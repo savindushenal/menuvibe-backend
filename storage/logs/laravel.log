@@ -1,0 +1,431 @@
+[2025-11-01 08:00:50] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":8,"token_present":true} 
+[2025-11-01 08:00:51] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":7,"locations_count":1} 
+[2025-11-01 08:01:00] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":8,"token_present":true} 
+[2025-11-01 08:01:01] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":7,"locations_count":1} 
+[2025-11-01 08:01:40] local.INFO: Menu Item Subscription Check {"user_id":8,"menu_id":2,"current_count":0,"limit":10,"plan":"Free","can_add":true} 
+[2025-11-01 08:01:42] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":8,"token_present":true} 
+[2025-11-01 08:01:43] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":7,"locations_count":1} 
+[2025-11-01 08:03:44] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":8,"token_present":true} 
+[2025-11-01 08:03:45] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":7,"locations_count":1} 
+[2025-11-01 08:03:57] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":8,"token_present":true} 
+[2025-11-01 08:03:58] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":7,"locations_count":1} 
+[2025-11-01 08:09:47] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":8,"token_present":true} 
+[2025-11-01 08:09:48] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":7,"locations_count":1} 
+[2025-11-01 08:10:01] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":8,"token_present":true} 
+[2025-11-01 08:10:01] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":7,"locations_count":1} 
+[2025-11-01 08:11:04] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":8,"token_present":true} 
+[2025-11-01 08:11:05] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":7,"locations_count":1} 
+[2025-11-01 08:11:17] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":8,"token_present":true} 
+[2025-11-01 08:11:17] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":7,"locations_count":1} 
+[2025-11-01 09:47:29] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":8,"token_present":true} 
+[2025-11-01 09:47:30] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":7,"locations_count":1} 
+[2025-11-01 09:47:42] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":8,"token_present":true} 
+[2025-11-01 09:47:43] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":7,"locations_count":1} 
+[2025-11-01 09:55:42] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":8,"token_present":true} 
+[2025-11-01 09:55:43] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":7,"locations_count":1} 
+[2025-11-01 09:55:55] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":8,"token_present":true} 
+[2025-11-01 09:55:56] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":7,"locations_count":1} 
+[2025-11-01 10:11:09] local.INFO: Google OAuth callback received {"email":"shenalsavindubro@gmail.com","name":"mixsongs hub","google_id":"113674980901880956528"} 
+[2025-11-01 10:11:11] local.INFO: Existing user found and updated {"user_id":1} 
+[2025-11-01 10:11:12] local.INFO: Token created {"token_length":51} 
+[2025-11-01 10:11:12] local.INFO: Redirecting to frontend {"url":"http://localhost:3000/auth/callback?token=37|84szfS2lMRrGhjNfB9tz9J6zmY36z65f4SzGe3Sme0366112"} 
+[2025-11-01 10:15:35] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 10:15:36] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 10:15:39] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 10:15:40] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 10:16:05] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 10:16:06] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 10:16:18] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 10:16:18] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 10:17:56] local.INFO: Menu Item Subscription Check {"user_id":1,"menu_id":1,"current_count":0,"limit":10,"plan":"Free","can_add":true} 
+[2025-11-01 10:18:02] local.INFO: Menu Item Subscription Check {"user_id":1,"menu_id":1,"current_count":1,"limit":10,"plan":"Free","can_add":true} 
+[2025-11-01 10:18:08] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 10:18:09] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 10:18:16] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 10:18:17] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 10:18:26] local.INFO: Menu Item Subscription Check {"user_id":1,"menu_id":1,"current_count":2,"limit":10,"plan":"Free","can_add":true} 
+[2025-11-01 10:18:31] local.INFO: Menu Item Subscription Check {"user_id":1,"menu_id":1,"current_count":3,"limit":10,"plan":"Free","can_add":true} 
+[2025-11-01 10:18:35] local.INFO: Menu Item Subscription Check {"user_id":1,"menu_id":1,"current_count":4,"limit":10,"plan":"Free","can_add":true} 
+[2025-11-01 10:18:38] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 10:18:39] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 10:18:43] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 10:18:43] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 10:18:47] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 10:18:48] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 10:25:53] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 10:25:54] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 10:25:58] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 10:25:59] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 10:35:49] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 10:35:50] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 10:35:54] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 10:35:55] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 10:42:21] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 10:42:21] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 11:08:18] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 11:08:20] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 11:08:49] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 11:08:50] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 11:09:02] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 11:09:03] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 11:13:00] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 11:13:01] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 11:13:05] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 11:13:06] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 11:28:42] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 11:28:43] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 11:28:56] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 11:28:57] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 12:20:41] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 12:20:41] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 12:20:56] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 12:20:57] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 12:40:23] local.ERROR: SQLSTATE[HY000]: General error: 1830 Column 'category_id' cannot be NOT NULL: needed in a foreign key constraint 'menu_items_category_id_foreign' SET NULL (Connection: mysql, SQL: alter table `menu_items` modify `category_id` bigint unsigned not null) {"exception":"[object] (Illuminate\\Database\\QueryException(code: HY000): SQLSTATE[HY000]: General error: 1830 Column 'category_id' cannot be NOT NULL: needed in a foreign key constraint 'menu_items_category_id_foreign' SET NULL (Connection: mysql, SQL: alter table `menu_items` modify `category_id` bigint unsigned not null) at E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:829)
+[stacktrace]
+#0 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('alter table `me...', Array, Object(Closure))
+#1 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(576): Illuminate\\Database\\Connection->run('alter table `me...', Array, Object(Closure))
+#2 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Blueprint.php(110): Illuminate\\Database\\Connection->statement('alter table `me...')
+#3 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(602): Illuminate\\Database\\Schema\\Blueprint->build(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Schema\\Grammars\\MySqlGrammar))
+#4 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(444): Illuminate\\Database\\Schema\\Builder->build(Object(Illuminate\\Database\\Schema\\Blueprint))
+#5 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Facades\\Facade.php(355): Illuminate\\Database\\Schema\\Builder->table('menu_items', Object(Closure))
+#6 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\database\\migrations\\2025_11_01_122606_truncate_menu_items_and_make_category_required.php(19): Illuminate\\Support\\Facades\\Facade::__callStatic('table', Array)
+#7 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(501): Illuminate\\Database\\Migrations\\Migration@anonymous->up()
+#8 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(418): Illuminate\\Database\\Migrations\\Migrator->runMethod(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#9 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(427): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#10 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->runMigration(Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#11 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\View\\Components\\Task.php(37): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#12 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(783): Illuminate\\Console\\View\\Components\\Task->render('2025_11_01_1226...', Object(Closure))
+#13 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->write('Illuminate\\\\Cons...', '2025_11_01_1226...', Object(Closure))
+#14 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(189): Illuminate\\Database\\Migrations\\Migrator->runUp('E:\\\\githubNew\\\\me...', 12, false)
+#15 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(132): Illuminate\\Database\\Migrations\\Migrator->runPending(Array, Array)
+#16 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(90): Illuminate\\Database\\Migrations\\Migrator->run(Array, Array)
+#17 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(641): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->Illuminate\\Database\\Console\\Migrations\\{closure}()
+#18 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(83): Illuminate\\Database\\Migrations\\Migrator->usingConnection(NULL, Object(Closure))
+#19 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->handle()
+#20 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#21 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#22 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(35): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Array, Object(Closure))
+#23 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(662): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Array, Array, NULL)
+#24 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(211): Illuminate\\Container\\Container->call(Array)
+#25 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\symfony\\console\\Command\\Command.php(326): Illuminate\\Console\\Command->execute(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#26 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(180): Symfony\\Component\\Console\\Command\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#27 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\symfony\\console\\Application.php(1096): Illuminate\\Console\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#28 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\symfony\\console\\Application.php(324): Symfony\\Component\\Console\\Application->doRunCommand(Object(Illuminate\\Database\\Console\\Migrations\\MigrateCommand), Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#29 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\symfony\\console\\Application.php(175): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#30 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(201): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#31 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\artisan(35): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#32 {main}
+
+[previous exception] [object] (PDOException(code: HY000): SQLSTATE[HY000]: General error: 1830 Column 'category_id' cannot be NOT NULL: needed in a foreign key constraint 'menu_items_category_id_foreign' SET NULL at E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:587)
+[stacktrace]
+#0 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(587): PDOStatement->execute()
+#1 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(816): Illuminate\\Database\\Connection->Illuminate\\Database\\{closure}('alter table `me...', Array)
+#2 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('alter table `me...', Array, Object(Closure))
+#3 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(576): Illuminate\\Database\\Connection->run('alter table `me...', Array, Object(Closure))
+#4 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Blueprint.php(110): Illuminate\\Database\\Connection->statement('alter table `me...')
+#5 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(602): Illuminate\\Database\\Schema\\Blueprint->build(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Schema\\Grammars\\MySqlGrammar))
+#6 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(444): Illuminate\\Database\\Schema\\Builder->build(Object(Illuminate\\Database\\Schema\\Blueprint))
+#7 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Facades\\Facade.php(355): Illuminate\\Database\\Schema\\Builder->table('menu_items', Object(Closure))
+#8 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\database\\migrations\\2025_11_01_122606_truncate_menu_items_and_make_category_required.php(19): Illuminate\\Support\\Facades\\Facade::__callStatic('table', Array)
+#9 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(501): Illuminate\\Database\\Migrations\\Migration@anonymous->up()
+#10 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(418): Illuminate\\Database\\Migrations\\Migrator->runMethod(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#11 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(427): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#12 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->runMigration(Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#13 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\View\\Components\\Task.php(37): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#14 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(783): Illuminate\\Console\\View\\Components\\Task->render('2025_11_01_1226...', Object(Closure))
+#15 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->write('Illuminate\\\\Cons...', '2025_11_01_1226...', Object(Closure))
+#16 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(189): Illuminate\\Database\\Migrations\\Migrator->runUp('E:\\\\githubNew\\\\me...', 12, false)
+#17 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(132): Illuminate\\Database\\Migrations\\Migrator->runPending(Array, Array)
+#18 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(90): Illuminate\\Database\\Migrations\\Migrator->run(Array, Array)
+#19 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(641): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->Illuminate\\Database\\Console\\Migrations\\{closure}()
+#20 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(83): Illuminate\\Database\\Migrations\\Migrator->usingConnection(NULL, Object(Closure))
+#21 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->handle()
+#22 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#23 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#24 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(35): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Array, Object(Closure))
+#25 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(662): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Array, Array, NULL)
+#26 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(211): Illuminate\\Container\\Container->call(Array)
+#27 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\symfony\\console\\Command\\Command.php(326): Illuminate\\Console\\Command->execute(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#28 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(180): Symfony\\Component\\Console\\Command\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#29 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\symfony\\console\\Application.php(1096): Illuminate\\Console\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#30 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\symfony\\console\\Application.php(324): Symfony\\Component\\Console\\Application->doRunCommand(Object(Illuminate\\Database\\Console\\Migrations\\MigrateCommand), Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#31 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\symfony\\console\\Application.php(175): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#32 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(201): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#33 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\artisan(35): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#34 {main}
+"} 
+[2025-11-01 12:46:07] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 12:46:08] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 12:46:20] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 12:46:21] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 13:06:30] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 13:06:33] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 13:06:40] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 13:06:41] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 13:35:49] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 13:35:50] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 13:37:04] local.INFO: Menu Item Subscription Check {"user_id":1,"menu_id":1,"current_count":0,"limit":10,"plan":"Free","can_add":true} 
+[2025-11-01 13:37:06] local.ERROR: Disk [public] does not have a configured driver. {"exception":"[object] (InvalidArgumentException(code: 0): Disk [public] does not have a configured driver. at E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Filesystem\\FilesystemManager.php:137)
+[stacktrace]
+#0 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Filesystem\\FilesystemManager.php(120): Illuminate\\Filesystem\\FilesystemManager->resolve('public')
+#1 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Filesystem\\FilesystemManager.php(83): Illuminate\\Filesystem\\FilesystemManager->get('public')
+#2 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\UploadedFile.php(94): Illuminate\\Filesystem\\FilesystemManager->disk('public')
+#3 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\UploadedFile.php(36): Illuminate\\Http\\UploadedFile->storeAs('menu-items', 'ojDmTnwYwOQ1Fo5...', Array)
+#4 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\app\\Http\\Controllers\\MenuItemController.php(218): Illuminate\\Http\\UploadedFile->store('menu-items', 'public')
+#5 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Controller.php(54): App\\Http\\Controllers\\MenuItemController->store(Object(Illuminate\\Http\\Request), '1')
+#6 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(43): Illuminate\\Routing\\Controller->callAction('store', Array)
+#7 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(259): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\MenuItemController), 'store')
+#8 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(205): Illuminate\\Routing\\Route->runController()
+#9 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(806): Illuminate\\Routing\\Route->run()
+#10 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Routing\\Router->Illuminate\\Routing\\{closure}(Object(Illuminate\\Http\\Request))
+#11 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#12 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#13 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\ThrottleRequests.php(159): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#14 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\ThrottleRequests.php(125): Illuminate\\Routing\\Middleware\\ThrottleRequests->handleRequest(Object(Illuminate\\Http\\Request), Object(Closure), Array)
+#15 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\ThrottleRequests.php(87): Illuminate\\Routing\\Middleware\\ThrottleRequests->handleRequestUsingNamedLimiter(Object(Illuminate\\Http\\Request), Object(Closure), 'api', Object(Closure))
+#16 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Routing\\Middleware\\ThrottleRequests->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'api')
+#17 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#18 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(805): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#19 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#20 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#21 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#22 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#23 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#24 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#25 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#26 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#27 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#28 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#29 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#30 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#31 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#32 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(99): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#33 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#34 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\HandleCors.php(62): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#35 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#36 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#37 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#38 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#39 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#40 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#41 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\public\\index.php(51): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#42 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(16): require_once('E:\\\\githubNew\\\\me...')
+#43 {main}
+"} 
+[2025-11-01 13:39:16] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 13:39:17] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 13:39:30] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 13:39:31] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 13:40:37] local.INFO: Menu Item Subscription Check {"user_id":1,"menu_id":1,"current_count":0,"limit":10,"plan":"Free","can_add":true} 
+[2025-11-01 13:40:45] local.ERROR: Disk [public] does not have a configured driver. {"exception":"[object] (InvalidArgumentException(code: 0): Disk [public] does not have a configured driver. at E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Filesystem\\FilesystemManager.php:137)
+[stacktrace]
+#0 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Filesystem\\FilesystemManager.php(120): Illuminate\\Filesystem\\FilesystemManager->resolve('public')
+#1 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Filesystem\\FilesystemManager.php(83): Illuminate\\Filesystem\\FilesystemManager->get('public')
+#2 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\UploadedFile.php(94): Illuminate\\Filesystem\\FilesystemManager->disk('public')
+#3 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\UploadedFile.php(36): Illuminate\\Http\\UploadedFile->storeAs('menu-items', 'MP3q75qJdj2b6lc...', Array)
+#4 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\app\\Http\\Controllers\\MenuItemController.php(218): Illuminate\\Http\\UploadedFile->store('menu-items', 'public')
+#5 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Controller.php(54): App\\Http\\Controllers\\MenuItemController->store(Object(Illuminate\\Http\\Request), '1')
+#6 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(43): Illuminate\\Routing\\Controller->callAction('store', Array)
+#7 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(259): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\MenuItemController), 'store')
+#8 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(205): Illuminate\\Routing\\Route->runController()
+#9 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(806): Illuminate\\Routing\\Route->run()
+#10 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Routing\\Router->Illuminate\\Routing\\{closure}(Object(Illuminate\\Http\\Request))
+#11 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#12 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#13 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\ThrottleRequests.php(159): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#14 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\ThrottleRequests.php(125): Illuminate\\Routing\\Middleware\\ThrottleRequests->handleRequest(Object(Illuminate\\Http\\Request), Object(Closure), Array)
+#15 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\ThrottleRequests.php(87): Illuminate\\Routing\\Middleware\\ThrottleRequests->handleRequestUsingNamedLimiter(Object(Illuminate\\Http\\Request), Object(Closure), 'api', Object(Closure))
+#16 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Routing\\Middleware\\ThrottleRequests->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'api')
+#17 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#18 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(805): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#19 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#20 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#21 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#22 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#23 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#24 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#25 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#26 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#27 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#28 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#29 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#30 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#31 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#32 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(99): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#33 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#34 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\HandleCors.php(62): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#35 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#36 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#37 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#38 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#39 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#40 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#41 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\public\\index.php(51): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#42 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(16): require_once('E:\\\\githubNew\\\\me...')
+#43 {main}
+"} 
+[2025-11-01 13:44:43] local.INFO: Menu Item Subscription Check {"user_id":1,"menu_id":1,"current_count":0,"limit":10,"plan":"Free","can_add":true} 
+[2025-11-01 13:44:52] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 13:44:53] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 13:48:59] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 13:49:00] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 13:49:15] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 13:49:15] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 13:58:20] local.INFO: Menu Item Subscription Check {"user_id":1,"menu_id":1,"current_count":1,"limit":10,"plan":"Free","can_add":true} 
+[2025-11-01 13:58:26] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 13:58:27] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 14:08:08] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 14:08:09] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 14:08:25] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 14:08:26] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 14:11:08] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 14:11:09] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 14:11:24] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 14:11:25] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 17:06:57] local.INFO: Google OAuth callback received {"email":"shenalsavindubro@gmail.com","name":"mixsongs hub","google_id":"113674980901880956528"} 
+[2025-11-01 17:07:00] local.INFO: Existing user found and updated {"user_id":1} 
+[2025-11-01 17:07:01] local.INFO: Token created {"token_length":51} 
+[2025-11-01 17:07:01] local.INFO: Redirecting to frontend {"url":"http://localhost:3000/auth/callback?token=38|irT3uTRNNQFTEa1Ak3cafnr29ULbGPKch2Gvtplida141e63"} 
+[2025-11-01 17:08:46] local.INFO: Google OAuth callback received {"email":"shenalsavindubro@gmail.com","name":"mixsongs hub","google_id":"113674980901880956528"} 
+[2025-11-01 17:08:48] local.INFO: Existing user found and updated {"user_id":1} 
+[2025-11-01 17:08:49] local.INFO: Token created {"token_length":51} 
+[2025-11-01 17:08:49] local.INFO: Redirecting to frontend {"url":"http://localhost:3000/auth/callback?token=39|taUNTPdAxgstI8uxZfM72D5qovzMGjt2aOlLndts9f112ab7"} 
+[2025-11-01 17:31:55] local.INFO: Google OAuth callback received {"email":"shenalsavindubro@gmail.com","name":"mixsongs hub","google_id":"113674980901880956528"} 
+[2025-11-01 17:31:57] local.INFO: Existing user found and updated {"user_id":1} 
+[2025-11-01 17:31:58] local.INFO: Token created {"token_length":51} 
+[2025-11-01 17:31:58] local.INFO: Redirecting to frontend {"url":"http://localhost:3000/auth/callback?token=40|PMGCXfr66cVuxbbWs2O3Ua49uGL96vmDWimwLKNK775d6792"} 
+[2025-11-01 17:56:46] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 17:56:48] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 17:56:53] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 17:56:54] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 18:00:51] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 18:00:52] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 18:01:00] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 18:01:01] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 18:01:06] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 18:01:06] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 18:01:11] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 18:01:12] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 18:02:03] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 18:02:04] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 18:02:09] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 18:02:09] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 18:04:51] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 18:04:52] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 18:07:03] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 18:07:03] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 18:07:48] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 18:07:49] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 18:09:17] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 18:09:17] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 18:09:21] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 18:09:21] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 18:10:42] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 18:10:43] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 18:13:49] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 18:13:49] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 18:15:17] local.INFO: Menu Item Subscription Check {"user_id":1,"menu_id":3,"current_count":0,"limit":10,"plan":"Free","can_add":true} 
+[2025-11-01 18:15:17] local.ERROR: Menu Item Validation Failed {"errors":{"category_id":["The category id field is required."]},"input":{"name":"salad","description":null,"price":"1000","is_available":"1","is_spicy":"0"}} 
+[2025-11-01 18:15:26] local.INFO: Menu Item Subscription Check {"user_id":1,"menu_id":3,"current_count":0,"limit":10,"plan":"Free","can_add":true} 
+[2025-11-01 18:16:09] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 18:16:10] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 18:21:41] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 18:21:41] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 18:21:46] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 18:21:47] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 18:23:46] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 18:23:47] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 18:23:52] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 18:23:53] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 18:37:00] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 18:37:01] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 18:37:06] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 18:37:06] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 18:47:10] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 18:47:11] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 18:47:16] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 18:47:17] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 18:56:55] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 18:56:58] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 18:57:07] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 18:57:08] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 19:01:33] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 19:01:34] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 19:01:39] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 19:01:39] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 19:02:01] local.INFO: Menu Item Subscription Check {"user_id":1,"menu_id":3,"current_count":1,"limit":10,"plan":"Free","can_add":true} 
+[2025-11-01 19:03:23] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 19:03:24] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 19:06:18] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 19:06:18] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 19:06:23] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 19:06:23] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 19:08:34] local.INFO: Menu Item Subscription Check {"user_id":1,"menu_id":3,"current_count":2,"limit":10,"plan":"Free","can_add":true} 
+[2025-11-01 19:09:48] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 19:09:50] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 19:23:47] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 19:23:48] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 19:27:54] local.INFO: Google OAuth callback received {"email":"shenalsavindu7@gmail.com","name":"savindu shenal","google_id":"105487459840704400919"} 
+[2025-11-01 19:27:56] local.INFO: Existing user found and updated {"user_id":8} 
+[2025-11-01 19:27:57] local.INFO: Token created {"token_length":51} 
+[2025-11-01 19:27:57] local.INFO: Redirecting to frontend {"url":"http://localhost:3000/auth/callback?token=41|kVukd3Emh909G1S7ju7NhKFn5vOTwDrzlGKvXcqG89ea242a"} 
+[2025-11-01 19:28:49] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":8,"token_present":true} 
+[2025-11-01 19:28:50] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":7,"locations_count":1} 
+[2025-11-01 19:28:54] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":8,"token_present":true} 
+[2025-11-01 19:28:55] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":7,"locations_count":1} 
+[2025-11-01 19:30:27] local.INFO: Menu Item Subscription Check {"user_id":8,"menu_id":2,"current_count":0,"limit":10,"plan":"Free","can_add":true} 
+[2025-11-01 19:34:24] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":8,"token_present":true} 
+[2025-11-01 19:34:26] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":7,"locations_count":1} 
+[2025-11-01 19:34:31] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":8,"token_present":true} 
+[2025-11-01 19:34:31] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":7,"locations_count":1} 
+[2025-11-01 19:35:43] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":8,"token_present":true} 
+[2025-11-01 19:35:44] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":7,"locations_count":1} 
+[2025-11-01 19:41:00] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":8,"token_present":true} 
+[2025-11-01 19:41:01] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":7,"locations_count":1} 
+[2025-11-01 19:41:06] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":8,"token_present":true} 
+[2025-11-01 19:41:07] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":7,"locations_count":1} 
+[2025-11-01 19:41:53] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 19:41:54] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 19:48:41] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":8,"token_present":true} 
+[2025-11-01 19:48:41] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":7,"locations_count":1} 
+[2025-11-01 19:50:41] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":8,"token_present":true} 
+[2025-11-01 19:50:42] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":7,"locations_count":1} 
+[2025-11-01 19:52:22] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 19:52:23] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 19:53:01] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 19:53:01] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 19:53:14] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 19:53:15] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 19:53:20] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 19:53:20] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 20:18:31] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 20:18:32] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 20:18:37] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 20:18:38] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 20:23:12] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 20:23:13] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 20:23:50] local.INFO: Google OAuth callback received {"email":"shenalsavindu7@gmail.com","name":"savindu shenal","google_id":"105487459840704400919"} 
+[2025-11-01 20:23:51] local.INFO: Existing user found and updated {"user_id":8} 
+[2025-11-01 20:23:52] local.INFO: Token created {"token_length":51} 
+[2025-11-01 20:23:52] local.INFO: Redirecting to frontend {"url":"http://localhost:3000/auth/callback?token=42|Zrton4t7LUQhLGkb7dpiAbqSK1iAToIRdIjTgir354a7abfa"} 
+[2025-11-01 20:24:38] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":8,"token_present":true} 
+[2025-11-01 20:24:38] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":7,"locations_count":1} 
+[2025-11-01 20:28:17] local.ERROR: json_decode(): Argument #1 ($json) must be of type string, array given {"exception":"[object] (TypeError(code: 0): json_decode(): Argument #1 ($json) must be of type string, array given at E:\\githubNew\\menuvibe-full\\menuvibe-backend\\test_locations.php:37)
+[stacktrace]
+#0 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\test_locations.php(37): json_decode(Array, true)
+#1 {main}
+"} 
+[2025-11-01 20:28:50] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":8,"token_present":true} 
+[2025-11-01 20:28:51] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":7,"locations_count":1} 
+[2025-11-01 20:28:55] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":8,"token_present":true} 
+[2025-11-01 20:28:56] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":7,"locations_count":1} 
+[2025-11-01 20:35:02] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":8,"token_present":true} 
+[2025-11-01 20:35:03] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":7,"locations_count":1} 
+[2025-11-01 20:35:07] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 20:35:07] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
+[2025-11-01 20:36:53] local.INFO: Menu Item Subscription Check {"user_id":1,"menu_id":3,"current_count":3,"limit":10,"plan":"Free","can_add":true} 
+[2025-11-01 20:49:29] local.INFO: Menu Item Update Request {"item_id":"6","menu_id":"2","input":[]} 
+[2025-11-01 20:51:01] local.INFO: Menu Item Update Request {"item_id":"6","menu_id":"2","input":[]} 
+[2025-11-01 20:51:22] local.INFO: Menu Item Update Request {"item_id":"6","menu_id":"2","input":[]} 
+[2025-11-01 20:55:21] local.INFO: MenuController@index - Auth Check {"has_user":true,"user_id":1,"token_present":true} 
+[2025-11-01 20:55:22] local.INFO: MenuController@index - Location Check {"has_default":true,"location_id":6,"locations_count":1} 
