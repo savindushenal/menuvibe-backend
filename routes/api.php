@@ -6,6 +6,7 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\MenuItemController;
 use App\Http\Controllers\MenuCategoryController;
+use App\Http\Controllers\QRCodeController;
 use App\Http\Controllers\SocialAuthController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\Api\SettingsController;
@@ -68,6 +69,11 @@ Route::post('/locations/{location}/set-default', [LocationController::class, 'se
 Route::put('/locations/sort-order', [LocationController::class, 'updateSortOrder']);
 Route::get('/locations/{location}/statistics', [LocationController::class, 'statistics']);
 
+// QR Code routes (manual auth)
+Route::get('/qr-codes', [QRCodeController::class, 'index']);
+Route::post('/qr-codes', [QRCodeController::class, 'store']);
+Route::delete('/qr-codes/{id}', [QRCodeController::class, 'destroy']);
+
 // Location-aware menu routes
 Route::apiResource('locations.menus', MenuController::class);
 Route::apiResource('locations.menus.items', MenuItemController::class);
@@ -84,16 +90,56 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Additional protected routes can be added here
     Route::get('/dashboard', function (Request $request) {
+        $user = $request->user();
+        
+        // Get user's location IDs
+        $locationIds = $user->locations()->pluck('id')->toArray();
+        
+        // Get actual counts from database
+        $totalMenus = 0;
+        $totalItems = 0;
+        
+        if (!empty($locationIds)) {
+            $totalMenus = \App\Models\Menu::whereIn('location_id', $locationIds)->count();
+            $totalItems = \App\Models\MenuItem::whereHas('menu', function($q) use ($locationIds) {
+                $q->whereIn('location_id', $locationIds);
+            })->count();
+        }
+        
+        // For now, using mock data for views and scans (can be implemented with analytics later)
         return response()->json([
             'success' => true,
             'message' => 'Dashboard data',
             'data' => [
-                'user' => $request->user(),
+                'user' => $user,
                 'stats' => [
-                    'total_menus' => 0,
-                    'total_items' => 0,
-                    'total_categories' => 0,
-                ]
+                    'totalViews' => [
+                        'value' => 0,
+                        'formatted' => '0',
+                        'change' => 0,
+                        'trend' => 'neutral'
+                    ],
+                    'qrScans' => [
+                        'value' => 0,
+                        'formatted' => '0',
+                        'change' => 0,
+                        'trend' => 'neutral'
+                    ],
+                    'menuItems' => [
+                        'value' => $totalItems,
+                        'formatted' => (string)$totalItems,
+                        'change' => 0,
+                        'trend' => 'neutral'
+                    ],
+                    'activeCustomers' => [
+                        'value' => 0,
+                        'formatted' => '0',
+                        'change' => 0,
+                        'trend' => 'neutral'
+                    ]
+                ],
+                'recentActivity' => [],
+                'popularItems' => []
             ]
         ]);
     });
@@ -439,4 +485,282 @@ Route::post('/settings/reset', function (Request $request) {
     } catch (\Exception $e) {
         return response()->json(['error' => $e->getMessage()], 500);
     }
+});
+
+// ============================================
+// FRANCHISE WHITE-LABEL ROUTES
+// ============================================
+
+use App\Http\Controllers\Api\FranchiseController;
+use App\Http\Controllers\Api\FranchiseUserController;
+
+// Public branding endpoint (no auth required)
+Route::get('/branding/{identifier}', [FranchiseController::class, 'getBranding']);
+
+// Public franchise endpoints for customer-facing menu view
+Route::prefix('public/franchise')->group(function () {
+    Route::get('/{slug}', [FranchiseController::class, 'getPublicFranchise']);
+    Route::get('/{franchiseSlug}/location/{locationSlug}/menu', [FranchiseController::class, 'getPublicMenu']);
+});
+
+// Franchise invitation acceptance (can be public or auth based on token)
+Route::post('/franchise-invitations/accept', [FranchiseUserController::class, 'acceptInvitation']);
+
+// Franchise management routes (with manual token auth)
+Route::get('/franchises', function (Request $request) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(FranchiseController::class)->index($request);
+});
+
+Route::post('/franchises', function (Request $request) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(FranchiseController::class)->store($request);
+});
+
+Route::get('/franchises/{id}', function (Request $request, int $id) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(FranchiseController::class)->show($request, $id);
+});
+
+Route::put('/franchises/{id}', function (Request $request, int $id) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(FranchiseController::class)->update($request, $id);
+});
+
+Route::delete('/franchises/{id}', function (Request $request, int $id) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(FranchiseController::class)->destroy($request, $id);
+});
+
+// Franchise domain verification
+Route::get('/franchises/{id}/domain-verification', function (Request $request, int $id) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(FranchiseController::class)->getDomainVerification($request, $id);
+});
+
+Route::post('/franchises/{id}/verify-domain', function (Request $request, int $id) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(FranchiseController::class)->verifyDomain($request, $id);
+});
+
+// Franchise locations management
+Route::get('/franchises/{id}/locations', function (Request $request, int $id) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(FranchiseController::class)->getLocations($request, $id);
+});
+
+Route::post('/franchises/{id}/locations', function (Request $request, int $id) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(FranchiseController::class)->attachLocation($request, $id);
+});
+
+Route::delete('/franchises/{id}/locations/{locationId}', function (Request $request, int $id, int $locationId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(FranchiseController::class)->detachLocation($request, $id, $locationId);
+});
+
+// Franchise users management
+Route::get('/franchises/{franchiseId}/users', function (Request $request, int $franchiseId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(FranchiseUserController::class)->index($request, $franchiseId);
+});
+
+Route::post('/franchises/{franchiseId}/users/invite', function (Request $request, int $franchiseId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(FranchiseUserController::class)->invite($request, $franchiseId);
+});
+
+Route::put('/franchises/{franchiseId}/users/{userId}', function (Request $request, int $franchiseId, int $userId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(FranchiseUserController::class)->update($request, $franchiseId, $userId);
+});
+
+Route::delete('/franchises/{franchiseId}/users/{userId}', function (Request $request, int $franchiseId, int $userId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(FranchiseUserController::class)->remove($request, $franchiseId, $userId);
+});
+
+Route::post('/franchises/{franchiseId}/leave', function (Request $request, int $franchiseId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(FranchiseUserController::class)->leave($request, $franchiseId);
 });

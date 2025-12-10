@@ -8,6 +8,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
 {
@@ -116,6 +117,67 @@ class User extends Authenticatable
                               ->orWhere('ends_at', '>', now());
                     })
                     ->latest();
+    }
+
+    /**
+     * Get all franchises this user belongs to
+     */
+    public function franchises(): BelongsToMany
+    {
+        return $this->belongsToMany(Franchise::class, 'franchise_users')
+                    ->withPivot(['role', 'permissions', 'location_ids', 'is_active'])
+                    ->withTimestamps();
+    }
+
+    /**
+     * Get franchise user pivot records
+     */
+    public function franchiseUsers(): HasMany
+    {
+        return $this->hasMany(FranchiseUser::class);
+    }
+
+    /**
+     * Get franchises where user is owner
+     */
+    public function ownedFranchises(): BelongsToMany
+    {
+        return $this->franchises()->wherePivot('role', 'owner');
+    }
+
+    /**
+     * Get franchises where user is admin or owner
+     */
+    public function adminFranchises(): BelongsToMany
+    {
+        return $this->franchises()->wherePivotIn('role', ['owner', 'admin']);
+    }
+
+    /**
+     * Check if user is a franchise owner
+     */
+    public function isFranchiseOwner(): bool
+    {
+        return $this->ownedFranchises()->exists();
+    }
+
+    /**
+     * Check if user belongs to a specific franchise
+     */
+    public function belongsToFranchise(int $franchiseId): bool
+    {
+        return $this->franchises()->where('franchises.id', $franchiseId)->exists();
+    }
+
+    /**
+     * Get user's role in a franchise
+     */
+    public function getRoleInFranchise(int $franchiseId): ?string
+    {
+        $franchiseUser = $this->franchiseUsers()
+                              ->where('franchise_id', $franchiseId)
+                              ->first();
+        return $franchiseUser?->role;
     }
 
     /**

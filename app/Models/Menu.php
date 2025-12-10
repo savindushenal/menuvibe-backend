@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Menu extends Model
 {
@@ -14,18 +15,24 @@ class Menu extends Model
     protected $fillable = [
         'location_id',
         'name',
+        'slug',
+        'public_id',
         'description',
+        'style',
+        'currency',
         'is_active',
         'sort_order',
         'availability_hours',
         'is_featured',
         'image_url',
+        'settings',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'is_featured' => 'boolean',
         'availability_hours' => 'array',
+        'settings' => 'array',
         'sort_order' => 'integer',
     ];
 

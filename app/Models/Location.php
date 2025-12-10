@@ -13,6 +13,7 @@ class Location extends Model
 
     protected $fillable = [
         'user_id',
+        'franchise_id',
         'name',
         'description',
         'is_active',
@@ -60,6 +61,14 @@ class Location extends Model
     }
 
     /**
+     * Get the franchise this location belongs to
+     */
+    public function franchise(): BelongsTo
+    {
+        return $this->belongsTo(Franchise::class);
+    }
+
+    /**
      * Get the menus for this location
      */
     public function menus(): HasMany
@@ -97,6 +106,22 @@ class Location extends Model
     public function scopeOrdered($query)
     {
         return $query->orderBy('sort_order')->orderBy('name');
+    }
+
+    /**
+     * Scope for franchise locations
+     */
+    public function scopeForFranchise($query, int $franchiseId)
+    {
+        return $query->where('franchise_id', $franchiseId);
+    }
+
+    /**
+     * Check if location belongs to a franchise
+     */
+    public function belongsToFranchise(): bool
+    {
+        return !is_null($this->franchise_id);
     }
 
     /**

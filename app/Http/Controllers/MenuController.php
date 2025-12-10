@@ -141,6 +141,8 @@ class MenuController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
+            'style' => 'nullable|string|max:50',
+            'currency' => 'nullable|string|size:3',
             'is_active' => 'boolean',
             'is_featured' => 'boolean',
             'sort_order' => 'integer|min:0',
@@ -274,6 +276,8 @@ class MenuController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|string|max:255',
             'description' => 'nullable|string|max:1000',
+            'style' => 'nullable|string|max:50',
+            'currency' => 'nullable|string|size:3',
             'is_active' => 'boolean',
             'is_featured' => 'boolean',
             'sort_order' => 'integer|min:0',
