@@ -3,7 +3,7 @@
     "type": "project",
     "description": "MenuVibe Backend API",
     "require": {
-        "php": "^8.1",
+        "php": "^8.2",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^10.0",
         "laravel/sanctum": "^3.2",
