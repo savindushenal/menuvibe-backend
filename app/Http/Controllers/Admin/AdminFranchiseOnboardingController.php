@@ -556,10 +556,25 @@ class AdminFranchiseOnboardingController extends Controller
                 'created_by' => $request->user()->id,
             ]);
 
+            // Create an invitation record for tracking
+            $invitation = FranchiseInvitation::create([
+                'franchise_id' => $franchiseId,
+                'email' => $user->email,
+                'name' => $user->name,
+                'role' => $request->role,
+                'branch_id' => $request->branch_id,
+                'token' => FranchiseInvitation::generateToken(),
+                'status' => 'accepted', // Already accepted since account is created
+                'expires_at' => now()->addDays(7),
+                'accepted_at' => now(),
+                'send_credentials' => $request->send_credentials ?? true,
+                'invited_by' => $request->user()->id,
+            ]);
+
             DB::commit();
 
             // Send credentials email
-            if ($request->send_credentials) {
+            if ($request->send_credentials !== false) {
                 try {
                     Mail::to($user->email)->send(new FranchiseCredentialsMail(
                         $user,
@@ -574,11 +589,12 @@ class AdminFranchiseOnboardingController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Account created successfully',
+                'message' => 'Account created and invitation sent successfully',
                 'data' => [
                     'user' => $user,
                     'account' => $account,
-                    'password' => $request->send_credentials ? null : $password,
+                    'invitation' => $invitation,
+                    'password' => $request->send_credentials === false ? $password : null,
                 ],
             ], Response::HTTP_CREATED);
 
@@ -721,6 +737,37 @@ class AdminFranchiseOnboardingController extends Controller
         $invitation = FranchiseInvitation::where('franchise_id', $franchiseId)
             ->findOrFail($invitationId);
 
+        $franchise = Franchise::find($franchiseId);
+
+        // If invitation was already accepted, resend credentials with new password
+        if ($invitation->status === 'accepted') {
+            $user = User::where('email', $invitation->email)->first();
+            if ($user) {
+                $newPassword = Str::random(12);
+                $user->update(['password' => Hash::make($newPassword)]);
+
+                try {
+                    Mail::to($user->email)->send(new FranchiseCredentialsMail(
+                        $user,
+                        $franchise,
+                        $newPassword,
+                        $invitation->role
+                    ));
+                } catch (\Exception $e) {
+                    \Log::error('Failed to resend credentials email: ' . $e->getMessage());
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Failed to send email',
+                    ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Credentials resent successfully with new password',
+                ]);
+            }
+        }
+
         if ($invitation->status !== 'pending') {
             return response()->json([
                 'success' => false,
@@ -728,18 +775,21 @@ class AdminFranchiseOnboardingController extends Controller
             ], Response::HTTP_BAD_REQUEST);
         }
 
-        // Extend expiration
+        // Generate new temp password if needed
+        $tempPassword = $invitation->send_credentials ? FranchiseInvitation::generateTempPassword() : null;
+        
+        // Extend expiration and update temp password
         $invitation->update([
             'expires_at' => now()->addDays(7),
+            'temp_password' => $tempPassword ? Hash::make($tempPassword) : $invitation->temp_password,
         ]);
-
-        $franchise = Franchise::find($franchiseId);
 
         // Resend email
         try {
             Mail::to($invitation->email)->send(new FranchiseInvitationMail(
                 $invitation,
-                $franchise
+                $franchise,
+                $tempPassword
             ));
         } catch (\Exception $e) {
             \Log::error('Failed to resend invitation email: ' . $e->getMessage());
@@ -785,16 +835,21 @@ class AdminFranchiseOnboardingController extends Controller
             ->orderBy('due_date', 'desc')
             ->limit(10)
             ->get();
-        $invitations = FranchiseInvitation::where('franchise_id', $franchiseId)
-            ->pending()
+        
+        // Get all invitations (for display in Invitations tab)
+        $allInvitations = FranchiseInvitation::where('franchise_id', $franchiseId)
+            ->orderBy('created_at', 'desc')
             ->get();
+        
+        // Get pending invitations count for stats
+        $pendingInvitations = $allInvitations->where('status', 'pending');
 
         $stats = [
             'total_branches' => $branches->count(),
             'active_branches' => $branches->where('is_active', true)->count(),
             'paid_branches' => $branches->where('is_paid', true)->count(),
             'total_accounts' => $accounts->count(),
-            'pending_invitations' => $invitations->count(),
+            'pending_invitations' => $pendingInvitations->count(),
             'total_paid' => FranchisePayment::where('franchise_id', $franchiseId)
                 ->where('status', 'paid')->sum('amount'),
             'total_pending' => FranchisePayment::where('franchise_id', $franchiseId)
@@ -808,7 +863,8 @@ class AdminFranchiseOnboardingController extends Controller
                 'branches' => $branches,
                 'accounts' => $accounts,
                 'recent_payments' => $payments,
-                'pending_invitations' => $invitations,
+                'pending_invitations' => $pendingInvitations->values(),
+                'all_invitations' => $allInvitations,
                 'stats' => $stats,
             ],
         ]);
