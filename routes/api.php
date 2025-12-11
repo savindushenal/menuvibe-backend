@@ -152,6 +152,7 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'admin'])->group(function ()
     Route::post('/users/{id}/toggle-status', [AdminUserController::class, 'toggleStatus']);
     Route::delete('/users/{id}', [AdminUserController::class, 'destroy']);
     Route::post('/users/{id}/reset-password', [AdminUserController::class, 'resetPassword']);
+    Route::post('/users/{id}/send-password', [AdminUserController::class, 'generateAndSendPassword']);
     Route::post('/admins', [AdminUserController::class, 'createAdmin']);
     
     // Platform Settings (super admin only)

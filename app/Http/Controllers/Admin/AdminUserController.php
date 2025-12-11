@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\PasswordResetByAdminMail;
 use App\Models\AdminActivityLog;
 use App\Models\User;
 use App\Models\UserSubscription;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class AdminUserController extends Controller
@@ -424,6 +427,106 @@ class AdminUserController extends Controller
             'success' => true,
             'message' => 'Password reset successfully',
         ]);
+    }
+
+    /**
+     * Generate a random password and send it to the user via email
+     */
+    public function generateAndSendPassword(Request $request, int $id): JsonResponse
+    {
+        $admin = $this->getAuthenticatedUser($request);
+        
+        if (!$admin || !$admin->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found',
+            ], 404);
+        }
+
+        if (!$admin->canManageUser($user)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You cannot modify this user',
+            ], 403);
+        }
+
+        // Generate a secure random password
+        $password = $this->generateSecurePassword();
+
+        // Update the user's password
+        $user->update([
+            'password' => Hash::make($password),
+        ]);
+
+        // Revoke all existing tokens for security
+        $user->tokens()->delete();
+
+        // Send the password via email
+        try {
+            Mail::to($user->email)->send(new PasswordResetByAdminMail($user, $password));
+            $emailSent = true;
+        } catch (\Exception $e) {
+            $emailSent = false;
+            \Log::error('Failed to send password reset email: ' . $e->getMessage());
+        }
+
+        // Log the activity
+        AdminActivityLog::log(
+            $admin,
+            'user.password_generated',
+            $user,
+            null,
+            ['email_sent' => $emailSent],
+            "Generated and sent new password for: {$user->email}"
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => $emailSent 
+                ? 'New password generated and sent to user\'s email' 
+                : 'Password reset but email failed to send. Password: ' . $password,
+            'data' => [
+                'email_sent' => $emailSent,
+                'user_email' => $user->email,
+                // Only include password in response if email failed
+                'password' => !$emailSent ? $password : null,
+            ],
+        ]);
+    }
+
+    /**
+     * Generate a secure random password
+     */
+    private function generateSecurePassword(int $length = 12): string
+    {
+        $lowercase = 'abcdefghijklmnopqrstuvwxyz';
+        $uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $numbers = '0123456789';
+        $special = '!@#$%^&*';
+        
+        // Ensure at least one of each type
+        $password = $lowercase[random_int(0, strlen($lowercase) - 1)];
+        $password .= $uppercase[random_int(0, strlen($uppercase) - 1)];
+        $password .= $numbers[random_int(0, strlen($numbers) - 1)];
+        $password .= $special[random_int(0, strlen($special) - 1)];
+        
+        // Fill the rest with random characters
+        $allChars = $lowercase . $uppercase . $numbers . $special;
+        for ($i = 4; $i < $length; $i++) {
+            $password .= $allChars[random_int(0, strlen($allChars) - 1)];
+        }
+        
+        // Shuffle the password
+        return str_shuffle($password);
     }
 
     /**
