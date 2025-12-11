@@ -126,7 +126,7 @@ class AuthController extends Controller
         $contexts = [];
 
         // Check for personal business (locations owned directly)
-        $personalLocations = Location::where('owner_id', $user->id)
+        $personalLocations = Location::where('user_id', $user->id)
             ->whereNull('franchise_id')
             ->count();
         
