@@ -51,6 +51,11 @@ class Franchise extends Model
     ];
 
     /**
+     * The accessors to append to the model's array form.
+     */
+    protected $appends = ['owner'];
+
+    /**
      * Default values for attributes.
      */
     protected $attributes = [
@@ -101,6 +106,22 @@ class Franchise extends Model
     }
 
     /**
+     * Get all pricing configurations for this franchise.
+     */
+    public function pricing(): HasMany
+    {
+        return $this->hasMany(FranchisePricing::class);
+    }
+
+    /**
+     * Get the active pricing configuration.
+     */
+    public function activePricing()
+    {
+        return $this->hasOne(FranchisePricing::class)->where('is_active', true)->latest();
+    }
+
+    /**
      * Get all users belonging to this franchise.
      */
     public function users(): BelongsToMany
@@ -116,6 +137,15 @@ class Franchise extends Model
     public function owners(): BelongsToMany
     {
         return $this->users()->wherePivot('role', 'owner');
+    }
+
+    /**
+     * Get the primary franchise owner (first owner).
+     * This is an accessor that returns the first owner for convenience.
+     */
+    public function getOwnerAttribute()
+    {
+        return $this->owners()->first();
     }
 
     /**

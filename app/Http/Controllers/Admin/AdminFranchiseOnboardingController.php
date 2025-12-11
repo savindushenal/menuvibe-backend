@@ -169,7 +169,7 @@ class AdminFranchiseOnboardingController extends Controller
                 'success' => true,
                 'message' => 'Franchise created successfully',
                 'data' => [
-                    'franchise' => $franchise->load(['owner', 'pricing']),
+                    'franchise' => $franchise->load(['owners', 'pricing']),
                     'owner_created' => $isNewUser,
                     'temp_password' => $isNewUser ? $tempPassword : null,
                 ],
@@ -765,7 +765,7 @@ class AdminFranchiseOnboardingController extends Controller
     public function getFranchiseDetails($franchiseId)
     {
         $franchise = Franchise::with([
-            'owner:id,name,email',
+            'owners:id,name,email',
             'pricing' => fn($q) => $q->where('is_active', true),
         ])->findOrFail($franchiseId);
 

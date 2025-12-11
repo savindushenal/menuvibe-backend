@@ -16,7 +16,7 @@ class AdminFranchiseController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Franchise::with(['owner:id,name,email', 'locations'])
+        $query = Franchise::with(['owners:id,name,email', 'locations'])
             ->withCount(['locations', 'users']);
 
         // Search filter
@@ -25,7 +25,7 @@ class AdminFranchiseController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('slug', 'like', "%{$search}%")
-                  ->orWhereHas('owner', function ($q) use ($search) {
+                  ->orWhereHas('owners', function ($q) use ($search) {
                       $q->where('name', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%");
                   });
@@ -58,7 +58,7 @@ class AdminFranchiseController extends Controller
     public function show($id)
     {
         $franchise = Franchise::with([
-            'owner:id,name,email',
+            'owners:id,name,email',
             'locations',
             'users.user:id,name,email',
         ])->withCount(['locations', 'users'])->findOrFail($id);
@@ -114,7 +114,7 @@ class AdminFranchiseController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Franchise updated successfully',
-            'data' => $franchise->fresh(['owner', 'locations']),
+            'data' => $franchise->fresh(['owners', 'locations']),
         ]);
     }
 
@@ -182,7 +182,7 @@ class AdminFranchiseController extends Controller
         ];
 
         // Recent franchises
-        $recentFranchises = Franchise::with('owner:id,name,email')
+        $recentFranchises = Franchise::with('owners:id,name,email')
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get();
@@ -214,11 +214,13 @@ class AdminFranchiseController extends Controller
         }
 
         $franchise = Franchise::findOrFail($id);
-        $oldOwnerId = $franchise->owner_id;
+        $oldOwner = $franchise->owners()->first();
+        $oldOwnerId = $oldOwner ? $oldOwner->id : null;
         $newOwner = User::findOrFail($request->new_owner_id);
 
-        $franchise->owner_id = $newOwner->id;
-        $franchise->save();
+        // Remove old owner(s) and add new owner via pivot table
+        $franchise->owners()->detach();
+        $franchise->users()->attach($newOwner->id, ['role' => 'owner']);
 
         // Log admin activity
         if (method_exists($request->user(), 'logAdminActivity')) {
@@ -234,7 +236,7 @@ class AdminFranchiseController extends Controller
         return response()->json([
             'success' => true,
             'message' => "Ownership transferred to {$newOwner->name}",
-            'data' => $franchise->fresh(['owner']),
+            'data' => $franchise->fresh(['owners']),
         ]);
     }
 }
