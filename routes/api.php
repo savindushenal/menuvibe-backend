@@ -162,6 +162,7 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'admin'])->group(function ()
     Route::post('/franchises/{id}/invitations', [AdminFranchiseOnboardingController::class, 'sendInvitation']);
     Route::post('/franchises/{id}/branches', [AdminFranchiseOnboardingController::class, 'addBranch']);
     Route::post('/franchises/{id}/payments', [AdminFranchiseOnboardingController::class, 'recordPayment']);
+    Route::put('/franchises/{franchiseId}/payments/{paymentId}', [AdminFranchiseOnboardingController::class, 'updatePayment']);
     Route::get('/franchises/{id}/branches', [AdminFranchiseOnboardingController::class, 'getBranches']);
     Route::get('/franchises/{id}/payments', [AdminFranchiseOnboardingController::class, 'getPayments']);
     Route::get('/franchises/{id}/accounts', [AdminFranchiseOnboardingController::class, 'getAccounts']);
