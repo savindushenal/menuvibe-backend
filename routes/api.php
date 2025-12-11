@@ -21,6 +21,10 @@ use App\Http\Controllers\Admin\AdminFranchiseController;
 use App\Http\Controllers\Admin\AdminFranchiseOnboardingController;
 use App\Http\Controllers\MasterMenuController;
 use App\Http\Controllers\MasterMenuOfferController;
+use App\Http\Controllers\MenuTemplateController;
+use App\Http\Controllers\MenuEndpointController;
+use App\Http\Controllers\MenuOfferController;
+use App\Http\Controllers\PublicMenuController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -1354,4 +1358,356 @@ Route::get('/franchises/{franchiseId}/offers/active', function (Request $request
     $request->setUserResolver(fn() => $user);
     
     return app(MasterMenuOfferController::class)->getActiveOffers($request, $franchiseId);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Universal Template Menu System Routes
+|--------------------------------------------------------------------------
+| Routes for the universal menu template system that works for:
+| - Single restaurants with tables/rooms
+| - Multi-location restaurants
+| - Franchises
+*/
+
+// ===========================================
+// PUBLIC MENU ROUTES (No Auth Required)
+// ===========================================
+
+// Get menu by short code (customer scans QR)
+Route::get('/menu/{shortCode}', [PublicMenuController::class, 'getMenu']);
+Route::get('/menu/{shortCode}/data', [PublicMenuController::class, 'getMenuOnly']);
+Route::get('/menu/{shortCode}/offers', [PublicMenuController::class, 'getOffers']);
+Route::get('/menu/{shortCode}/info', [PublicMenuController::class, 'getEndpointInfo']);
+Route::post('/menu/{shortCode}/scan', [PublicMenuController::class, 'recordScan']);
+
+// ===========================================
+// AUTHENTICATED ROUTES
+// ===========================================
+
+// Menu Templates
+Route::get('/menu-templates', function (Request $request) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuTemplateController::class)->index($request);
+});
+
+Route::post('/menu-templates', function (Request $request) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuTemplateController::class)->store($request);
+});
+
+Route::get('/menu-templates/{templateId}', function (Request $request, int $templateId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuTemplateController::class)->show($request, $templateId);
+});
+
+Route::put('/menu-templates/{templateId}', function (Request $request, int $templateId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuTemplateController::class)->update($request, $templateId);
+});
+
+Route::delete('/menu-templates/{templateId}', function (Request $request, int $templateId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuTemplateController::class)->destroy($request, $templateId);
+});
+
+Route::post('/menu-templates/{templateId}/duplicate', function (Request $request, int $templateId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuTemplateController::class)->duplicate($request, $templateId);
+});
+
+// Template Categories
+Route::post('/menu-templates/{templateId}/categories', function (Request $request, int $templateId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuTemplateController::class)->addCategory($request, $templateId);
+});
+
+Route::put('/menu-templates/{templateId}/categories/{categoryId}', function (Request $request, int $templateId, int $categoryId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuTemplateController::class)->updateCategory($request, $templateId, $categoryId);
+});
+
+Route::delete('/menu-templates/{templateId}/categories/{categoryId}', function (Request $request, int $templateId, int $categoryId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuTemplateController::class)->deleteCategory($request, $templateId, $categoryId);
+});
+
+Route::post('/menu-templates/{templateId}/categories/reorder', function (Request $request, int $templateId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuTemplateController::class)->reorderCategories($request, $templateId);
+});
+
+// Template Items
+Route::post('/menu-templates/{templateId}/categories/{categoryId}/items', function (Request $request, int $templateId, int $categoryId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuTemplateController::class)->addItem($request, $templateId, $categoryId);
+});
+
+Route::put('/menu-templates/{templateId}/items/{itemId}', function (Request $request, int $templateId, int $itemId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuTemplateController::class)->updateItem($request, $templateId, $itemId);
+});
+
+Route::delete('/menu-templates/{templateId}/items/{itemId}', function (Request $request, int $templateId, int $itemId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuTemplateController::class)->deleteItem($request, $templateId, $itemId);
+});
+
+Route::post('/menu-templates/{templateId}/items/bulk', function (Request $request, int $templateId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuTemplateController::class)->bulkUpdateItems($request, $templateId);
+});
+
+// ===========================================
+// MENU ENDPOINTS (Tables, Rooms, etc.)
+// ===========================================
+
+Route::get('/menu-endpoints', function (Request $request) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuEndpointController::class)->index($request);
+});
+
+Route::post('/menu-endpoints', function (Request $request) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuEndpointController::class)->store($request);
+});
+
+Route::post('/menu-endpoints/bulk', function (Request $request) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuEndpointController::class)->bulkCreate($request);
+});
+
+Route::get('/menu-endpoints/{endpointId}', function (Request $request, int $endpointId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuEndpointController::class)->show($request, $endpointId);
+});
+
+Route::put('/menu-endpoints/{endpointId}', function (Request $request, int $endpointId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuEndpointController::class)->update($request, $endpointId);
+});
+
+Route::delete('/menu-endpoints/{endpointId}', function (Request $request, int $endpointId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuEndpointController::class)->destroy($request, $endpointId);
+});
+
+Route::post('/menu-endpoints/{endpointId}/regenerate-qr', function (Request $request, int $endpointId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuEndpointController::class)->regenerateQr($request, $endpointId);
+});
+
+Route::get('/menu-endpoints/{endpointId}/qr', function (Request $request, int $endpointId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuEndpointController::class)->getQrCode($request, $endpointId);
+});
+
+Route::get('/menu-endpoints/{endpointId}/analytics', function (Request $request, int $endpointId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuEndpointController::class)->analytics($request, $endpointId);
+});
+
+// Endpoint Overrides
+Route::get('/menu-endpoints/{endpointId}/overrides', function (Request $request, int $endpointId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuEndpointController::class)->getOverrides($request, $endpointId);
+});
+
+Route::post('/menu-endpoints/{endpointId}/overrides', function (Request $request, int $endpointId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuEndpointController::class)->setOverride($request, $endpointId);
+});
+
+Route::delete('/menu-endpoints/{endpointId}/overrides/{itemId}', function (Request $request, int $endpointId, int $itemId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuEndpointController::class)->removeOverride($request, $endpointId, $itemId);
+});
+
+Route::post('/menu-endpoints/{endpointId}/overrides/bulk', function (Request $request, int $endpointId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuEndpointController::class)->bulkSetOverrides($request, $endpointId);
+});
+
+// ===========================================
+// MENU OFFERS
+// ===========================================
+
+Route::get('/menu-offers', function (Request $request) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuOfferController::class)->index($request);
+});
+
+Route::post('/menu-offers', function (Request $request) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuOfferController::class)->store($request);
+});
+
+Route::get('/menu-offers/{offerId}', function (Request $request, int $offerId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuOfferController::class)->show($request, $offerId);
+});
+
+Route::put('/menu-offers/{offerId}', function (Request $request, int $offerId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuOfferController::class)->update($request, $offerId);
+});
+
+Route::delete('/menu-offers/{offerId}', function (Request $request, int $offerId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuOfferController::class)->destroy($request, $offerId);
+});
+
+Route::post('/menu-offers/{offerId}/toggle', function (Request $request, int $offerId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuOfferController::class)->toggleActive($request, $offerId);
+});
+
+Route::post('/menu-offers/{offerId}/duplicate', function (Request $request, int $offerId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuOfferController::class)->duplicate($request, $offerId);
+});
+
+Route::get('/menu-offers/type/{type}', function (Request $request, string $type) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuOfferController::class)->byType($request, $type);
 });
