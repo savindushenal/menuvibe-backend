@@ -15,12 +15,11 @@ class MasterMenuOfferController extends Controller
     /**
      * Get all offers for a franchise
      */
-    public function index(Request $request, string $franchiseSlug)
+    public function index(Request $request, int $franchiseId)
     {
-        $franchise = $request->get('franchise');
         $type = $request->query('type'); // special, instant, seasonal, combo, happy_hour
 
-        $query = MasterMenuOffer::where('franchise_id', $franchise->id)
+        $query = MasterMenuOffer::where('franchise_id', $franchiseId)
             ->with(['masterMenu:id,name'])
             ->orderBy('sort_order');
 
@@ -56,10 +55,8 @@ class MasterMenuOfferController extends Controller
     /**
      * Create a new offer
      */
-    public function store(Request $request, string $franchiseSlug)
+    public function store(Request $request, int $franchiseId)
     {
-        $franchise = $request->get('franchise');
-
         $validator = Validator::make($request->all(), [
             'master_menu_id' => 'nullable|exists:master_menus,id',
             'offer_type' => 'required|in:special,instant,seasonal,combo,happy_hour',
@@ -95,7 +92,7 @@ class MasterMenuOfferController extends Controller
         }
 
         $data = $validator->validated();
-        $data['franchise_id'] = $franchise->id;
+        $data['franchise_id'] = $franchiseId;
         $data['slug'] = Str::slug($data['title']);
         $data['created_by'] = $request->user()->id;
 
@@ -137,11 +134,9 @@ class MasterMenuOfferController extends Controller
     /**
      * Get a specific offer
      */
-    public function show(Request $request, string $franchiseSlug, int $offerId)
+    public function show(Request $request, int $franchiseId, int $offerId)
     {
-        $franchise = $request->get('franchise');
-
-        $offer = MasterMenuOffer::where('franchise_id', $franchise->id)
+        $offer = MasterMenuOffer::where('franchise_id', $franchiseId)
             ->where('id', $offerId)
             ->with(['masterMenu:id,name', 'branchOverrides.branch:id,branch_name'])
             ->first();
@@ -169,11 +164,9 @@ class MasterMenuOfferController extends Controller
     /**
      * Update an offer
      */
-    public function update(Request $request, string $franchiseSlug, int $offerId)
+    public function update(Request $request, int $franchiseId, int $offerId)
     {
-        $franchise = $request->get('franchise');
-
-        $offer = MasterMenuOffer::where('franchise_id', $franchise->id)
+        $offer = MasterMenuOffer::where('franchise_id', $franchiseId)
             ->where('id', $offerId)
             ->first();
 
@@ -235,11 +228,9 @@ class MasterMenuOfferController extends Controller
     /**
      * Delete an offer
      */
-    public function destroy(Request $request, string $franchiseSlug, int $offerId)
+    public function destroy(Request $request, int $franchiseId, int $offerId)
     {
-        $franchise = $request->get('franchise');
-
-        $offer = MasterMenuOffer::where('franchise_id', $franchise->id)
+        $offer = MasterMenuOffer::where('franchise_id', $franchiseId)
             ->where('id', $offerId)
             ->first();
 
@@ -261,11 +252,9 @@ class MasterMenuOfferController extends Controller
     /**
      * Toggle offer active status
      */
-    public function toggleActive(Request $request, string $franchiseSlug, int $offerId)
+    public function toggleActive(Request $request, int $franchiseId, int $offerId)
     {
-        $franchise = $request->get('franchise');
-
-        $offer = MasterMenuOffer::where('franchise_id', $franchise->id)
+        $offer = MasterMenuOffer::where('franchise_id', $franchiseId)
             ->where('id', $offerId)
             ->first();
 
@@ -288,11 +277,9 @@ class MasterMenuOfferController extends Controller
     /**
      * Duplicate an offer
      */
-    public function duplicate(Request $request, string $franchiseSlug, int $offerId)
+    public function duplicate(Request $request, int $franchiseId, int $offerId)
     {
-        $franchise = $request->get('franchise');
-
-        $offer = MasterMenuOffer::where('franchise_id', $franchise->id)
+        $offer = MasterMenuOffer::where('franchise_id', $franchiseId)
             ->where('id', $offerId)
             ->first();
 
@@ -321,11 +308,9 @@ class MasterMenuOfferController extends Controller
     /**
      * Get offer analytics
      */
-    public function analytics(Request $request, string $franchiseSlug, int $offerId)
+    public function analytics(Request $request, int $franchiseId, int $offerId)
     {
-        $franchise = $request->get('franchise');
-
-        $offer = MasterMenuOffer::where('franchise_id', $franchise->id)
+        $offer = MasterMenuOffer::where('franchise_id', $franchiseId)
             ->where('id', $offerId)
             ->first();
 
@@ -361,10 +346,8 @@ class MasterMenuOfferController extends Controller
     /**
      * Get offers by type for quick filtering
      */
-    public function byType(Request $request, string $franchiseSlug, string $type)
+    public function byType(Request $request, int $franchiseId, string $type)
     {
-        $franchise = $request->get('franchise');
-
         $validTypes = ['special', 'instant', 'seasonal', 'combo', 'happy_hour'];
         if (!in_array($type, $validTypes)) {
             return response()->json([
@@ -373,7 +356,7 @@ class MasterMenuOfferController extends Controller
             ], 400);
         }
 
-        $offers = MasterMenuOffer::where('franchise_id', $franchise->id)
+        $offers = MasterMenuOffer::where('franchise_id', $franchiseId)
             ->where('offer_type', $type)
             ->active()
             ->orderBy('sort_order')
@@ -388,11 +371,9 @@ class MasterMenuOfferController extends Controller
     /**
      * Set branch override for an offer
      */
-    public function setBranchOverride(Request $request, string $franchiseSlug, int $offerId, int $branchId)
+    public function setBranchOverride(Request $request, int $franchiseId, int $offerId, int $branchId)
     {
-        $franchise = $request->get('franchise');
-
-        $offer = MasterMenuOffer::where('franchise_id', $franchise->id)
+        $offer = MasterMenuOffer::where('franchise_id', $franchiseId)
             ->where('id', $offerId)
             ->first();
 
@@ -434,12 +415,11 @@ class MasterMenuOfferController extends Controller
     /**
      * Get active offers for public menu display
      */
-    public function getActiveOffers(Request $request, string $franchiseSlug)
+    public function getActiveOffers(Request $request, int $franchiseId)
     {
-        $franchise = $request->get('franchise');
         $branchId = $request->query('branch_id');
 
-        $offers = MasterMenuOffer::where('franchise_id', $franchise->id)
+        $offers = MasterMenuOffer::where('franchise_id', $franchiseId)
             ->active()
             ->orderBy('is_featured', 'desc')
             ->orderBy('sort_order')

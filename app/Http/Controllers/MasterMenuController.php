@@ -26,11 +26,9 @@ class MasterMenuController extends Controller
     /**
      * Get all master menus for a franchise
      */
-    public function index(Request $request, string $franchiseSlug)
+    public function index(Request $request, int $franchiseId)
     {
-        $franchise = $request->get('franchise');
-
-        $menus = MasterMenu::where('franchise_id', $franchise->id)
+        $menus = MasterMenu::where('franchise_id', $franchiseId)
             ->with(['categories.items', 'activeOffers'])
             ->withCount(['categories', 'items'])
             ->orderBy('sort_order')
@@ -45,10 +43,8 @@ class MasterMenuController extends Controller
     /**
      * Create a new master menu
      */
-    public function store(Request $request, string $franchiseSlug)
+    public function store(Request $request, int $franchiseId)
     {
-        $franchise = $request->get('franchise');
-
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -69,13 +65,13 @@ class MasterMenuController extends Controller
         }
 
         $data = $validator->validated();
-        $data['franchise_id'] = $franchise->id;
+        $data['franchise_id'] = $franchiseId;
         $data['created_by'] = $request->user()->id;
         $data['slug'] = Str::slug($data['name']);
 
         // If this is set as default, unset other defaults
         if (!empty($data['is_default'])) {
-            MasterMenu::where('franchise_id', $franchise->id)
+            MasterMenu::where('franchise_id', $franchiseId)
                 ->update(['is_default' => false]);
         }
 
@@ -91,11 +87,9 @@ class MasterMenuController extends Controller
     /**
      * Get a specific master menu
      */
-    public function show(Request $request, string $franchiseSlug, int $menuId)
+    public function show(Request $request, int $franchiseId, int $menuId)
     {
-        $franchise = $request->get('franchise');
-
-        $menu = MasterMenu::where('franchise_id', $franchise->id)
+        $menu = MasterMenu::where('franchise_id', $franchiseId)
             ->where('id', $menuId)
             ->with(['categories.items', 'offers', 'syncLogs' => function ($q) {
                 $q->latest()->limit(10);
@@ -118,11 +112,9 @@ class MasterMenuController extends Controller
     /**
      * Update a master menu
      */
-    public function update(Request $request, string $franchiseSlug, int $menuId)
+    public function update(Request $request, int $franchiseId, int $menuId)
     {
-        $franchise = $request->get('franchise');
-
-        $menu = MasterMenu::where('franchise_id', $franchise->id)
+        $menu = MasterMenu::where('franchise_id', $franchiseId)
             ->where('id', $menuId)
             ->first();
 
@@ -161,7 +153,7 @@ class MasterMenuController extends Controller
 
         // If this is set as default, unset other defaults
         if (!empty($data['is_default'])) {
-            MasterMenu::where('franchise_id', $franchise->id)
+            MasterMenu::where('franchise_id', $franchiseId)
                 ->where('id', '!=', $menuId)
                 ->update(['is_default' => false]);
         }
@@ -178,11 +170,9 @@ class MasterMenuController extends Controller
     /**
      * Delete a master menu
      */
-    public function destroy(Request $request, string $franchiseSlug, int $menuId)
+    public function destroy(Request $request, int $franchiseId, int $menuId)
     {
-        $franchise = $request->get('franchise');
-
-        $menu = MasterMenu::where('franchise_id', $franchise->id)
+        $menu = MasterMenu::where('franchise_id', $franchiseId)
             ->where('id', $menuId)
             ->first();
 
@@ -208,11 +198,9 @@ class MasterMenuController extends Controller
     /**
      * Add a category to a master menu
      */
-    public function addCategory(Request $request, string $franchiseSlug, int $menuId)
+    public function addCategory(Request $request, int $franchiseId, int $menuId)
     {
-        $franchise = $request->get('franchise');
-
-        $menu = MasterMenu::where('franchise_id', $franchise->id)
+        $menu = MasterMenu::where('franchise_id', $franchiseId)
             ->where('id', $menuId)
             ->first();
 
@@ -263,12 +251,10 @@ class MasterMenuController extends Controller
     /**
      * Update a category
      */
-    public function updateCategory(Request $request, string $franchiseSlug, int $menuId, int $categoryId)
+    public function updateCategory(Request $request, int $franchiseId, int $menuId, int $categoryId)
     {
-        $franchise = $request->get('franchise');
-
-        $category = MasterMenuCategory::whereHas('masterMenu', function ($q) use ($franchise) {
-            $q->where('franchise_id', $franchise->id);
+        $category = MasterMenuCategory::whereHas('masterMenu', function ($q) use ($franchiseId) {
+            $q->where('franchise_id', $franchiseId);
         })->where('id', $categoryId)->where('master_menu_id', $menuId)->first();
 
         if (!$category) {
@@ -314,12 +300,10 @@ class MasterMenuController extends Controller
     /**
      * Delete a category
      */
-    public function deleteCategory(Request $request, string $franchiseSlug, int $menuId, int $categoryId)
+    public function deleteCategory(Request $request, int $franchiseId, int $menuId, int $categoryId)
     {
-        $franchise = $request->get('franchise');
-
-        $category = MasterMenuCategory::whereHas('masterMenu', function ($q) use ($franchise) {
-            $q->where('franchise_id', $franchise->id);
+        $category = MasterMenuCategory::whereHas('masterMenu', function ($q) use ($franchiseId) {
+            $q->where('franchise_id', $franchiseId);
         })->where('id', $categoryId)->where('master_menu_id', $menuId)->first();
 
         if (!$category) {
@@ -344,12 +328,10 @@ class MasterMenuController extends Controller
     /**
      * Add an item to a category
      */
-    public function addItem(Request $request, string $franchiseSlug, int $menuId, int $categoryId)
+    public function addItem(Request $request, int $franchiseId, int $menuId, int $categoryId)
     {
-        $franchise = $request->get('franchise');
-
-        $category = MasterMenuCategory::whereHas('masterMenu', function ($q) use ($franchise) {
-            $q->where('franchise_id', $franchise->id);
+        $category = MasterMenuCategory::whereHas('masterMenu', function ($q) use ($franchiseId) {
+            $q->where('franchise_id', $franchiseId);
         })->where('id', $categoryId)->where('master_menu_id', $menuId)->first();
 
         if (!$category) {
@@ -414,12 +396,10 @@ class MasterMenuController extends Controller
     /**
      * Update an item
      */
-    public function updateItem(Request $request, string $franchiseSlug, int $menuId, int $itemId)
+    public function updateItem(Request $request, int $franchiseId, int $menuId, int $itemId)
     {
-        $franchise = $request->get('franchise');
-
-        $item = MasterMenuItem::whereHas('masterMenu', function ($q) use ($franchise) {
-            $q->where('franchise_id', $franchise->id);
+        $item = MasterMenuItem::whereHas('masterMenu', function ($q) use ($franchiseId) {
+            $q->where('franchise_id', $franchiseId);
         })->where('id', $itemId)->where('master_menu_id', $menuId)->first();
 
         if (!$item) {
@@ -480,12 +460,10 @@ class MasterMenuController extends Controller
     /**
      * Delete an item
      */
-    public function deleteItem(Request $request, string $franchiseSlug, int $menuId, int $itemId)
+    public function deleteItem(Request $request, int $franchiseId, int $menuId, int $itemId)
     {
-        $franchise = $request->get('franchise');
-
-        $item = MasterMenuItem::whereHas('masterMenu', function ($q) use ($franchise) {
-            $q->where('franchise_id', $franchise->id);
+        $item = MasterMenuItem::whereHas('masterMenu', function ($q) use ($franchiseId) {
+            $q->where('franchise_id', $franchiseId);
         })->where('id', $itemId)->where('master_menu_id', $menuId)->first();
 
         if (!$item) {
@@ -506,11 +484,9 @@ class MasterMenuController extends Controller
     /**
      * Bulk update items (for sorting, availability, etc.)
      */
-    public function bulkUpdateItems(Request $request, string $franchiseSlug, int $menuId)
+    public function bulkUpdateItems(Request $request, int $franchiseId, int $menuId)
     {
-        $franchise = $request->get('franchise');
-
-        $menu = MasterMenu::where('franchise_id', $franchise->id)
+        $menu = MasterMenu::where('franchise_id', $franchiseId)
             ->where('id', $menuId)
             ->first();
 
@@ -562,11 +538,9 @@ class MasterMenuController extends Controller
     /**
      * Push master menu to all branches
      */
-    public function syncToAllBranches(Request $request, string $franchiseSlug, int $menuId)
+    public function syncToAllBranches(Request $request, int $franchiseId, int $menuId)
     {
-        $franchise = $request->get('franchise');
-
-        $menu = MasterMenu::where('franchise_id', $franchise->id)
+        $menu = MasterMenu::where('franchise_id', $franchiseId)
             ->where('id', $menuId)
             ->with(['categories.items'])
             ->first();
@@ -578,7 +552,7 @@ class MasterMenuController extends Controller
             ], 404);
         }
 
-        $branches = FranchiseBranch::where('franchise_id', $franchise->id)
+        $branches = FranchiseBranch::where('franchise_id', $franchiseId)
             ->where('is_active', true)
             ->get();
 
@@ -650,11 +624,9 @@ class MasterMenuController extends Controller
     /**
      * Get sync history for a menu
      */
-    public function getSyncHistory(Request $request, string $franchiseSlug, int $menuId)
+    public function getSyncHistory(Request $request, int $franchiseId, int $menuId)
     {
-        $franchise = $request->get('franchise');
-
-        $menu = MasterMenu::where('franchise_id', $franchise->id)
+        $menu = MasterMenu::where('franchise_id', $franchiseId)
             ->where('id', $menuId)
             ->first();
 
@@ -683,11 +655,9 @@ class MasterMenuController extends Controller
     /**
      * Get branch overrides for a menu
      */
-    public function getBranchOverrides(Request $request, string $franchiseSlug, int $menuId, int $branchId)
+    public function getBranchOverrides(Request $request, int $franchiseId, int $menuId, int $branchId)
     {
-        $franchise = $request->get('franchise');
-
-        $menu = MasterMenu::where('franchise_id', $franchise->id)
+        $menu = MasterMenu::where('franchise_id', $franchiseId)
             ->where('id', $menuId)
             ->first();
 
@@ -714,10 +684,8 @@ class MasterMenuController extends Controller
     /**
      * Set a branch override for an item
      */
-    public function setBranchOverride(Request $request, string $franchiseSlug, int $menuId, int $branchId)
+    public function setBranchOverride(Request $request, int $franchiseId, int $menuId, int $branchId)
     {
-        $franchise = $request->get('franchise');
-
         $validator = Validator::make($request->all(), [
             'master_item_id' => 'required|exists:master_menu_items,id',
             'price_override' => 'nullable|numeric|min:0',
@@ -756,7 +724,7 @@ class MasterMenuController extends Controller
     /**
      * Remove a branch override
      */
-    public function removeBranchOverride(Request $request, string $franchiseSlug, int $menuId, int $branchId, int $itemId)
+    public function removeBranchOverride(Request $request, int $franchiseId, int $menuId, int $branchId, int $itemId)
     {
         BranchMenuOverride::where('branch_id', $branchId)
             ->where('master_item_id', $itemId)
@@ -775,10 +743,8 @@ class MasterMenuController extends Controller
     /**
      * Upload an image
      */
-    public function uploadImage(Request $request, string $franchiseSlug)
+    public function uploadImage(Request $request, int $franchiseId)
     {
-        $franchise = $request->get('franchise');
-
         $validator = Validator::make($request->all(), [
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // 5MB max
             'type' => 'nullable|in:item,category,menu,offer,gallery',
@@ -808,7 +774,7 @@ class MasterMenuController extends Controller
             $height = $imageInfo[1] ?? null;
 
             $menuImage = MenuImage::create([
-                'franchise_id' => $franchise->id,
+                'franchise_id' => $franchiseId,
                 'user_id' => $request->user()->id,
                 'filename' => $filename,
                 'original_filename' => $originalFilename,
@@ -837,12 +803,11 @@ class MasterMenuController extends Controller
     /**
      * Get image gallery for franchise
      */
-    public function getImageGallery(Request $request, string $franchiseSlug)
+    public function getImageGallery(Request $request, int $franchiseId)
     {
-        $franchise = $request->get('franchise');
         $type = $request->query('type');
 
-        $query = MenuImage::where('franchise_id', $franchise->id)
+        $query = MenuImage::where('franchise_id', $franchiseId)
             ->orderBy('created_at', 'desc');
 
         if ($type) {
@@ -860,11 +825,9 @@ class MasterMenuController extends Controller
     /**
      * Delete an image
      */
-    public function deleteImage(Request $request, string $franchiseSlug, int $imageId)
+    public function deleteImage(Request $request, int $franchiseId, int $imageId)
     {
-        $franchise = $request->get('franchise');
-
-        $image = MenuImage::where('franchise_id', $franchise->id)
+        $image = MenuImage::where('franchise_id', $franchiseId)
             ->where('id', $imageId)
             ->first();
 
