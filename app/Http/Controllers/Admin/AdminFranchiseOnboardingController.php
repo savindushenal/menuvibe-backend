@@ -100,9 +100,8 @@ class AdminFranchiseOnboardingController extends Controller
             if ($owner) {
                 $franchise->users()->attach($owner->id, [
                     'role' => 'owner',
-                    'is_primary' => true,
                     'is_active' => true,
-                    'joined_at' => now(),
+                    'accepted_at' => now(),
                 ]);
             }
 
