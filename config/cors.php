@@ -15,13 +15,15 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie', 'auth/*'],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:3000'],
+    'allowed_origins' => [env('FRONTEND_URL','https://staging.menuvire.com'),'https://menuvire.com','http://localhost:3000'],
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => [
+        '#^https://.*\.menuvire\.com$#',
+    ],
 
     'allowed_headers' => ['*'],
 
