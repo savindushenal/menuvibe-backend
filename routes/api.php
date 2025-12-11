@@ -19,6 +19,8 @@ use App\Http\Controllers\Admin\AdminSubscriptionController;
 use App\Http\Controllers\Admin\AdminActivityController;
 use App\Http\Controllers\Admin\AdminFranchiseController;
 use App\Http\Controllers\Admin\AdminFranchiseOnboardingController;
+use App\Http\Controllers\MasterMenuController;
+use App\Http\Controllers\MasterMenuOfferController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -885,4 +887,471 @@ Route::post('/franchises/{franchiseId}/leave', function (Request $request, int $
     $request->setUserResolver(fn() => $user);
     
     return app(FranchiseUserController::class)->leave($request, $franchiseId);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Master Menu Routes (Franchise)
+|--------------------------------------------------------------------------
+| Routes for franchise master menu management.
+| Allows franchises to create centralized menus that sync to all branches.
+| Supports special offers, instant offers, and seasonal promotions.
+*/
+
+// Master Menu CRUD
+Route::get('/franchises/{franchiseId}/master-menus', function (Request $request, int $franchiseId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(MasterMenuController::class)->index($request, $franchiseId);
+});
+
+Route::post('/franchises/{franchiseId}/master-menus', function (Request $request, int $franchiseId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(MasterMenuController::class)->store($request, $franchiseId);
+});
+
+Route::get('/franchises/{franchiseId}/master-menus/{menuId}', function (Request $request, int $franchiseId, int $menuId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(MasterMenuController::class)->show($request, $franchiseId, $menuId);
+});
+
+Route::put('/franchises/{franchiseId}/master-menus/{menuId}', function (Request $request, int $franchiseId, int $menuId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(MasterMenuController::class)->update($request, $franchiseId, $menuId);
+});
+
+Route::delete('/franchises/{franchiseId}/master-menus/{menuId}', function (Request $request, int $franchiseId, int $menuId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(MasterMenuController::class)->destroy($request, $franchiseId, $menuId);
+});
+
+// Master Menu Categories
+Route::post('/franchises/{franchiseId}/master-menus/{menuId}/categories', function (Request $request, int $franchiseId, int $menuId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(MasterMenuController::class)->storeCategory($request, $franchiseId, $menuId);
+});
+
+Route::put('/franchises/{franchiseId}/master-menus/{menuId}/categories/{categoryId}', function (Request $request, int $franchiseId, int $menuId, int $categoryId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(MasterMenuController::class)->updateCategory($request, $franchiseId, $menuId, $categoryId);
+});
+
+Route::delete('/franchises/{franchiseId}/master-menus/{menuId}/categories/{categoryId}', function (Request $request, int $franchiseId, int $menuId, int $categoryId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(MasterMenuController::class)->destroyCategory($request, $franchiseId, $menuId, $categoryId);
+});
+
+// Master Menu Items
+Route::post('/franchises/{franchiseId}/master-menus/{menuId}/categories/{categoryId}/items', function (Request $request, int $franchiseId, int $menuId, int $categoryId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(MasterMenuController::class)->storeItem($request, $franchiseId, $menuId, $categoryId);
+});
+
+Route::put('/franchises/{franchiseId}/master-menus/{menuId}/items/{itemId}', function (Request $request, int $franchiseId, int $menuId, int $itemId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(MasterMenuController::class)->updateItem($request, $franchiseId, $menuId, $itemId);
+});
+
+Route::delete('/franchises/{franchiseId}/master-menus/{menuId}/items/{itemId}', function (Request $request, int $franchiseId, int $menuId, int $itemId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(MasterMenuController::class)->destroyItem($request, $franchiseId, $menuId, $itemId);
+});
+
+// Master Menu Sync
+Route::post('/franchises/{franchiseId}/master-menus/{menuId}/sync', function (Request $request, int $franchiseId, int $menuId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(MasterMenuController::class)->syncToBranches($request, $franchiseId, $menuId);
+});
+
+Route::post('/franchises/{franchiseId}/master-menus/{menuId}/sync/{branchId}', function (Request $request, int $franchiseId, int $menuId, int $branchId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(MasterMenuController::class)->syncToSingleBranch($request, $franchiseId, $menuId, $branchId);
+});
+
+Route::get('/franchises/{franchiseId}/master-menus/{menuId}/sync-status', function (Request $request, int $franchiseId, int $menuId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(MasterMenuController::class)->getSyncStatus($request, $franchiseId, $menuId);
+});
+
+// Branch Overrides
+Route::post('/franchises/{franchiseId}/master-menus/{menuId}/items/{itemId}/override/{branchId}', function (Request $request, int $franchiseId, int $menuId, int $itemId, int $branchId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(MasterMenuController::class)->setBranchOverride($request, $franchiseId, $menuId, $itemId, $branchId);
+});
+
+Route::delete('/franchises/{franchiseId}/master-menus/{menuId}/items/{itemId}/override/{branchId}', function (Request $request, int $franchiseId, int $menuId, int $itemId, int $branchId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(MasterMenuController::class)->removeBranchOverride($request, $franchiseId, $menuId, $itemId, $branchId);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Master Menu Offers Routes
+|--------------------------------------------------------------------------
+| Routes for managing special offers, instant offers, and seasonal promotions.
+*/
+
+// Offers CRUD
+Route::get('/franchises/{franchiseId}/master-menus/{menuId}/offers', function (Request $request, int $franchiseId, int $menuId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(MasterMenuOfferController::class)->index($request, $franchiseId, $menuId);
+});
+
+Route::post('/franchises/{franchiseId}/master-menus/{menuId}/offers', function (Request $request, int $franchiseId, int $menuId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(MasterMenuOfferController::class)->store($request, $franchiseId, $menuId);
+});
+
+Route::get('/franchises/{franchiseId}/master-menus/{menuId}/offers/{offerId}', function (Request $request, int $franchiseId, int $menuId, int $offerId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(MasterMenuOfferController::class)->show($request, $franchiseId, $menuId, $offerId);
+});
+
+Route::put('/franchises/{franchiseId}/master-menus/{menuId}/offers/{offerId}', function (Request $request, int $franchiseId, int $menuId, int $offerId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(MasterMenuOfferController::class)->update($request, $franchiseId, $menuId, $offerId);
+});
+
+Route::delete('/franchises/{franchiseId}/master-menus/{menuId}/offers/{offerId}', function (Request $request, int $franchiseId, int $menuId, int $offerId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(MasterMenuOfferController::class)->destroy($request, $franchiseId, $menuId, $offerId);
+});
+
+// Offer Actions
+Route::post('/franchises/{franchiseId}/master-menus/{menuId}/offers/{offerId}/toggle', function (Request $request, int $franchiseId, int $menuId, int $offerId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(MasterMenuOfferController::class)->toggle($request, $franchiseId, $menuId, $offerId);
+});
+
+Route::post('/franchises/{franchiseId}/master-menus/{menuId}/offers/{offerId}/duplicate', function (Request $request, int $franchiseId, int $menuId, int $offerId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(MasterMenuOfferController::class)->duplicate($request, $franchiseId, $menuId, $offerId);
+});
+
+// Branch Offer Overrides
+Route::post('/franchises/{franchiseId}/master-menus/{menuId}/offers/{offerId}/override/{branchId}', function (Request $request, int $franchiseId, int $menuId, int $offerId, int $branchId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(MasterMenuOfferController::class)->setBranchOverride($request, $franchiseId, $menuId, $offerId, $branchId);
+});
+
+Route::delete('/franchises/{franchiseId}/master-menus/{menuId}/offers/{offerId}/override/{branchId}', function (Request $request, int $franchiseId, int $menuId, int $offerId, int $branchId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(MasterMenuOfferController::class)->removeBranchOverride($request, $franchiseId, $menuId, $offerId, $branchId);
+});
+
+// Active Offers Query
+Route::get('/franchises/{franchiseId}/offers/active', function (Request $request, int $franchiseId) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 401);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    return app(MasterMenuOfferController::class)->getActiveOffers($request, $franchiseId);
 });
