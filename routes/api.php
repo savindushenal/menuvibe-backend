@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BusinessProfileController;
+use App\Http\Controllers\FranchiseContextController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\MenuItemController;
@@ -53,6 +54,7 @@ Route::post('/auth/google', [SocialAuthController::class, 'googleAuth']);
 
 // Manual auth routes (bypass EnsureFrontendRequestsAreStateful middleware)
 Route::get('/user', [AuthController::class, 'profileManual']);
+Route::get('/auth/contexts', [AuthController::class, 'getContexts']);
 Route::get('/business-profile', [BusinessProfileController::class, 'indexManual']);
 Route::post('/business-profile', [BusinessProfileController::class, 'storeManual']);
 Route::put('/business-profile', [BusinessProfileController::class, 'updateManual']);
@@ -94,6 +96,36 @@ Route::get('/subscription/recommendations', [SubscriptionController::class, 'get
 
 // Public platform settings
 Route::get('/platform/settings', [AdminSettingsController::class, 'publicSettings']);
+
+/*
+|--------------------------------------------------------------------------
+| Franchise Context Routes (Slug-based)
+|--------------------------------------------------------------------------
+| Routes for franchise users to access their franchise context.
+| Uses franchise slug in URL: /franchise/{slug}/dashboard
+| All routes require authentication and franchise access verification.
+*/
+Route::prefix('franchise/{franchiseSlug}')
+    ->middleware(['auth:sanctum', 'franchise'])
+    ->group(function () {
+        // Dashboard
+        Route::get('/dashboard', [FranchiseContextController::class, 'dashboard']);
+        
+        // Branches
+        Route::get('/branches', [FranchiseContextController::class, 'branches']);
+        
+        // Locations
+        Route::get('/locations', [FranchiseContextController::class, 'locations']);
+        
+        // Menus
+        Route::get('/menus', [FranchiseContextController::class, 'menus']);
+        
+        // Staff/Team
+        Route::get('/staff', [FranchiseContextController::class, 'staff']);
+        
+        // Settings
+        Route::get('/settings', [FranchiseContextController::class, 'settings']);
+    });
 
 /*
 |--------------------------------------------------------------------------

@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Location;
+use App\Models\Franchise;
+use App\Models\FranchiseAccount;
 use App\Models\SubscriptionPlan;
 use App\Models\UserSubscription;
 use Illuminate\Http\Request;
@@ -81,6 +84,9 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->firstOrFail();
         $token = $user->createToken('auth_token')->plainTextToken;
+        
+        // Get user contexts (personal + franchise memberships)
+        $contexts = $this->getUserContexts($user);
 
         return response()->json([
             'success' => true,
@@ -88,9 +94,129 @@ class AuthController extends Controller
             'data' => [
                 'user' => $user,
                 'token' => $token,
-                'token_type' => 'Bearer'
+                'token_type' => 'Bearer',
+                'contexts' => $contexts,
+                'default_redirect' => $this->getDefaultRedirect($contexts),
             ]
         ], Response::HTTP_OK);
+    }
+
+    /**
+     * Get user contexts (personal business + franchise memberships)
+     */
+    public function getContexts(Request $request)
+    {
+        $user = $request->user();
+        $contexts = $this->getUserContexts($user);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'contexts' => $contexts,
+                'default_redirect' => $this->getDefaultRedirect($contexts),
+            ]
+        ]);
+    }
+
+    /**
+     * Build user contexts array
+     */
+    private function getUserContexts(User $user): array
+    {
+        $contexts = [];
+
+        // Check for personal business (locations owned directly)
+        $personalLocations = Location::where('owner_id', $user->id)
+            ->whereNull('franchise_id')
+            ->count();
+        
+        if ($personalLocations > 0 || $user->role === 'user') {
+            $contexts[] = [
+                'type' => 'personal',
+                'id' => null,
+                'slug' => null,
+                'name' => 'My Business',
+                'role' => 'owner',
+                'locations_count' => $personalLocations,
+                'redirect' => '/dashboard',
+            ];
+        }
+
+        // Check for franchise memberships
+        $franchiseAccounts = FranchiseAccount::where('user_id', $user->id)
+            ->where('is_active', true)
+            ->with(['franchise:id,name,slug,logo_url', 'branch:id,branch_name'])
+            ->get();
+
+        foreach ($franchiseAccounts as $account) {
+            if ($account->franchise) {
+                $contexts[] = [
+                    'type' => 'franchise',
+                    'id' => $account->franchise->id,
+                    'slug' => $account->franchise->slug,
+                    'name' => $account->franchise->name,
+                    'logo_url' => $account->franchise->logo_url,
+                    'role' => $account->role,
+                    'branch' => $account->branch?->branch_name,
+                    'redirect' => '/' . $account->franchise->slug . '/dashboard',
+                ];
+            }
+        }
+
+        // Also check franchise_users pivot table
+        $franchiseUsers = $user->franchises()
+            ->where('franchise_users.is_active', true)
+            ->get();
+
+        foreach ($franchiseUsers as $franchise) {
+            // Avoid duplicates
+            $exists = collect($contexts)->firstWhere('id', $franchise->id);
+            if (!$exists) {
+                $contexts[] = [
+                    'type' => 'franchise',
+                    'id' => $franchise->id,
+                    'slug' => $franchise->slug,
+                    'name' => $franchise->name,
+                    'logo_url' => $franchise->logo_url,
+                    'role' => $franchise->pivot->role,
+                    'branch' => null,
+                    'redirect' => '/' . $franchise->slug . '/dashboard',
+                ];
+            }
+        }
+
+        // Admin/Super Admin always has personal context
+        if (in_array($user->role, ['admin', 'super_admin']) && empty($contexts)) {
+            $contexts[] = [
+                'type' => 'personal',
+                'id' => null,
+                'slug' => null,
+                'name' => 'Admin Dashboard',
+                'role' => $user->role,
+                'locations_count' => 0,
+                'redirect' => '/admin/dashboard',
+            ];
+        }
+
+        return $contexts;
+    }
+
+    /**
+     * Determine default redirect based on contexts
+     */
+    private function getDefaultRedirect(array $contexts): string
+    {
+        if (empty($contexts)) {
+            return '/dashboard';
+        }
+
+        // If only one context, redirect directly
+        if (count($contexts) === 1) {
+            return $contexts[0]['redirect'];
+        }
+
+        // If multiple contexts, go to context selector
+        return '/auth/select-context';
     }
 
     /**
