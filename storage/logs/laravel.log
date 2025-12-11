@@ -1741,3 +1741,29 @@ Did you mean one of these?
 [2025-12-10 18:09:23] local.INFO: Existing user found and updated {"user_id":1} 
 [2025-12-10 18:09:24] local.INFO: Token created {"token_length":51} 
 [2025-12-10 18:09:24] local.INFO: Redirecting to frontend {"url":"http://localhost:3000/auth/callback?token=54|UbZXbWExAZiWmkbnzdlpLyxr5Cop2LRrjvxGvq7B89c490b4"} 
+[2025-12-11 06:28:31] local.INFO: Google OAuth callback received {"email":"shenalsavindubro@gmail.com","name":"mixsongs hub","google_id":"113674980901880956528"} 
+[2025-12-11 06:28:33] local.INFO: Existing user found and updated {"user_id":1} 
+[2025-12-11 06:28:33] local.INFO: Token created {"token_length":51} 
+[2025-12-11 06:28:33] local.INFO: Redirecting to frontend {"url":"http://localhost:3000/auth/callback?token=55|HUbMfKnAxxUoS6uuGJUHtoqgu1m0fMzV7oK9aNOo4096a2dc"} 
+[2025-12-11 06:31:50] local.INFO: Incoming business profile update {"user_id":1,"keys":[],"has_logo":false} 
+[2025-12-11 06:32:20] local.INFO: Business profile update payload {"user_id":1,"data":{"logo_url":"https://z64z2rpkw3klfisp.public.blob.vercel-storage.com/logos/logo-1-1762243562610.png"}} 
+[2025-12-11 06:32:20] local.INFO: Business profile updated {"user_id":1,"changes":[],"logo_url":"https://z64z2rpkw3klfisp.public.blob.vercel-storage.com/logos/logo-1-1762243562610.png"} 
+[2025-12-11 06:39:37] local.INFO: Google OAuth callback received {"email":"shenalsavindubro@gmail.com","name":"mixsongs hub","google_id":"113674980901880956528"} 
+[2025-12-11 06:39:39] local.INFO: Existing user found and updated {"user_id":1} 
+[2025-12-11 06:39:40] local.INFO: Token created {"token_length":51} 
+[2025-12-11 06:39:40] local.INFO: Redirecting to frontend {"url":"http://localhost:3000/auth/callback?token=56|FQickKCuIqNwT9D1ZfcYiemeAtcsfXbPae4teXaj73eb4688"} 
+[2025-12-11 06:41:44] local.INFO: Incoming business profile update {"user_id":1,"keys":[],"has_logo":false} 
+[2025-12-11 06:41:45] local.INFO: Business profile update payload {"user_id":1,"data":{"logo_url":"https://z64z2rpkw3klfisp.public.blob.vercel-storage.com/logos/logo-1-1762243562610.png"}} 
+[2025-12-11 06:41:45] local.INFO: Business profile updated {"user_id":1,"changes":[],"logo_url":"https://z64z2rpkw3klfisp.public.blob.vercel-storage.com/logos/logo-1-1762243562610.png"} 
+[2025-12-11 06:43:54] local.INFO: Google OAuth callback received {"email":"shenalsavindubro@gmail.com","name":"mixsongs hub","google_id":"113674980901880956528"} 
+[2025-12-11 06:43:56] local.INFO: Existing user found and updated {"user_id":1} 
+[2025-12-11 06:43:57] local.INFO: Token created {"token_length":51} 
+[2025-12-11 06:43:57] local.INFO: Redirecting to frontend {"url":"http://localhost:3000/auth/callback?token=57|s12sDu0Ml6LdeVglQoBVKFSNX0csrQBlPDJfxax02a55a8ce"} 
+[2025-12-11 06:48:34] local.INFO: Google OAuth callback received {"email":"shenalsavindubro@gmail.com","name":"mixsongs hub","google_id":"113674980901880956528"} 
+[2025-12-11 06:48:37] local.INFO: Existing user found and updated {"user_id":1} 
+[2025-12-11 06:48:37] local.INFO: Token created {"token_length":51} 
+[2025-12-11 06:48:37] local.INFO: Redirecting to frontend {"url":"http://localhost:3000/auth/callback?token=58|cAMfDuLkhIdzDakGN0AB30otxNAcRQ3ZHSTwCkNa561f5d97"} 
+[2025-12-11 07:03:10] local.INFO: Google OAuth callback received {"email":"shenalsavindubro@gmail.com","name":"mixsongs hub","google_id":"113674980901880956528"} 
+[2025-12-11 07:03:21] local.INFO: Existing user found and updated {"user_id":1} 
+[2025-12-11 07:03:25] local.INFO: Token created {"token_length":51} 
+[2025-12-11 07:03:25] local.INFO: Redirecting to frontend {"url":"http://localhost:3000/auth/callback?token=59|8vTgHgL4y3jseWqSGSCcUuoTR7ugIQKDznxC304Gace7ad22"} 
