@@ -1,0 +1,418 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\AdminActivityLog;
+use App\Models\SupportTicket;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class AdminSupportController extends Controller
+{
+    /**
+     * List all support tickets
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $admin = $this->getAuthenticatedUser($request);
+        
+        if (!$admin || !$admin->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        $query = SupportTicket::with(['user:id,name,email', 'assignedTo:id,name,email']);
+
+        // Status filter
+        if ($status = $request->get('status')) {
+            $query->where('status', $status);
+        }
+
+        // Priority filter
+        if ($priority = $request->get('priority')) {
+            $query->where('priority', $priority);
+        }
+
+        // Category filter
+        if ($category = $request->get('category')) {
+            $query->where('category', $category);
+        }
+
+        // Assigned to filter
+        if ($request->has('assigned_to')) {
+            $assignedTo = $request->get('assigned_to');
+            if ($assignedTo === 'unassigned') {
+                $query->whereNull('assigned_to');
+            } elseif ($assignedTo === 'me') {
+                $query->where('assigned_to', $admin->id);
+            } else {
+                $query->where('assigned_to', $assignedTo);
+            }
+        }
+
+        // Open tickets only
+        if ($request->get('open_only')) {
+            $query->open();
+        }
+
+        // Search
+        if ($search = $request->get('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('ticket_number', 'like', "%{$search}%")
+                  ->orWhere('subject', 'like', "%{$search}%")
+                  ->orWhereHas('user', function ($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Sorting
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortDir = $request->get('sort_dir', 'desc');
+        $query->orderBy($sortBy, $sortDir);
+
+        $perPage = min($request->get('per_page', 20), 100);
+        $tickets = $query->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'data' => $tickets->items(),
+            'meta' => [
+                'current_page' => $tickets->currentPage(),
+                'last_page' => $tickets->lastPage(),
+                'per_page' => $tickets->perPage(),
+                'total' => $tickets->total(),
+            ],
+        ]);
+    }
+
+    /**
+     * Get a specific ticket with messages
+     */
+    public function show(Request $request, int $id): JsonResponse
+    {
+        $admin = $this->getAuthenticatedUser($request);
+        
+        if (!$admin || !$admin->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        $ticket = SupportTicket::with([
+            'user:id,name,email',
+            'assignedTo:id,name,email',
+            'messages.user:id,name,email,role',
+        ])->find($id);
+
+        if (!$ticket) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ticket not found',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $ticket,
+        ]);
+    }
+
+    /**
+     * Assign ticket to admin
+     */
+    public function assign(Request $request, int $id): JsonResponse
+    {
+        $admin = $this->getAuthenticatedUser($request);
+        
+        if (!$admin || !$admin->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        $ticket = SupportTicket::find($id);
+
+        if (!$ticket) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ticket not found',
+            ], 404);
+        }
+
+        $validated = $request->validate([
+            'admin_id' => 'required|exists:users,id',
+        ]);
+
+        $assignee = User::find($validated['admin_id']);
+        
+        if (!$assignee->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Can only assign to admin users',
+            ], 400);
+        }
+
+        $oldAssignee = $ticket->assigned_to;
+        $ticket->assignTo($assignee);
+
+        AdminActivityLog::log(
+            $admin,
+            'ticket.assigned',
+            $ticket,
+            ['assigned_to' => $oldAssignee],
+            ['assigned_to' => $assignee->id],
+            "Assigned ticket {$ticket->ticket_number} to {$assignee->name}"
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ticket assigned successfully',
+            'data' => $ticket->fresh(['user:id,name,email', 'assignedTo:id,name,email']),
+        ]);
+    }
+
+    /**
+     * Update ticket status
+     */
+    public function updateStatus(Request $request, int $id): JsonResponse
+    {
+        $admin = $this->getAuthenticatedUser($request);
+        
+        if (!$admin || !$admin->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        $ticket = SupportTicket::find($id);
+
+        if (!$ticket) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ticket not found',
+            ], 404);
+        }
+
+        $validated = $request->validate([
+            'status' => 'required|in:open,in_progress,waiting_on_customer,resolved,closed',
+        ]);
+
+        $oldStatus = $ticket->status;
+        
+        switch ($validated['status']) {
+            case 'resolved':
+                $ticket->resolve();
+                break;
+            case 'closed':
+                $ticket->close();
+                break;
+            case 'open':
+                $ticket->reopen();
+                break;
+            default:
+                $ticket->update(['status' => $validated['status']]);
+        }
+
+        AdminActivityLog::log(
+            $admin,
+            'ticket.status_changed',
+            $ticket,
+            ['status' => $oldStatus],
+            ['status' => $validated['status']],
+            "Changed ticket {$ticket->ticket_number} status from {$oldStatus} to {$validated['status']}"
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ticket status updated successfully',
+            'data' => $ticket->fresh(),
+        ]);
+    }
+
+    /**
+     * Add a message to a ticket
+     */
+    public function addMessage(Request $request, int $id): JsonResponse
+    {
+        $admin = $this->getAuthenticatedUser($request);
+        
+        if (!$admin || !$admin->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        $ticket = SupportTicket::find($id);
+
+        if (!$ticket) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ticket not found',
+            ], 404);
+        }
+
+        $validated = $request->validate([
+            'message' => 'required|string',
+            'is_internal' => 'sometimes|boolean',
+        ]);
+
+        $message = $ticket->addMessage(
+            $admin,
+            $validated['message'],
+            $validated['is_internal'] ?? false
+        );
+
+        // Auto-assign if not assigned
+        if (!$ticket->assigned_to) {
+            $ticket->assignTo($admin);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Message added successfully',
+            'data' => $message->load('user:id,name,email,role'),
+        ]);
+    }
+
+    /**
+     * Update ticket priority
+     */
+    public function updatePriority(Request $request, int $id): JsonResponse
+    {
+        $admin = $this->getAuthenticatedUser($request);
+        
+        if (!$admin || !$admin->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        $ticket = SupportTicket::find($id);
+
+        if (!$ticket) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ticket not found',
+            ], 404);
+        }
+
+        $validated = $request->validate([
+            'priority' => 'required|in:low,medium,high,urgent',
+        ]);
+
+        $oldPriority = $ticket->priority;
+        $ticket->update(['priority' => $validated['priority']]);
+
+        AdminActivityLog::log(
+            $admin,
+            'ticket.priority_changed',
+            $ticket,
+            ['priority' => $oldPriority],
+            ['priority' => $validated['priority']],
+            "Changed ticket {$ticket->ticket_number} priority from {$oldPriority} to {$validated['priority']}"
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ticket priority updated successfully',
+            'data' => $ticket->fresh(),
+        ]);
+    }
+
+    /**
+     * Get ticket statistics
+     */
+    public function statistics(Request $request): JsonResponse
+    {
+        $admin = $this->getAuthenticatedUser($request);
+        
+        if (!$admin || !$admin->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        $stats = [
+            'by_status' => [
+                'open' => SupportTicket::where('status', 'open')->count(),
+                'in_progress' => SupportTicket::where('status', 'in_progress')->count(),
+                'waiting_on_customer' => SupportTicket::where('status', 'waiting_on_customer')->count(),
+                'resolved' => SupportTicket::where('status', 'resolved')->count(),
+                'closed' => SupportTicket::where('status', 'closed')->count(),
+            ],
+            'by_priority' => [
+                'low' => SupportTicket::open()->where('priority', 'low')->count(),
+                'medium' => SupportTicket::open()->where('priority', 'medium')->count(),
+                'high' => SupportTicket::open()->where('priority', 'high')->count(),
+                'urgent' => SupportTicket::open()->where('priority', 'urgent')->count(),
+            ],
+            'by_category' => [
+                'billing' => SupportTicket::open()->where('category', 'billing')->count(),
+                'technical' => SupportTicket::open()->where('category', 'technical')->count(),
+                'feature_request' => SupportTicket::open()->where('category', 'feature_request')->count(),
+                'account' => SupportTicket::open()->where('category', 'account')->count(),
+                'other' => SupportTicket::open()->where('category', 'other')->count(),
+            ],
+            'unassigned' => SupportTicket::open()->unassigned()->count(),
+            'my_tickets' => SupportTicket::open()->where('assigned_to', $admin->id)->count(),
+            'average_resolution_time' => $this->calculateAverageResolutionTime(),
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $stats,
+        ]);
+    }
+
+    /**
+     * Calculate average resolution time in hours
+     */
+    private function calculateAverageResolutionTime(): ?float
+    {
+        $resolved = SupportTicket::whereNotNull('resolved_at')
+            ->whereNotNull('created_at')
+            ->selectRaw('AVG(TIMESTAMPDIFF(HOUR, created_at, resolved_at)) as avg_hours')
+            ->first();
+
+        return $resolved->avg_hours ? round($resolved->avg_hours, 1) : null;
+    }
+
+    /**
+     * Helper to get authenticated user
+     */
+    private function getAuthenticatedUser(Request $request): ?User
+    {
+        $token = $request->bearerToken();
+        
+        if (!$token) {
+            return null;
+        }
+
+        if (str_contains($token, '|')) {
+            [$id, $plainTextToken] = explode('|', $token, 2);
+            $hashedToken = hash('sha256', $plainTextToken);
+        } else {
+            $hashedToken = hash('sha256', $token);
+        }
+
+        $tokenRecord = \Laravel\Sanctum\PersonalAccessToken::where('token', $hashedToken)->first();
+
+        if (!$tokenRecord) {
+            return null;
+        }
+
+        return User::find($tokenRecord->tokenable_id);
+    }
+}

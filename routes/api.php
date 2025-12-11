@@ -10,6 +10,14 @@ use App\Http\Controllers\QRCodeController;
 use App\Http\Controllers\SocialAuthController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\Api\SettingsController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\AdminSettingsController;
+use App\Http\Controllers\Admin\AdminSupportController;
+use App\Http\Controllers\Admin\AdminSubscriptionController;
+use App\Http\Controllers\Admin\AdminActivityController;
+use App\Http\Controllers\Admin\AdminFranchiseController;
+use App\Http\Controllers\Admin\AdminFranchiseOnboardingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -83,6 +91,87 @@ Route::get('/subscription-plans', [SubscriptionController::class, 'getPlans']);
 Route::get('/subscription/current', [SubscriptionController::class, 'getCurrentSubscription']);
 Route::post('/subscription/trial/{planId}', [SubscriptionController::class, 'startTrial']);
 Route::get('/subscription/recommendations', [SubscriptionController::class, 'getUpgradeRecommendations']);
+
+// Public platform settings
+Route::get('/platform/settings', [AdminSettingsController::class, 'publicSettings']);
+
+/*
+|--------------------------------------------------------------------------
+| Admin Routes
+|--------------------------------------------------------------------------
+| Routes for admin and super admin users to manage the platform.
+| All routes require authentication and admin role.
+*/
+Route::prefix('admin')->middleware(['auth:sanctum', 'admin'])->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [AdminDashboardController::class, 'index']);
+    Route::get('/analytics', [AdminDashboardController::class, 'analytics']);
+    
+    // User Management
+    Route::get('/users', [AdminUserController::class, 'index']);
+    Route::get('/users/{id}', [AdminUserController::class, 'show']);
+    Route::put('/users/{id}', [AdminUserController::class, 'update']);
+    Route::post('/users/{id}/toggle-status', [AdminUserController::class, 'toggleStatus']);
+    Route::delete('/users/{id}', [AdminUserController::class, 'destroy']);
+    Route::post('/users/{id}/reset-password', [AdminUserController::class, 'resetPassword']);
+    Route::post('/admins', [AdminUserController::class, 'createAdmin']);
+    
+    // Platform Settings (super admin only)
+    Route::get('/settings', [AdminSettingsController::class, 'index']);
+    Route::get('/settings/group/{group}', [AdminSettingsController::class, 'showGroup']);
+    Route::put('/settings/{key}', [AdminSettingsController::class, 'update']);
+    Route::post('/settings/bulk', [AdminSettingsController::class, 'bulkUpdate']);
+    
+    // Subscription Management
+    Route::get('/subscription-plans', [AdminSubscriptionController::class, 'plans']);
+    Route::put('/subscription-plans/{id}', [AdminSubscriptionController::class, 'updatePlan']);
+    Route::get('/subscriptions', [AdminSubscriptionController::class, 'subscriptions']);
+    Route::post('/users/{userId}/subscription', [AdminSubscriptionController::class, 'changeUserSubscription']);
+    Route::post('/subscriptions/{id}/cancel', [AdminSubscriptionController::class, 'cancelSubscription']);
+    Route::get('/subscriptions/statistics', [AdminSubscriptionController::class, 'statistics']);
+    
+    // Support Tickets
+    Route::get('/tickets', [AdminSupportController::class, 'index']);
+    Route::get('/tickets/statistics', [AdminSupportController::class, 'statistics']);
+    Route::get('/tickets/{id}', [AdminSupportController::class, 'show']);
+    Route::post('/tickets/{id}/assign', [AdminSupportController::class, 'assign']);
+    Route::post('/tickets/{id}/status', [AdminSupportController::class, 'updateStatus']);
+    Route::post('/tickets/{id}/priority', [AdminSupportController::class, 'updatePriority']);
+    Route::post('/tickets/{id}/messages', [AdminSupportController::class, 'addMessage']);
+    
+    // Activity Logs
+    Route::get('/activity', [AdminActivityController::class, 'index']);
+    Route::get('/activity/actions', [AdminActivityController::class, 'actions']);
+    Route::get('/activity/admins', [AdminActivityController::class, 'admins']);
+    Route::get('/activity/{id}', [AdminActivityController::class, 'show']);
+    Route::get('/activity/target/{type}/{id}', [AdminActivityController::class, 'forTarget']);
+    
+    // Franchise Management (super admin only)
+    Route::get('/franchises', [AdminFranchiseController::class, 'index']);
+    Route::get('/franchises/statistics', [AdminFranchiseController::class, 'statistics']);
+    Route::get('/franchises/{id}', [AdminFranchiseController::class, 'show']);
+    Route::put('/franchises/{id}', [AdminFranchiseController::class, 'update']);
+    Route::post('/franchises/{id}/toggle-status', [AdminFranchiseController::class, 'toggleStatus']);
+    Route::post('/franchises/{id}/transfer-ownership', [AdminFranchiseController::class, 'transferOwnership']);
+    Route::delete('/franchises/{id}', [AdminFranchiseController::class, 'destroy']);
+    
+    // Franchise Onboarding & Management (super admin only)
+    Route::post('/franchises/onboard', [AdminFranchiseOnboardingController::class, 'onboard']);
+    Route::get('/franchises/{id}/details', [AdminFranchiseOnboardingController::class, 'getFranchiseDetails']);
+    Route::post('/franchises/{id}/accounts', [AdminFranchiseOnboardingController::class, 'createAccount']);
+    Route::post('/franchises/{id}/invitations', [AdminFranchiseOnboardingController::class, 'sendInvitation']);
+    Route::post('/franchises/{id}/branches', [AdminFranchiseOnboardingController::class, 'addBranch']);
+    Route::post('/franchises/{id}/payments', [AdminFranchiseOnboardingController::class, 'recordPayment']);
+    Route::get('/franchises/{id}/branches', [AdminFranchiseOnboardingController::class, 'getBranches']);
+    Route::get('/franchises/{id}/payments', [AdminFranchiseOnboardingController::class, 'getPayments']);
+    Route::get('/franchises/{id}/accounts', [AdminFranchiseOnboardingController::class, 'getAccounts']);
+    Route::get('/franchises/{id}/invitations', [AdminFranchiseOnboardingController::class, 'getInvitations']);
+    Route::put('/franchises/{id}/pricing', [AdminFranchiseOnboardingController::class, 'updatePricing']);
+    Route::put('/franchises/{franchiseId}/branches/{branchId}', [AdminFranchiseOnboardingController::class, 'updateBranch']);
+    Route::delete('/franchises/{franchiseId}/branches/{branchId}', [AdminFranchiseOnboardingController::class, 'deleteBranch']);
+    Route::post('/franchises/{franchiseId}/invitations/{invitationId}/resend', [AdminFranchiseOnboardingController::class, 'resendInvitation']);
+    Route::delete('/franchises/{franchiseId}/invitations/{invitationId}', [AdminFranchiseOnboardingController::class, 'cancelInvitation']);
+});
 
 // Protected routes (with sanctum middleware for cookie-based auth)
 Route::middleware('auth:sanctum')->group(function () {
