@@ -36,7 +36,7 @@ class AdminFranchiseOnboardingController extends Controller
     public function createFranchise(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:franchises,name',
             'description' => 'nullable|string',
             'owner_email' => 'required|email',
             'owner_name' => 'required|string|max:255',
@@ -93,9 +93,18 @@ class AdminFranchiseOnboardingController extends Controller
                 'name' => $request->name,
                 'slug' => Str::slug($request->name),
                 'description' => $request->description,
-                'owner_id' => $owner?->id,
                 'is_active' => true,
             ]);
+
+            // Attach owner to franchise through pivot table
+            if ($owner) {
+                $franchise->users()->attach($owner->id, [
+                    'role' => 'owner',
+                    'is_primary' => true,
+                    'is_active' => true,
+                    'joined_at' => now(),
+                ]);
+            }
 
             // Create pricing
             $pricing = FranchisePricing::create([
