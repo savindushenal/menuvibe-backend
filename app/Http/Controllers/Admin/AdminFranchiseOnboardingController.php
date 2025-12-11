@@ -582,8 +582,10 @@ class AdminFranchiseOnboardingController extends Controller
                         $password,
                         $request->role
                     ));
+                    \Log::info('Credentials email sent to: ' . $user->email);
                 } catch (\Exception $e) {
-                    \Log::error('Failed to send credentials email: ' . $e->getMessage());
+                    \Log::error('Failed to send credentials email to ' . $user->email . ': ' . $e->getMessage());
+                    \Log::error('Stack trace: ' . $e->getTraceAsString());
                 }
             }
 
@@ -832,7 +834,7 @@ class AdminFranchiseOnboardingController extends Controller
             ->with('user:id,name,email')
             ->get();
         $payments = FranchisePayment::where('franchise_id', $franchiseId)
-            ->orderBy('due_date', 'desc')
+            ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
         
