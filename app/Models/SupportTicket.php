@@ -53,6 +53,7 @@ class SupportTicket extends Model
     const CATEGORY_TECHNICAL = 'technical';
     const CATEGORY_FEATURE_REQUEST = 'feature_request';
     const CATEGORY_ACCOUNT = 'account';
+    const CATEGORY_FRANCHISE = 'franchise';
     const CATEGORY_OTHER = 'other';
 
     /**

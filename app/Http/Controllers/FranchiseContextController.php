@@ -61,7 +61,7 @@ class FranchiseContextController extends Controller
 
         // For branch managers, only show their branch
         $query = FranchiseBranch::where('franchise_id', $franchise->id)
-            ->with(['locations']);
+            ->with(['location', 'accounts']);
 
         if ($role === 'branch_manager') {
             $account = FranchiseAccount::where('user_id', $user->id)

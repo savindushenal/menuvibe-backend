@@ -66,7 +66,7 @@ class HelpTicketController extends Controller
         $validator = Validator::make($request->all(), [
             'subject' => 'required|string|max:255',
             'description' => 'required|string',
-            'category' => 'required|in:technical,billing,feature_request,account,other',
+            'category' => 'required|in:technical,billing,feature_request,account,franchise,other',
             'priority' => 'nullable|in:low,medium,high,urgent',
         ]);
 
@@ -278,6 +278,7 @@ class HelpTicketController extends Controller
                     'billing' => 'Billing & Subscription',
                     'feature_request' => 'Feature Request',
                     'account' => 'Account Help',
+                    'franchise' => 'Franchise Support',
                     'other' => 'Other',
                 ],
                 'priorities' => [
