@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BusinessProfileController;
 use App\Http\Controllers\FranchiseContextController;
+use App\Http\Controllers\HelpTicketController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\MenuItemController;
@@ -27,6 +28,7 @@ use App\Http\Controllers\MenuOfferController;
 use App\Http\Controllers\PublicMenuController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -125,6 +127,14 @@ Route::get('/subscription/current', [SubscriptionController::class, 'getCurrentS
 Route::post('/subscription/trial/{planId}', [SubscriptionController::class, 'startTrial']);
 Route::get('/subscription/recommendations', [SubscriptionController::class, 'getUpgradeRecommendations']);
 
+// Help Ticket routes (user tickets - manual auth)
+Route::get('/help-tickets/options', [HelpTicketController::class, 'options']);
+Route::get('/help-tickets', [HelpTicketController::class, 'index']);
+Route::post('/help-tickets', [HelpTicketController::class, 'store']);
+Route::get('/help-tickets/{id}', [HelpTicketController::class, 'show']);
+Route::post('/help-tickets/{id}/messages', [HelpTicketController::class, 'addMessage']);
+Route::post('/help-tickets/{id}/status', [HelpTicketController::class, 'updateStatus']);
+
 // Public platform settings
 Route::get('/platform/settings', [AdminSettingsController::class, 'publicSettings']);
 
@@ -144,6 +154,9 @@ Route::prefix('franchise/{franchiseSlug}')
         
         // Branches
         Route::get('/branches', [FranchiseContextController::class, 'branches']);
+        Route::post('/branches', [FranchiseContextController::class, 'createBranch']);
+        Route::put('/branches/{branchId}', [FranchiseContextController::class, 'updateBranch']);
+        Route::delete('/branches/{branchId}', [FranchiseContextController::class, 'deleteBranch']);
         
         // Locations
         Route::get('/locations', [FranchiseContextController::class, 'locations']);
@@ -156,6 +169,7 @@ Route::prefix('franchise/{franchiseSlug}')
         
         // Settings
         Route::get('/settings', [FranchiseContextController::class, 'settings']);
+        Route::put('/settings', [FranchiseContextController::class, 'updateSettings']);
     });
 
 /*

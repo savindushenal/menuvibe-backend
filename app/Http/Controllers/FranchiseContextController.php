@@ -200,23 +200,264 @@ class FranchiseContextController extends Controller
                                in_array($user->role, ['admin', 'super_admin']);
 
         $settings = [
+            'id' => $franchise->id,
             'name' => $franchise->name,
             'slug' => $franchise->slug,
+            'description' => $franchise->description,
             'logo_url' => $franchise->logo_url,
-            'brand_color' => $franchise->brand_color,
+            'primary_color' => $franchise->primary_color ?? '#10b981',
+            'secondary_color' => $franchise->secondary_color ?? '#059669',
         ];
 
         if ($canViewFullSettings) {
-            $settings['business_type'] = $franchise->business_type;
-            $settings['contact_email'] = $franchise->contact_email;
-            $settings['contact_phone'] = $franchise->contact_phone;
-            $settings['website'] = $franchise->website;
-            $settings['subscription_plan'] = $franchise->subscription_plan;
+            $settings['email'] = $franchise->support_email;
+            $settings['phone'] = $franchise->support_phone;
+            $settings['website'] = $franchise->website_url;
+            $settings['timezone'] = $franchise->settings['timezone'] ?? 'UTC';
+            $settings['currency'] = $franchise->settings['currency'] ?? 'USD';
+            $settings['address'] = $franchise->settings['address'] ?? '';
+            $settings['city'] = $franchise->settings['city'] ?? '';
+            $settings['state'] = $franchise->settings['state'] ?? '';
+            $settings['country'] = $franchise->settings['country'] ?? '';
+            $settings['postal_code'] = $franchise->settings['postal_code'] ?? '';
+            $settings['settings'] = $franchise->settings;
         }
 
         return response()->json([
             'success' => true,
             'data' => $settings
+        ]);
+    }
+
+    /**
+     * Update franchise settings
+     */
+    public function updateSettings(Request $request, string $franchiseSlug)
+    {
+        $franchise = $request->get('franchise');
+        $user = $request->user();
+        $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
+
+        // Only owners and admins can update settings
+        if (!in_array($role, ['franchise_owner', 'franchise_admin']) && 
+            !in_array($user->role, ['admin', 'super_admin'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to update settings'
+            ], 403);
+        }
+
+        $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'description' => 'nullable|string|max:1000',
+            'website' => 'nullable|url|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:50',
+            'address' => 'nullable|string|max:500',
+            'city' => 'nullable|string|max:100',
+            'state' => 'nullable|string|max:100',
+            'country' => 'nullable|string|max:100',
+            'postal_code' => 'nullable|string|max:20',
+            'timezone' => 'nullable|string|max:50',
+            'currency' => 'nullable|string|max:10',
+            'primary_color' => 'nullable|string|max:20',
+            'secondary_color' => 'nullable|string|max:20',
+            'settings' => 'nullable|array',
+        ]);
+
+        $updateData = [];
+        
+        if ($request->has('name')) {
+            $updateData['name'] = $request->name;
+        }
+        if ($request->has('description')) {
+            $updateData['description'] = $request->description;
+        }
+        if ($request->has('website')) {
+            $updateData['website_url'] = $request->website;
+        }
+        if ($request->has('email')) {
+            $updateData['support_email'] = $request->email;
+        }
+        if ($request->has('phone')) {
+            $updateData['support_phone'] = $request->phone;
+        }
+        if ($request->has('primary_color')) {
+            $updateData['primary_color'] = $request->primary_color;
+        }
+        if ($request->has('secondary_color')) {
+            $updateData['secondary_color'] = $request->secondary_color;
+        }
+        
+        // Store address and other location info in settings JSON
+        $existingSettings = $franchise->settings ?? [];
+        $newSettings = $existingSettings;
+        
+        if ($request->has('address')) {
+            $newSettings['address'] = $request->address;
+        }
+        if ($request->has('city')) {
+            $newSettings['city'] = $request->city;
+        }
+        if ($request->has('state')) {
+            $newSettings['state'] = $request->state;
+        }
+        if ($request->has('country')) {
+            $newSettings['country'] = $request->country;
+        }
+        if ($request->has('postal_code')) {
+            $newSettings['postal_code'] = $request->postal_code;
+        }
+        if ($request->has('timezone')) {
+            $newSettings['timezone'] = $request->timezone;
+        }
+        if ($request->has('currency')) {
+            $newSettings['currency'] = $request->currency;
+        }
+        if ($request->has('settings')) {
+            $newSettings = array_merge($newSettings, $request->settings);
+        }
+        
+        $updateData['settings'] = $newSettings;
+
+        $franchise->update($updateData);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Settings updated successfully',
+            'data' => $franchise->fresh()
+        ]);
+    }
+
+    /**
+     * Create a new branch
+     */
+    public function createBranch(Request $request, string $franchiseSlug)
+    {
+        $franchise = $request->get('franchise');
+        $user = $request->user();
+        $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
+
+        // Only owners and admins can create branches
+        if (!in_array($role, ['franchise_owner', 'franchise_admin']) && 
+            !in_array($user->role, ['admin', 'super_admin'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to create branches'
+            ], 403);
+        }
+
+        $request->validate([
+            'branch_name' => 'required|string|max:255',
+            'address' => 'nullable|string|max:500',
+            'city' => 'nullable|string|max:100',
+            'phone' => 'nullable|string|max:50',
+            'is_active' => 'nullable|boolean',
+        ]);
+
+        $branch = FranchiseBranch::create([
+            'franchise_id' => $franchise->id,
+            'branch_name' => $request->branch_name,
+            'branch_code' => FranchiseBranch::generateBranchCode($franchise->id),
+            'address' => $request->address,
+            'city' => $request->city,
+            'phone' => $request->phone,
+            'is_active' => $request->is_active ?? true,
+            'added_by' => $user->id,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Branch created successfully',
+            'data' => $branch
+        ], 201);
+    }
+
+    /**
+     * Update a branch
+     */
+    public function updateBranch(Request $request, string $franchiseSlug, int $branchId)
+    {
+        $franchise = $request->get('franchise');
+        $user = $request->user();
+        $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
+
+        // Only owners and admins can update branches
+        if (!in_array($role, ['franchise_owner', 'franchise_admin']) && 
+            !in_array($user->role, ['admin', 'super_admin'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to update branches'
+            ], 403);
+        }
+
+        $branch = FranchiseBranch::where('franchise_id', $franchise->id)
+            ->where('id', $branchId)
+            ->first();
+
+        if (!$branch) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Branch not found'
+            ], 404);
+        }
+
+        $request->validate([
+            'branch_name' => 'sometimes|string|max:255',
+            'address' => 'nullable|string|max:500',
+            'city' => 'nullable|string|max:100',
+            'phone' => 'nullable|string|max:50',
+            'is_active' => 'nullable|boolean',
+        ]);
+
+        $branch->update($request->only([
+            'branch_name', 'address', 'city', 'phone', 'is_active'
+        ]));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Branch updated successfully',
+            'data' => $branch
+        ]);
+    }
+
+    /**
+     * Delete a branch
+     */
+    public function deleteBranch(Request $request, string $franchiseSlug, int $branchId)
+    {
+        $franchise = $request->get('franchise');
+        $user = $request->user();
+        $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
+
+        // Only owners can delete branches
+        if (!in_array($role, ['franchise_owner']) && 
+            !in_array($user->role, ['admin', 'super_admin'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only franchise owners can delete branches'
+            ], 403);
+        }
+
+        $branch = FranchiseBranch::where('franchise_id', $franchise->id)
+            ->where('id', $branchId)
+            ->first();
+
+        if (!$branch) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Branch not found'
+            ], 404);
+        }
+
+        // Delete related records
+        $branch->accounts()->delete();
+        $branch->invitations()->delete();
+        $branch->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Branch deleted successfully'
         ]);
     }
 }
