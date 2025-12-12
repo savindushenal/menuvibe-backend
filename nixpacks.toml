@@ -12,10 +12,8 @@ cmds = [
     "mkdir -p storage/logs",
     "mkdir -p bootstrap/cache",
     "chmod -R 775 storage",
-    "chmod -R 775 bootstrap/cache",
-    "php artisan route:cache",
-    "php artisan view:cache"
+    "chmod -R 775 bootstrap/cache"
 ]
 
 [start]
-cmd = "mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache && php artisan storage:link --force 2>/dev/null; php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"
+cmd = "mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache && php artisan route:clear && php artisan route:cache && php artisan view:cache && php artisan storage:link --force 2>/dev/null; php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"
