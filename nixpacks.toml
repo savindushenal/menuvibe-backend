@@ -2,18 +2,20 @@
 nixPkgs = ["php83", "php83Packages.composer", "php83Extensions.pdo", "php83Extensions.pdo_mysql", "php83Extensions.mbstring", "php83Extensions.xml", "php83Extensions.curl", "php83Extensions.zip", "php83Extensions.gd", "php83Extensions.bcmath", "php83Extensions.tokenizer", "php83Extensions.fileinfo"]
 
 [phases.install]
-cmds = ["composer install --no-dev --optimize-autoloader"]
-
-[phases.build]
 cmds = [
+    "mkdir -p bootstrap/cache",
     "mkdir -p storage/framework/cache/data",
     "mkdir -p storage/framework/sessions",
     "mkdir -p storage/framework/views",
     "mkdir -p storage/logs",
-    "mkdir -p bootstrap/cache",
-    "rm -f bootstrap/cache/*.php",
     "chmod -R 775 storage",
     "chmod -R 775 bootstrap/cache",
+    "composer install --no-dev --optimize-autoloader"
+]
+
+[phases.build]
+cmds = [
+    "rm -f bootstrap/cache/*.php",
     "php artisan package:discover --ansi"
 ]
 
