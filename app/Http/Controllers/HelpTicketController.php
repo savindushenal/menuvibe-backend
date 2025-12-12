@@ -78,29 +78,42 @@ class HelpTicketController extends Controller
             ], 422);
         }
 
-        $ticket = SupportTicket::create([
-            'ticket_number' => SupportTicket::generateTicketNumber(),
-            'user_id' => $user->id,
-            'subject' => $request->subject,
-            'description' => $request->description,
-            'category' => $request->category,
-            'priority' => $request->priority ?? 'medium',
-            'status' => 'open',
-        ]);
+        try {
+            $ticket = SupportTicket::create([
+                'ticket_number' => SupportTicket::generateTicketNumber(),
+                'user_id' => $user->id,
+                'subject' => $request->subject,
+                'description' => $request->description,
+                'category' => $request->category,
+                'priority' => $request->priority ?? 'medium',
+                'status' => 'open',
+            ]);
 
-        // Add initial message (the description)
-        SupportTicketMessage::create([
-            'ticket_id' => $ticket->id,
-            'user_id' => $user->id,
-            'message' => $request->description,
-            'is_internal' => false,
-        ]);
+            // Add initial message (the description)
+            SupportTicketMessage::create([
+                'ticket_id' => $ticket->id,
+                'user_id' => $user->id,
+                'message' => $request->description,
+                'is_internal' => false,
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Ticket created successfully',
-            'data' => $ticket->load('messages')
-        ], 201);
+            return response()->json([
+                'success' => true,
+                'message' => 'Ticket created successfully',
+                'data' => $ticket->load('messages')
+            ], 201);
+        } catch (\Exception $e) {
+            \Log::error('Help ticket creation failed: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'request' => $request->all(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create ticket: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
