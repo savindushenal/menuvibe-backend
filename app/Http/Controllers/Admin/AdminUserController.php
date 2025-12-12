@@ -472,11 +472,26 @@ class AdminUserController extends Controller
 
         // Send the password via email
         try {
+            \Log::info('Attempting to send password email', [
+                'to' => $user->email,
+                'mail_driver' => config('mail.default'),
+                'mail_host' => config('mail.mailers.smtp.host'),
+                'mail_port' => config('mail.mailers.smtp.port'),
+                'mail_from' => config('mail.from.address'),
+            ]);
+            
             Mail::to($user->email)->send(new PasswordResetByAdminMail($user, $password));
             $emailSent = true;
+            
+            \Log::info('Password email sent successfully', ['to' => $user->email]);
         } catch (\Exception $e) {
             $emailSent = false;
-            \Log::error('Failed to send password reset email: ' . $e->getMessage());
+            \Log::error('Failed to send password reset email', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'mail_driver' => config('mail.default'),
+                'mail_host' => config('mail.mailers.smtp.host'),
+            ]);
         }
 
         // Log the activity
