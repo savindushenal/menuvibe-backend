@@ -680,6 +680,77 @@ class MasterMenuController extends Controller
         ]);
     }
 
+    /**
+     * Get sync status for a menu with all branches
+     */
+    public function getSyncStatus(Request $request, int $franchiseId, int $menuId)
+    {
+        $menu = MasterMenu::where('franchise_id', $franchiseId)
+            ->where('id', $menuId)
+            ->first();
+
+        if (!$menu) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Menu not found'
+            ], 404);
+        }
+
+        // Get all branches for this franchise
+        $branches = FranchiseBranch::where('franchise_id', $franchiseId)
+            ->where('is_active', true)
+            ->with('location:id,name')
+            ->get();
+
+        // Get sync logs for each branch
+        $branchStatuses = $branches->map(function ($branch) use ($menuId) {
+            // Get the most recent sync log for this branch and menu
+            $lastSync = MenuSyncLog::where('master_menu_id', $menuId)
+                ->where(function($q) use ($branch) {
+                    $q->where('branch_id', $branch->id)
+                      ->orWhereNull('branch_id'); // Global syncs count for all branches
+                })
+                ->where('status', 'completed')
+                ->orderBy('completed_at', 'desc')
+                ->first();
+
+            // Count overrides for this branch
+            $overridesCount = BranchMenuOverride::where('branch_id', $branch->id)
+                ->whereHas('masterItem', function ($q) use ($menuId) {
+                    $q->where('master_menu_id', $menuId);
+                })
+                ->count();
+
+            // Count items synced (items in master menu)
+            $itemsCount = MasterMenuItem::where('master_menu_id', $menuId)->count();
+
+            return [
+                'id' => $branch->id,
+                'name' => $branch->branch_name,
+                'location_name' => $branch->location?->name ?? $branch->city ?? 'Unknown',
+                'last_synced_at' => $lastSync?->completed_at,
+                'is_synced' => $lastSync !== null,
+                'items_synced' => $itemsCount,
+                'has_overrides' => $overridesCount > 0,
+                'overrides_count' => $overridesCount,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'menu' => [
+                    'id' => $menu->id,
+                    'name' => $menu->name,
+                    'last_synced_at' => $menu->last_synced_at,
+                ],
+                'branches' => $branchStatuses,
+                'total_branches' => $branches->count(),
+                'synced_branches' => $branchStatuses->filter(fn($b) => $b['is_synced'])->count(),
+            ]
+        ]);
+    }
+
     // ===========================================
     // BRANCH OVERRIDES
     // ===========================================
