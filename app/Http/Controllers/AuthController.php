@@ -106,7 +106,7 @@ class AuthController extends Controller
      */
     public function getContexts(Request $request)
     {
-        $user = $request->user();
+        $user = $this->getUserFromToken($request);
         
         // Return empty contexts if user is not authenticated
         if (!$user) {
