@@ -53,6 +53,31 @@ Route::get('/health', function () {
     ]);
 });
 
+// Debug mail configuration (TEMPORARY - remove after debugging)
+Route::get('/debug-mail', function () {
+    $config = [
+        'mail_driver' => config('mail.default'),
+        'mail_host' => config('mail.mailers.smtp.host'),
+        'mail_port' => config('mail.mailers.smtp.port'),
+        'mail_encryption' => config('mail.mailers.smtp.encryption'),
+        'mail_username' => config('mail.mailers.smtp.username'),
+        'mail_password_set' => !empty(config('mail.mailers.smtp.password')) ? 'YES' : 'NO',
+        'mail_from_address' => config('mail.from.address'),
+        'mail_from_name' => config('mail.from.name'),
+        'openssl_loaded' => extension_loaded('openssl') ? 'YES' : 'NO',
+        'openssl_version' => defined('OPENSSL_VERSION_TEXT') ? OPENSSL_VERSION_TEXT : 'N/A',
+        'php_version' => PHP_VERSION,
+        'loaded_extensions' => implode(', ', get_loaded_extensions()),
+    ];
+    
+    \Log::info('Mail debug info', $config);
+    
+    return response()->json([
+        'success' => true,
+        'mail_config' => $config,
+    ]);
+});
+
 // Google OAuth routes
 Route::get('/auth/google', [SocialAuthController::class, 'redirectToGoogle']);
 Route::get('/auth/google/callback', [SocialAuthController::class, 'handleGoogleCallback']);

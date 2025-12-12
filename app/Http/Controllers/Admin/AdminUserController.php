@@ -472,25 +472,40 @@ class AdminUserController extends Controller
 
         // Send the password via email
         try {
-            \Log::info('Attempting to send password email', [
+            \Log::info('=== PASSWORD EMAIL DEBUG START ===');
+            \Log::info('Mail configuration', [
                 'to' => $user->email,
                 'mail_driver' => config('mail.default'),
                 'mail_host' => config('mail.mailers.smtp.host'),
                 'mail_port' => config('mail.mailers.smtp.port'),
-                'mail_from' => config('mail.from.address'),
+                'mail_encryption' => config('mail.mailers.smtp.encryption'),
+                'mail_username' => config('mail.mailers.smtp.username'),
+                'mail_from_address' => config('mail.from.address'),
+                'mail_from_name' => config('mail.from.name'),
+                'queue_connection' => config('queue.default'),
             ]);
             
-            Mail::to($user->email)->send(new PasswordResetByAdminMail($user, $password));
-            $emailSent = true;
+            // Check if OpenSSL is loaded
+            \Log::info('OpenSSL loaded: ' . (extension_loaded('openssl') ? 'YES' : 'NO'));
             
-            \Log::info('Password email sent successfully', ['to' => $user->email]);
-        } catch (\Exception $e) {
+            // Create the mailable
+            $mailable = new PasswordResetByAdminMail($user, $password);
+            
+            // Force synchronous sending (bypass queue)
+            \Log::info('Sending email synchronously...');
+            Mail::mailer('smtp')->to($user->email)->send($mailable);
+            
+            $emailSent = true;
+            \Log::info('=== PASSWORD EMAIL SENT SUCCESSFULLY ===', ['to' => $user->email]);
+        } catch (\Throwable $e) {
             $emailSent = false;
-            \Log::error('Failed to send password reset email', [
-                'error' => $e->getMessage(),
+            \Log::error('=== PASSWORD EMAIL FAILED ===', [
+                'error_class' => get_class($e),
+                'error_message' => $e->getMessage(),
+                'error_code' => $e->getCode(),
+                'error_file' => $e->getFile(),
+                'error_line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
-                'mail_driver' => config('mail.default'),
-                'mail_host' => config('mail.mailers.smtp.host'),
             ]);
         }
 
