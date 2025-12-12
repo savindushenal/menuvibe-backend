@@ -207,7 +207,7 @@ class AuthController extends Controller
                 'name' => 'Admin Dashboard',
                 'role' => $user->role,
                 'locations_count' => 0,
-                'redirect' => '/admin/dashboard',
+                'redirect' => '/admin',
             ];
         }
 
