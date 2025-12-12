@@ -249,6 +249,14 @@ class MasterMenuController extends Controller
     }
 
     /**
+     * Store a category (alias for addCategory)
+     */
+    public function storeCategory(Request $request, int $franchiseId, int $menuId)
+    {
+        return $this->addCategory($request, $franchiseId, $menuId);
+    }
+
+    /**
      * Update a category
      */
     public function updateCategory(Request $request, int $franchiseId, int $menuId, int $categoryId)
@@ -319,6 +327,14 @@ class MasterMenuController extends Controller
             'success' => true,
             'message' => 'Category deleted successfully'
         ]);
+    }
+
+    /**
+     * Destroy a category (alias for deleteCategory)
+     */
+    public function destroyCategory(Request $request, int $franchiseId, int $menuId, int $categoryId)
+    {
+        return $this->deleteCategory($request, $franchiseId, $menuId, $categoryId);
     }
 
     // ===========================================
