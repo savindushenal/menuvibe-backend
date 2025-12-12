@@ -410,6 +410,14 @@ class MasterMenuController extends Controller
     }
 
     /**
+     * Alias for addItem - used by routes
+     */
+    public function storeItem(Request $request, int $franchiseId, int $menuId, int $categoryId)
+    {
+        return $this->addItem($request, $franchiseId, $menuId, $categoryId);
+    }
+
+    /**
      * Update an item
      */
     public function updateItem(Request $request, int $franchiseId, int $menuId, int $itemId)
