@@ -646,6 +646,14 @@ class MasterMenuController extends Controller
     }
 
     /**
+     * Alias for syncToAllBranches - used by routes
+     */
+    public function syncToBranches(Request $request, int $franchiseId, int $menuId)
+    {
+        return $this->syncToAllBranches($request, $franchiseId, $menuId);
+    }
+
+    /**
      * Get sync history for a menu
      */
     public function getSyncHistory(Request $request, int $franchiseId, int $menuId)
