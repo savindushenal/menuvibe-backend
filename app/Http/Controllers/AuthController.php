@@ -107,6 +107,19 @@ class AuthController extends Controller
     public function getContexts(Request $request)
     {
         $user = $request->user();
+        
+        // Return empty contexts if user is not authenticated
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated',
+                'data' => [
+                    'contexts' => [],
+                    'default_redirect' => '/auth/login',
+                ]
+            ], 401);
+        }
+        
         $contexts = $this->getUserContexts($user);
 
         return response()->json([
