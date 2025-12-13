@@ -105,6 +105,7 @@ class SyncMenuToTemplates extends Command
                         'is_spicy' => $item->is_spicy ?? 0,
                         'spice_level' => $item->spice_level,
                         'preparation_time' => $item->preparation_time,
+                        'variations' => $item->variations,
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
