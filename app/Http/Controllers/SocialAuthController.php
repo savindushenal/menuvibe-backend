@@ -63,7 +63,7 @@ class SocialAuthController extends Controller
             \Log::info('Token created', ['token_length' => strlen($token)]);
 
             // Redirect to frontend with token
-            $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000');
+            $frontendUrl = config('app.frontend_url');
             $redirectUrl = $frontendUrl . '/auth/callback?token=' . $token;
             
             \Log::info('Redirecting to frontend', ['url' => $redirectUrl]);
@@ -76,7 +76,7 @@ class SocialAuthController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
             
-            $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000');
+            $frontendUrl = config('app.frontend_url');
             return redirect()->to($frontendUrl . '/auth/login?error=google_auth_failed');
         }
     }

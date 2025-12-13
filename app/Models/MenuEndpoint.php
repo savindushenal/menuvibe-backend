@@ -69,8 +69,8 @@ class MenuEndpoint extends Model
             if (empty($endpoint->short_code)) {
                 $endpoint->short_code = self::generateShortCode();
             }
-            // Generate short_url using env variable
-            $frontendUrl = rtrim(env('FRONTEND_URL', 'https://app.menuvire.com'), '/');
+            // Generate short_url using config (reads from FRONTEND_URL env)
+            $frontendUrl = rtrim(config('app.frontend_url'), '/');
             $endpoint->short_url = $frontendUrl . '/m/' . $endpoint->short_code;
         });
 
@@ -97,10 +97,10 @@ class MenuEndpoint extends Model
      */
     public function generateQrCodeUrl(): void
     {
-        $frontendUrl = rtrim(env('FRONTEND_URL', 'https://app.menuvire.com'), '/');
+        $frontendUrl = rtrim(config('app.frontend_url'), '/');
         $menuUrl = $frontendUrl . '/m/' . $this->short_code;
         
-        // Use Google Charts API or similar for QR generation
+        // Use QR Server API for QR generation
         $qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/';
         $qrSize = '300x300';
         
@@ -178,7 +178,7 @@ class MenuEndpoint extends Model
 
     public function getMenuUrlAttribute(): string
     {
-        $frontendUrl = rtrim(env('FRONTEND_URL', 'https://app.menuvire.com'), '/');
+        $frontendUrl = rtrim(config('app.frontend_url'), '/');
         return $frontendUrl . '/m/' . $this->short_code;
     }
 
