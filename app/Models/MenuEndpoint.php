@@ -69,9 +69,14 @@ class MenuEndpoint extends Model
             if (empty($endpoint->short_code)) {
                 $endpoint->short_code = self::generateShortCode();
             }
-            if (empty($endpoint->short_url)) {
-                $endpoint->short_url = config('app.frontend_url', 'https://menuvibe.com') . '/m/' . $endpoint->short_code;
-            }
+            // Generate short_url using env variable
+            $frontendUrl = rtrim(env('FRONTEND_URL', 'https://app.menuvire.com'), '/');
+            $endpoint->short_url = $frontendUrl . '/m/' . $endpoint->short_code;
+        });
+
+        static::created(function ($endpoint) {
+            // Auto-generate QR code URL after creation
+            $endpoint->generateQrCodeUrl();
         });
     }
 
@@ -85,6 +90,23 @@ class MenuEndpoint extends Model
         } while (self::where('short_code', $code)->exists());
 
         return $code;
+    }
+
+    /**
+     * Generate QR code URL using a QR code service
+     */
+    public function generateQrCodeUrl(): void
+    {
+        $frontendUrl = rtrim(env('FRONTEND_URL', 'https://app.menuvire.com'), '/');
+        $menuUrl = $frontendUrl . '/m/' . $this->short_code;
+        
+        // Use Google Charts API or similar for QR generation
+        $qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/';
+        $qrSize = '300x300';
+        
+        $this->short_url = $menuUrl;
+        $this->qr_code_url = $qrApiUrl . '?size=' . $qrSize . '&data=' . urlencode($menuUrl);
+        $this->saveQuietly();
     }
 
     // ===========================================
@@ -156,7 +178,8 @@ class MenuEndpoint extends Model
 
     public function getMenuUrlAttribute(): string
     {
-        return config('app.frontend_url', 'https://menuvibe.com') . '/m/' . $this->short_code;
+        $frontendUrl = rtrim(env('FRONTEND_URL', 'https://app.menuvire.com'), '/');
+        return $frontendUrl . '/m/' . $this->short_code;
     }
 
     // ===========================================
@@ -228,8 +251,6 @@ class MenuEndpoint extends Model
     public function regenerateQrCode(): void
     {
         $this->short_code = self::generateShortCode();
-        $this->short_url = config('app.frontend_url', 'https://menuvibe.com') . '/m/' . $this->short_code;
-        $this->qr_code_url = null; // Will be regenerated on next request
-        $this->save();
+        $this->generateQrCodeUrl();
     }
 }
