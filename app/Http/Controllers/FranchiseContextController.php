@@ -264,6 +264,8 @@ class FranchiseContextController extends Controller
             'currency' => 'nullable|string|max:10',
             'primary_color' => 'nullable|string|max:20',
             'secondary_color' => 'nullable|string|max:20',
+            'template_type' => 'nullable|string|in:premium,classic,minimal,barista,custom',
+            'design_tokens' => 'nullable|array',
             'settings' => 'nullable|array',
         ]);
 
@@ -289,6 +291,12 @@ class FranchiseContextController extends Controller
         }
         if ($request->has('secondary_color')) {
             $updateData['secondary_color'] = $request->secondary_color;
+        }
+        if ($request->has('template_type')) {
+            $updateData['template_type'] = $request->template_type;
+        }
+        if ($request->has('design_tokens')) {
+            $updateData['design_tokens'] = $request->design_tokens;
         }
         
         // Store address and other location info in settings JSON
