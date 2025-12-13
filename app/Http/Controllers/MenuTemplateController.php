@@ -466,6 +466,8 @@ class MenuTemplateController extends Controller
             'is_spicy' => 'nullable|boolean',
             'spice_level' => 'nullable|integer|min:1|max:5',
             'variations' => 'nullable|array',
+            'variations.*.name' => 'required_with:variations|string|max:100',
+            'variations.*.price' => 'required_with:variations|numeric|min:0',
             'addons' => 'nullable|array',
             'sku' => 'nullable|string|max:100',
         ]);
@@ -539,6 +541,8 @@ class MenuTemplateController extends Controller
             'is_spicy' => 'nullable|boolean',
             'spice_level' => 'nullable|integer|min:1|max:5',
             'variations' => 'nullable|array',
+            'variations.*.name' => 'required_with:variations|string|max:100',
+            'variations.*.price' => 'required_with:variations|numeric|min:0',
             'addons' => 'nullable|array',
             'sku' => 'nullable|string|max:100',
         ]);
