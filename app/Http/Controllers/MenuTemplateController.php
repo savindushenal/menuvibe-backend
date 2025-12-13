@@ -108,7 +108,9 @@ class MenuTemplateController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $template
+            'data' => [
+                'template' => $template
+            ]
         ]);
     }
 
