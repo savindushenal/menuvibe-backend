@@ -2887,3 +2887,45 @@ Did you mean one of these?
 #18 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\artisan(35): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
 #19 {main}
 "} 
+[2025-12-13 15:16:18] local.ERROR: PHP Parse error: Syntax error, unexpected T_OBJECT_OPERATOR on line 1 {"exception":"[object] (Psy\\Exception\\ParseErrorException(code: 0): PHP Parse error: Syntax error, unexpected T_OBJECT_OPERATOR on line 1 at E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\psy\\psysh\\src\\Exception\\ParseErrorException.php:44)
+[stacktrace]
+#0 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\psy\\psysh\\src\\CodeCleaner.php(560): Psy\\Exception\\ParseErrorException::fromParseError(Object(PhpParser\\Error))
+#1 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\psy\\psysh\\src\\CodeCleaner.php(283): Psy\\CodeCleaner->parse('<?php DB::table...', false)
+#2 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\psy\\psysh\\src\\Shell.php(924): Psy\\CodeCleaner->clean(Array, false)
+#3 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\psy\\psysh\\src\\Shell.php(958): Psy\\Shell->addCode('DB::table('menu...', true)
+#4 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\psy\\psysh\\src\\Shell.php(1497): Psy\\Shell->setCode('DB::table('menu...', true)
+#5 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\tinker\\src\\Console\\TinkerCommand.php(76): Psy\\Shell->execute('DB::table('menu...')
+#6 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Laravel\\Tinker\\Console\\TinkerCommand->handle()
+#7 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#8 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#9 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(35): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Array, Object(Closure))
+#10 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(662): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Array, Array, NULL)
+#11 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(211): Illuminate\\Container\\Container->call(Array)
+#12 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\symfony\\console\\Command\\Command.php(326): Illuminate\\Console\\Command->execute(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#13 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(180): Symfony\\Component\\Console\\Command\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#14 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\symfony\\console\\Application.php(1096): Illuminate\\Console\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#15 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\symfony\\console\\Application.php(324): Symfony\\Component\\Console\\Application->doRunCommand(Object(Laravel\\Tinker\\Console\\TinkerCommand), Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#16 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\symfony\\console\\Application.php(175): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#17 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(201): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#18 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\artisan(35): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#19 {main}
+"} 
+[2025-12-13 15:22:57] local.ERROR: Undefined property: stdClass::$compare_at_price {"exception":"[object] (ErrorException(code: 0): Undefined property: stdClass::$compare_at_price at E:\\githubNew\\menuvibe-full\\menuvibe-backend\\app\\Console\\Commands\\SyncMenuToTemplates.php:98)
+[stacktrace]
+#0 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\HandleExceptions.php(255): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->handleError(2, 'Undefined prope...', 'E:\\\\githubNew\\\\me...', 98)
+#1 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\app\\Console\\Commands\\SyncMenuToTemplates.php(98): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'Undefined prope...', 'E:\\\\githubNew\\\\me...', 98)
+#2 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): App\\Console\\Commands\\SyncMenuToTemplates->handle()
+#3 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#4 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#5 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(35): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Array, Object(Closure))
+#6 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(662): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Array, Array, NULL)
+#7 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(211): Illuminate\\Container\\Container->call(Array)
+#8 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\symfony\\console\\Command\\Command.php(326): Illuminate\\Console\\Command->execute(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#9 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(180): Symfony\\Component\\Console\\Command\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#10 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\symfony\\console\\Application.php(1096): Illuminate\\Console\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#11 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\symfony\\console\\Application.php(324): Symfony\\Component\\Console\\Application->doRunCommand(Object(App\\Console\\Commands\\SyncMenuToTemplates), Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#12 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\symfony\\console\\Application.php(175): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#13 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(201): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#14 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\artisan(35): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#15 {main}
+"} 
