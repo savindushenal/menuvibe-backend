@@ -58,7 +58,7 @@ class MenuEndpointController extends Controller
 
         $validator = Validator::make($request->all(), [
             'template_id' => 'required|exists:menu_templates,id',
-            'type' => 'required|in:table,room,area,branch,kiosk,takeaway,delivery,drive_thru,bar,patio,private',
+            'type' => 'required|in:table,room,area,branch,kiosk,takeaway,delivery,drive_thru,bar,patio,private,event',
             'name' => 'required|string|max:255',
             'identifier' => 'required|string|max:100',
             'description' => 'nullable|string',
@@ -113,7 +113,7 @@ class MenuEndpointController extends Controller
 
         $validator = Validator::make($request->all(), [
             'template_id' => 'required|exists:menu_templates,id',
-            'type' => 'required|in:table,room,area,branch,kiosk,takeaway,delivery,drive_thru,bar,patio,private',
+            'type' => 'required|in:table,room,area,branch,kiosk,takeaway,delivery,drive_thru,bar,patio,private,event',
             'prefix' => 'required|string|max:50',
             'start_number' => 'required|integer|min:1',
             'count' => 'required|integer|min:1|max:100',
@@ -218,7 +218,7 @@ class MenuEndpointController extends Controller
 
         $validator = Validator::make($request->all(), [
             'template_id' => 'sometimes|exists:menu_templates,id',
-            'type' => 'sometimes|in:table,room,area,branch,kiosk,takeaway,delivery,drive_thru,bar,patio,private',
+            'type' => 'sometimes|in:table,room,area,branch,kiosk,takeaway,delivery,drive_thru,bar,patio,private,event',
             'name' => 'sometimes|string|max:255',
             'identifier' => 'sometimes|string|max:100',
             'description' => 'nullable|string',
