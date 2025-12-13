@@ -8,8 +8,10 @@ use App\Models\FranchiseBranch;
 use App\Models\Location;
 use App\Models\Menu;
 use App\Models\FranchiseAccount;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Str;
 
 class FranchiseContextController extends Controller
 {
@@ -458,6 +460,215 @@ class FranchiseContextController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Branch deleted successfully'
+        ]);
+    }
+
+    /**
+     * Invite a staff member to the franchise
+     */
+    public function inviteStaff(Request $request, string $franchiseSlug)
+    {
+        $franchise = $request->get('franchise');
+        $user = $request->user();
+        $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
+
+        // Only owners and admins can invite staff
+        if (!in_array($role, ['franchise_owner', 'franchise_admin']) && 
+            !in_array($user->role, ['admin', 'super_admin'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to invite staff'
+            ], 403);
+        }
+
+        $request->validate([
+            'email' => 'required|email|max:255',
+            'name' => 'required|string|max:255',
+            'role' => 'required|in:franchise_admin,branch_manager,staff',
+            'branch_id' => 'nullable|integer',
+        ]);
+
+        // Check if branch belongs to franchise
+        if ($request->branch_id) {
+            $branch = FranchiseBranch::where('franchise_id', $franchise->id)
+                ->where('id', $request->branch_id)
+                ->first();
+            
+            if (!$branch) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Branch not found'
+                ], 404);
+            }
+        }
+
+        // Find or create user
+        $invitedUser = User::where('email', $request->email)->first();
+        
+        if (!$invitedUser) {
+            // Create a new user account
+            $invitedUser = User::create([
+                'email' => $request->email,
+                'name' => $request->name,
+                'password' => bcrypt(Str::random(32)), // Temporary password
+                'role' => 'user',
+            ]);
+        }
+
+        // Check if user already has an account in this franchise
+        $existingAccount = FranchiseAccount::where('franchise_id', $franchise->id)
+            ->where('user_id', $invitedUser->id)
+            ->first();
+
+        if ($existingAccount) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This user is already a member of this franchise'
+            ], 400);
+        }
+
+        // Create franchise account
+        $account = FranchiseAccount::create([
+            'franchise_id' => $franchise->id,
+            'user_id' => $invitedUser->id,
+            'role' => $request->role,
+            'branch_id' => $request->branch_id,
+            'is_active' => true,
+            'created_by' => $user->id,
+        ]);
+
+        // TODO: Send invitation email
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Staff member invited successfully',
+            'data' => [
+                'id' => $account->id,
+                'user_id' => $invitedUser->id,
+                'name' => $invitedUser->name,
+                'email' => $invitedUser->email,
+                'role' => $account->role,
+                'branch' => $account->branch?->branch_name,
+            ]
+        ], 201);
+    }
+
+    /**
+     * Update a staff member's role or branch
+     */
+    public function updateStaff(Request $request, string $franchiseSlug, int $staffId)
+    {
+        $franchise = $request->get('franchise');
+        $user = $request->user();
+        $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
+
+        // Only owners and admins can update staff
+        if (!in_array($role, ['franchise_owner', 'franchise_admin']) && 
+            !in_array($user->role, ['admin', 'super_admin'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to update staff'
+            ], 403);
+        }
+
+        $account = FranchiseAccount::where('franchise_id', $franchise->id)
+            ->where('id', $staffId)
+            ->first();
+
+        if (!$account) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Staff member not found'
+            ], 404);
+        }
+
+        // Can't update franchise owner
+        if ($account->role === 'franchise_owner') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot modify franchise owner'
+            ], 403);
+        }
+
+        $request->validate([
+            'role' => 'sometimes|in:franchise_admin,branch_manager,staff',
+            'branch_id' => 'nullable|integer',
+            'is_active' => 'sometimes|boolean',
+        ]);
+
+        // Check if branch belongs to franchise
+        if ($request->has('branch_id') && $request->branch_id) {
+            $branch = FranchiseBranch::where('franchise_id', $franchise->id)
+                ->where('id', $request->branch_id)
+                ->first();
+            
+            if (!$branch) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Branch not found'
+                ], 404);
+            }
+        }
+
+        $account->update($request->only(['role', 'branch_id', 'is_active']));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Staff member updated successfully',
+            'data' => $account->load(['user:id,name,email', 'branch:id,branch_name'])
+        ]);
+    }
+
+    /**
+     * Remove a staff member from the franchise
+     */
+    public function removeStaff(Request $request, string $franchiseSlug, int $staffId)
+    {
+        $franchise = $request->get('franchise');
+        $user = $request->user();
+        $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
+
+        // Only owners and admins can remove staff
+        if (!in_array($role, ['franchise_owner', 'franchise_admin']) && 
+            !in_array($user->role, ['admin', 'super_admin'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to remove staff'
+            ], 403);
+        }
+
+        $account = FranchiseAccount::where('franchise_id', $franchise->id)
+            ->where('id', $staffId)
+            ->first();
+
+        if (!$account) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Staff member not found'
+            ], 404);
+        }
+
+        // Can't remove franchise owner
+        if ($account->role === 'franchise_owner') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot remove franchise owner'
+            ], 403);
+        }
+
+        // Can't remove yourself
+        if ($account->user_id === $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot remove yourself'
+            ], 400);
+        }
+
+        $account->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Staff member removed successfully'
         ]);
     }
 }

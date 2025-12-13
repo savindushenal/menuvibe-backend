@@ -166,6 +166,9 @@ Route::prefix('franchise/{franchiseSlug}')
         
         // Staff/Team
         Route::get('/staff', [FranchiseContextController::class, 'staff']);
+        Route::post('/staff', [FranchiseContextController::class, 'inviteStaff']);
+        Route::put('/staff/{staffId}', [FranchiseContextController::class, 'updateStaff']);
+        Route::delete('/staff/{staffId}', [FranchiseContextController::class, 'removeStaff']);
         
         // Settings
         Route::get('/settings', [FranchiseContextController::class, 'settings']);
