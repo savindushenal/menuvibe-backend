@@ -152,9 +152,9 @@ class MenuTemplate extends Model
                     'icon' => $category->icon,
                     'items' => $category->items->map(function ($item) {
                         return $item->toPublicArray();
-                    }),
+                    })->toArray(),
                 ];
-            }),
+            })->toArray(),
         ];
     }
 
