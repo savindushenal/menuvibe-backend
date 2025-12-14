@@ -36,9 +36,15 @@ class PublicMenuController extends Controller
         // Get active offers
         $offers = $this->getActiveOffersForEndpoint($endpoint);
 
-        // Build business info from location, user's default location, or template
+        // Build business info from BusinessProfile + Location (branch)
         $business = null;
+        $businessProfile = null;
         $location = $endpoint->location;
+        
+        // Get business profile from user
+        if ($endpoint->user_id) {
+            $businessProfile = \App\Models\BusinessProfile::where('user_id', $endpoint->user_id)->first();
+        }
         
         // If no direct location, try to get user's default location
         if (!$location && $endpoint->user_id) {
@@ -52,28 +58,32 @@ class PublicMenuController extends Controller
             }
         }
         
-        if ($location) {
+        // Build business object with business_name from BusinessProfile and branch_name from Location
+        if ($businessProfile || $location) {
             $business = [
-                'name' => $location->name,
-                'description' => $location->description,
-                'logo_url' => $location->logo_url,
-                'phone' => $location->phone,
-                'email' => $location->email,
-                'website' => $location->website,
-                'address' => array_filter([
+                // Business name from BusinessProfile, fallback to location name
+                'name' => $businessProfile?->business_name ?? $location?->name ?? $endpoint->template->name,
+                // Branch/location name (for display like "Business Name - Branch Name")
+                'branch_name' => $location?->name ?? null,
+                'description' => $businessProfile?->description ?? $location?->description,
+                'logo_url' => $businessProfile?->logo_url ?? $location?->logo_url,
+                'phone' => $location?->phone ?? $businessProfile?->phone,
+                'email' => $location?->email ?? $businessProfile?->email,
+                'website' => $location?->website ?? $businessProfile?->website,
+                'address' => $location ? array_filter([
                     $location->address_line_1,
                     $location->address_line_2,
                     $location->city,
                     $location->state,
                     $location->postal_code,
                     $location->country
-                ]),
-                'cuisine_type' => $location->cuisine_type,
-                'operating_hours' => $location->operating_hours,
-                'services' => $location->services,
-                'social_media' => $location->social_media,
-                'primary_color' => $location->primary_color,
-                'secondary_color' => $location->secondary_color,
+                ]) : [],
+                'cuisine_type' => $businessProfile?->cuisine_type ?? $location?->cuisine_type,
+                'operating_hours' => $location?->operating_hours ?? $businessProfile?->operating_hours,
+                'services' => $location?->services ?? $businessProfile?->services,
+                'social_media' => $businessProfile?->social_media ?? $location?->social_media,
+                'primary_color' => $businessProfile?->primary_color ?? $location?->primary_color,
+                'secondary_color' => $businessProfile?->secondary_color ?? $location?->secondary_color,
             ];
         }
 
