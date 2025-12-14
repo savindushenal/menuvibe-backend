@@ -17,7 +17,7 @@ class PublicMenuController extends Controller
             ->where('is_active', true)
             ->with(['template' => function ($q) {
                 $q->where('is_active', true);
-            }])
+            }, 'location'])
             ->first();
 
         if (!$endpoint || !$endpoint->template) {
@@ -36,11 +36,53 @@ class PublicMenuController extends Controller
         // Get active offers
         $offers = $this->getActiveOffersForEndpoint($endpoint);
 
+        // Build business info from location, user's default location, or template
+        $business = null;
+        $location = $endpoint->location;
+        
+        // If no direct location, try to get user's default location
+        if (!$location && $endpoint->user_id) {
+            $location = \App\Models\Location::where('user_id', $endpoint->user_id)
+                ->where('is_default', true)
+                ->first();
+            
+            // If no default, get first location
+            if (!$location) {
+                $location = \App\Models\Location::where('user_id', $endpoint->user_id)->first();
+            }
+        }
+        
+        if ($location) {
+            $business = [
+                'name' => $location->name,
+                'description' => $location->description,
+                'logo_url' => $location->logo_url,
+                'phone' => $location->phone,
+                'email' => $location->email,
+                'website' => $location->website,
+                'address' => array_filter([
+                    $location->address_line_1,
+                    $location->address_line_2,
+                    $location->city,
+                    $location->state,
+                    $location->postal_code,
+                    $location->country
+                ]),
+                'cuisine_type' => $location->cuisine_type,
+                'operating_hours' => $location->operating_hours,
+                'services' => $location->services,
+                'social_media' => $location->social_media,
+                'primary_color' => $location->primary_color,
+                'secondary_color' => $location->secondary_color,
+            ];
+        }
+
         return response()->json([
             'success' => true,
             'data' => [
                 'menu' => $menu,
                 'offers' => $offers,
+                'business' => $business,
                 'endpoint' => [
                     'id' => $endpoint->id,
                     'type' => $endpoint->type,
@@ -52,6 +94,7 @@ class PublicMenuController extends Controller
                     'name' => $endpoint->template->name,
                     'currency' => $endpoint->template->currency,
                     'settings' => $endpoint->template->settings,
+                    'image_url' => $endpoint->template->image_url,
                 ],
             ]
         ]);
