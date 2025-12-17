@@ -117,6 +117,14 @@ Route::get('/qr-codes', [QRCodeController::class, 'index']);
 Route::post('/qr-codes', [QRCodeController::class, 'store']);
 Route::delete('/qr-codes/{id}', [QRCodeController::class, 'destroy']);
 
+// Dynamic QR Code Generation (authenticated)
+Route::get('/qr/{code}/preview', [QRCodeController::class, 'preview']);
+Route::post('/qr/bulk-preview', [QRCodeController::class, 'bulkPreview']);
+
+// Public Dynamic QR Code routes (no auth - generated on-demand, no storage)
+Route::get('/qr/{code}', [QRCodeController::class, 'generateDynamic'])->name('qr.generate');
+Route::get('/qr/{code}/download', [QRCodeController::class, 'downloadDynamic'])->name('qr.download');
+
 // Location-aware menu routes
 Route::apiResource('locations.menus', MenuController::class);
 Route::apiResource('locations.menus.items', MenuItemController::class);
@@ -1422,6 +1430,7 @@ Route::get('/menu/{shortCode}', [PublicMenuController::class, 'getMenu']);
 Route::get('/menu/{shortCode}/data', [PublicMenuController::class, 'getMenuOnly']);
 Route::get('/menu/{shortCode}/offers', [PublicMenuController::class, 'getOffers']);
 Route::get('/menu/{shortCode}/info', [PublicMenuController::class, 'getEndpointInfo']);
+Route::get('/menu/{shortCode}/config', [PublicMenuController::class, 'getConfig']); // API-driven config
 Route::post('/menu/{shortCode}/scan', [PublicMenuController::class, 'recordScan']);
 
 // ===========================================

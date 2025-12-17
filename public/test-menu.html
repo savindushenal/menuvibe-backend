@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API-Driven Menu Test</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .test-section {
+            margin-bottom: 30px;
+        }
+        .test-section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        .test-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            background: #667eea;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        button.secondary {
+            background: #10b981;
+        }
+        button.secondary:hover {
+            background: #059669;
+        }
+        .result {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            max-height: 500px;
+            overflow: auto;
+            display: none;
+        }
+        .result.show {
+            display: block;
+        }
+        .result pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+        }
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .success { color: #10b981; font-weight: bold; }
+        .error { color: #ef4444; font-weight: bold; }
+        .info-box {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .info-box strong {
+            color: #1e40af;
+        }
+        .qr-image {
+            max-width: 300px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .endpoint-info {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .endpoint-info code {
+            background: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #ea580c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 API-Driven Menu System Test</h1>
+            <p>Testing Dynamic QR Codes & API-Controlled Templates</p>
+        </div>
+
+        <div class="card">
+            <div class="endpoint-info">
+                <strong>📍 Testing Endpoint:</strong> <code id="menuCode">ZISYSS</code>
+                <br><small>This menu has 2 categories with dynamic configuration from API</small>
+            </div>
+
+            <!-- Test 1: Full Menu API -->
+            <div class="test-section">
+                <h2>1️⃣ Full Menu API (with Configuration)</h2>
+                <div class="info-box">
+                    <strong>Endpoint:</strong> GET /api/menu/{code}<br>
+                    <strong>What it does:</strong> Returns menu data + template config + design variables
+                </div>
+                <div class="test-buttons">
+                    <button onclick="testFullMenu()">Test Full Menu API</button>
+                    <button class="secondary" onclick="showRawJson('menu')">Show Raw JSON</button>
+                </div>
+                <div id="menu-result" class="result"></div>
+            </div>
+
+            <!-- Test 2: Config Only -->
+            <div class="test-section">
+                <h2>2️⃣ Configuration Only API</h2>
+                <div class="info-box">
+                    <strong>Endpoint:</strong> GET /api/menu/{code}/config<br>
+                    <strong>What it does:</strong> Returns only template configuration (no menu items)
+                </div>
+                <div class="test-buttons">
+                    <button onclick="testConfig()">Test Config API</button>
+                    <button class="secondary" onclick="showRawJson('config')">Show Raw JSON</button>
+                </div>
+                <div id="config-result" class="result"></div>
+            </div>
+
+            <!-- Test 3: Dynamic QR -->
+            <div class="test-section">
+                <h2>3️⃣ Dynamic QR Code</h2>
+                <div class="info-box">
+                    <strong>Endpoint:</strong> GET /api/qr/{code}<br>
+                    <strong>What it does:</strong> Generates QR code on-demand (no storage!)
+                </div>
+                <div class="test-buttons">
+                    <button onclick="testQR()">Show QR Code (SVG)</button>
+                    <button class="secondary" onclick="downloadQR('png', 512)">Download PNG 512px</button>
+                    <button class="secondary" onclick="downloadQR('png', 1024)">Download PNG 1024px</button>
+                    <button class="secondary" onclick="downloadQR('jpg', 1024)">Download JPG 1024px</button>
+                </div>
+                <div id="qr-result" class="result"></div>
+            </div>
+
+            <!-- Test 4: Frontend Rendering -->
+            <div class="test-section">
+                <h2>4️⃣ Frontend Dynamic Renderer</h2>
+                <div class="info-box">
+                    <strong>Page:</strong> /menu/{code}<br>
+                    <strong>What it does:</strong> React component fetches API and renders menu dynamically
+                </div>
+                <div class="test-buttons">
+                    <button onclick="openFrontend()">Open Frontend Menu</button>
+                    <button class="secondary" onclick="explainRenderer()">How It Works</button>
+                </div>
+                <div id="frontend-result" class="result"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        const MENU_CODE = 'ZISYSS';
+        let cachedData = {};
+
+        async function testFullMenu() {
+            const resultDiv = document.getElementById('menu-result');
+            resultDiv.className = 'result show';
+            resultDiv.innerHTML = '<div class="loading"><div class="spinner"></div>Loading menu data...</div>';
+
+            try {
+                const response = await fetch(`${API_URL}/api/menu/${MENU_CODE}`);
+                const data = await response.json();
+                cachedData.menu = data;
+
+                if (data.success) {
+                    const config = data.data.template.config;
+                    const menu = data.data.menu;
+                    
+                    let html = '<div class="success">✅ API Call Successful!</div><br>';
+                    html += '<strong>📦 Response Structure:</strong><br><br>';
+                    html += `✅ Menu Categories: ${menu.categories.length}<br>`;
+                    html += `✅ Total Items: ${menu.categories.reduce((sum, cat) => sum + cat.items.length, 0)}<br>`;
+                    html += `✅ Offers: ${data.data.offers.length}<br>`;
+                    html += `✅ Business: ${data.data.business.name}<br><br>`;
+                    
+                    html += '<strong>🎨 Design Variables from API:</strong><br><br>';
+                    html += `Primary Color: <span style="display:inline-block;width:20px;height:20px;background:${config.design.colors.primary};border:1px solid #ccc;vertical-align:middle;"></span> ${config.design.colors.primary}<br>`;
+                    html += `Secondary Color: <span style="display:inline-block;width:20px;height:20px;background:${config.design.colors.secondary};border:1px solid #ccc;vertical-align:middle;"></span> ${config.design.colors.secondary}<br>`;
+                    html += `Font Family: ${config.design.typography.fontFamily}<br>`;
+                    html += `Border Radius: ${config.design.borderRadius.medium}<br><br>`;
+                    
+                    html += '<strong>🧩 Components (4 total):</strong><br><br>';
+                    config.components.forEach(comp => {
+                        const status = comp.enabled ? '✅' : '❌';
+                        html += `${status} <strong>${comp.type}</strong> (id: ${comp.id})<br>`;
+                    });
+                    
+                    html += '<br><strong>⚡ Features:</strong><br><br>';
+                    Object.keys(config.features).forEach(key => {
+                        const status = config.features[key] ? '✅' : '❌';
+                        html += `${status} ${key}<br>`;
+                    });
+                    
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Error: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testConfig() {
+            const resultDiv = document.getElementById('config-result');
+            resultDiv.className = 'result show';
+            resultDiv.innerHTML = '<div class="loading"><div class="spinner"></div>Loading config...</div>';
+
+            try {
+                const response = await fetch(`${API_URL}/api/menu/${MENU_CODE}/config`);
+                const data = await response.json();
+                cachedData.config = data;
+
+                if (data.success) {
+                    const config = data.data.config;
+                    
+                    let html = '<div class="success">✅ Config API Successful!</div><br>';
+                    html += '<strong>This endpoint returns ONLY configuration (no menu items)</strong><br><br>';
+                    html += `Layout: <strong>${config.layout}</strong><br>`;
+                    html += `Color Theme: <strong>${config.colorTheme}</strong><br>`;
+                    html += `Version: <strong>${config.version}</strong><br><br>`;
+                    
+                    html += '<strong>🎨 Design System:</strong><br><br>';
+                    html += '<pre>' + JSON.stringify(config.design, null, 2) + '</pre>';
+                    
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Error: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testQR() {
+            const resultDiv = document.getElementById('qr-result');
+            resultDiv.className = 'result show';
+            resultDiv.innerHTML = '<div class="loading"><div class="spinner"></div>Generating QR code...</div>';
+
+            try {
+                const url = `${API_URL}/api/qr/${MENU_CODE}`;
+                let html = '<div class="success">✅ QR Code Generated (On-Demand, No Storage!)</div><br>';
+                html += `<img src="${url}" class="qr-image" alt="QR Code"><br><br>`;
+                html += '<strong>Key Points:</strong><br>';
+                html += '• Generated on every request<br>';
+                html += '• No files saved to storage<br>';
+                html += '• Branded with business colors<br>';
+                html += '• Cached for 1 hour<br>';
+                html += `• Scans to: http://localhost:3000/menu/${MENU_CODE}<br>`;
+                
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        function downloadQR(format, size) {
+            const url = `${API_URL}/api/qr/${MENU_CODE}/download?format=${format}&size=${size}`;
+            window.open(url, '_blank');
+        }
+
+        function showRawJson(type) {
+            const data = cachedData[type];
+            if (!data) {
+                alert('Please test the API first!');
+                return;
+            }
+            
+            const newWindow = window.open('', '_blank');
+            newWindow.document.write('<pre>' + JSON.stringify(data, null, 2) + '</pre>');
+        }
+
+        function openFrontend() {
+            const resultDiv = document.getElementById('frontend-result');
+            resultDiv.className = 'result show';
+            
+            let html = '<div class="info-box">';
+            html += '<strong>⚠️ Frontend Not Started Yet</strong><br><br>';
+            html += 'To test the frontend:<br><br>';
+            html += '1. Open new terminal<br>';
+            html += '2. <code>cd menuvibe-frontend</code><br>';
+            html += '3. <code>npm run dev</code><br>';
+            html += '4. Then open: <a href="http://localhost:3000/menu/' + MENU_CODE + '" target="_blank">http://localhost:3000/menu/' + MENU_CODE + '</a><br>';
+            html += '</div>';
+            
+            resultDiv.innerHTML = html;
+        }
+
+        function explainRenderer() {
+            const resultDiv = document.getElementById('frontend-result');
+            resultDiv.className = 'result show';
+            
+            let html = '<strong>🎯 How Dynamic Rendering Works:</strong><br><br>';
+            html += '1️⃣ <strong>User visits:</strong> /menu/ZISYSS<br>';
+            html += '2️⃣ <strong>React component fetches:</strong> GET /api/menu/ZISYSS<br>';
+            html += '3️⃣ <strong>API returns:</strong> Menu data + Configuration<br>';
+            html += '4️⃣ <strong>Component injects CSS:</strong> Colors, fonts, spacing from API<br>';
+            html += '5️⃣ <strong>Renders components:</strong> Based on config.components array<br>';
+            html += '6️⃣ <strong>Result:</strong> Fully branded menu with zero hardcoded templates!<br><br>';
+            
+            html += '<strong>📝 Key Benefit:</strong><br>';
+            html += 'Change colors in Laravel → Frontend updates automatically!<br>';
+            html += 'No frontend deployment needed!';
+            
+            resultDiv.innerHTML = html;
+        }
+
+        // Auto-test on load
+        window.onload = () => {
+            document.getElementById('menuCode').textContent = MENU_CODE;
+        };
+    </script>
+</body>
+</html>

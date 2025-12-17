@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\QRCode;
 use App\Models\Location;
+use App\Models\MenuEndpoint;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Sanctum\PersonalAccessToken;
+use SimpleSoftwareIO\QrCode\Facades\QrCode as QrCodeGenerator;
 
 class QRCodeController extends Controller
 {
@@ -183,5 +185,250 @@ class QRCodeController extends Controller
             'success' => true,
             'message' => 'QR code deleted successfully'
         ], Response::HTTP_OK);
+    }
+    
+    /**
+     * Generate QR code dynamically as SVG (no storage)
+     * Public endpoint - no authentication required
+     * 
+     * @param string $code
+     * @return \Illuminate\Http\Response
+     */
+    public function generateDynamic($code)
+    {
+        $endpoint = MenuEndpoint::where('identifier', $code)
+            ->with(['location.user.businessProfile'])
+            ->first();
+        
+        if (!$endpoint) {
+            // Return a placeholder QR with error message
+            $errorSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="300" height="300" fill="#f8f9fa"/><text x="150" y="150" text-anchor="middle" fill="#dc3545" font-size="20">Invalid QR Code</text></svg>';
+            return response($errorSvg, 404)
+                ->header('Content-Type', 'image/svg+xml');
+        }
+        
+        // Get business branding colors
+        $business = $endpoint->location?->user->businessProfile;
+        $primaryColor = $business?->primary_color ?? '#000000';
+        
+        // Generate public menu URL
+        $frontendUrl = config('app.frontend_url', 'http://localhost:3000');
+        $url = $frontendUrl . '/m/' . $code;
+        
+        // Convert hex color to RGB
+        $r = hexdec(substr($primaryColor, 1, 2));
+        $g = hexdec(substr($primaryColor, 3, 2));
+        $b = hexdec(substr($primaryColor, 5, 2));
+        
+        // Generate QR code as SVG with branding
+        $qr = QrCodeGenerator::size(300)
+            ->style('round')
+            ->eye('circle')
+            ->color($r, $g, $b)
+            ->backgroundColor(255, 255, 255)
+            ->margin(2)
+            ->errorCorrection('H')
+            ->generate($url);
+        
+        return response($qr, 200)
+            ->header('Content-Type', 'image/svg+xml')
+            ->header('Cache-Control', 'public, max-age=3600')
+            ->header('X-QR-Endpoint', $endpoint->name)
+            ->header('X-QR-Type', $endpoint->type);
+    }
+    
+    /**
+     * Download QR code as PNG or JPG (generated on-demand)
+     * Public endpoint - no authentication required
+     * 
+     * @param \Illuminate\Http\Request $request
+     * @param string $code
+     * @return \Illuminate\Http\Response
+     */
+    public function downloadDynamic(Request $request, $code)
+    {
+        $endpoint = MenuEndpoint::where('identifier', $code)
+            ->with(['location.user.businessProfile'])
+            ->first();
+        
+        if (!$endpoint) {
+            return response()->json([
+                'success' => false,
+                'message' => 'QR code not found'
+            ], 404);
+        }
+        
+        // Get parameters
+        $format = $request->query('format', 'png');
+        $size = (int) $request->query('size', 512);
+        
+        // Validate format
+        if (!in_array($format, ['png', 'jpg', 'jpeg'])) {
+            $format = 'png';
+        }
+        
+        // Limit size to prevent abuse (256px - 2048px)
+        $size = max(256, min($size, 2048));
+        
+        // Get business branding
+        $business = $endpoint->location?->user->businessProfile;
+        $primaryColor = $business?->primary_color ?? '#000000';
+        
+        // Generate URL
+        $frontendUrl = config('app.frontend_url', 'http://localhost:3000');
+        $url = $frontendUrl . '/m/' . $code;
+        
+        // Convert hex to RGB
+        $r = hexdec(substr($primaryColor, 1, 2));
+        $g = hexdec(substr($primaryColor, 3, 2));
+        $b = hexdec(substr($primaryColor, 5, 2));
+        
+        // Generate QR code
+        $qr = QrCodeGenerator::format($format)
+            ->size($size)
+            ->style('round')
+            ->eye('circle')
+            ->color($r, $g, $b)
+            ->backgroundColor(255, 255, 255)
+            ->margin(2)
+            ->errorCorrection('H')
+            ->generate($url);
+        
+        // Generate safe filename
+        $safeName = preg_replace('/[^a-zA-Z0-9-_]/', '-', $endpoint->name);
+        $filename = 'qr-' . $safeName . '-' . $code . '.' . $format;
+        
+        $mimeType = $format === 'png' ? 'image/png' : 'image/jpeg';
+        
+        return response($qr, 200)
+            ->header('Content-Type', $mimeType)
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->header('X-QR-Endpoint', $endpoint->name)
+            ->header('X-QR-Size', $size);
+    }
+    
+    /**
+     * Get QR code preview with metadata (for dashboard display)
+     * Requires authentication
+     * 
+     * @param \Illuminate\Http\Request $request
+     * @param string $code
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function preview(Request $request, $code)
+    {
+        $user = $this->getUserFromToken($request);
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated'
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+        
+        $endpoint = MenuEndpoint::where('identifier', $code)
+            ->whereHas('location', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->with(['location.user.businessProfile'])
+            ->first();
+        
+        if (!$endpoint) {
+            return response()->json([
+                'success' => false,
+                'message' => 'QR code not found'
+            ], 404);
+        }
+        
+        $frontendUrl = config('app.frontend_url', 'http://localhost:3000');
+        $apiUrl = config('app.url', 'http://localhost:8000');
+        
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'endpoint' => [
+                    'id' => $endpoint->id,
+                    'name' => $endpoint->name,
+                    'type' => $endpoint->type,
+                    'identifier' => $endpoint->identifier,
+                ],
+                'location' => $endpoint->location ? [
+                    'id' => $endpoint->location->id,
+                    'name' => $endpoint->location->name,
+                ] : null,
+                'business' => $endpoint->location?->user->businessProfile ? [
+                    'name' => $endpoint->location->user->businessProfile->business_name,
+                    'primary_color' => $endpoint->location->user->businessProfile->primary_color,
+                ] : null,
+                'urls' => [
+                    'menu_url' => $frontendUrl . '/m/' . $code,
+                    'qr_svg' => $apiUrl . '/api/qr/' . $code,
+                    'qr_png_512' => $apiUrl . '/api/qr/' . $code . '/download?format=png&size=512',
+                    'qr_png_1024' => $apiUrl . '/api/qr/' . $code . '/download?format=png&size=1024',
+                    'qr_png_2048' => $apiUrl . '/api/qr/' . $code . '/download?format=png&size=2048',
+                    'qr_jpg_1024' => $apiUrl . '/api/qr/' . $code . '/download?format=jpg&size=1024',
+                ],
+            ]
+        ]);
+    }
+    
+    /**
+     * Bulk generate QR codes data for multiple endpoints
+     * Requires authentication
+     * 
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function bulkPreview(Request $request)
+    {
+        $user = $this->getUserFromToken($request);
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated'
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+        
+        $request->validate([
+            'endpoint_ids' => 'required|array',
+            'endpoint_ids.*' => 'integer|exists:menu_endpoints,id'
+        ]);
+        
+        $endpoints = MenuEndpoint::whereIn('id', $request->endpoint_ids)
+            ->whereHas('location', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->with(['location.user.businessProfile'])
+            ->get();
+        
+        $frontendUrl = config('app.frontend_url', 'http://localhost:3000');
+        $apiUrl = config('app.url', 'http://localhost:8000');
+        
+        $qrData = $endpoints->map(function ($endpoint) use ($frontendUrl, $apiUrl) {
+            return [
+                'endpoint' => [
+                    'id' => $endpoint->id,
+                    'name' => $endpoint->name,
+                    'type' => $endpoint->type,
+                    'identifier' => $endpoint->identifier,
+                ],
+                'location' => $endpoint->location ? [
+                    'id' => $endpoint->location->id,
+                    'name' => $endpoint->location->name,
+                ] : null,
+                'urls' => [
+                    'menu_url' => $frontendUrl . '/m/' . $endpoint->identifier,
+                    'qr_svg' => $apiUrl . '/api/qr/' . $endpoint->identifier,
+                    'qr_png_512' => $apiUrl . '/api/qr/' . $endpoint->identifier . '/download?format=png&size=512',
+                    'qr_png_1024' => $apiUrl . '/api/qr/' . $endpoint->identifier . '/download?format=png&size=1024',
+                ],
+            ];
+        });
+        
+        return response()->json([
+            'success' => true,
+            'data' => $qrData
+        ]);
     }
 }
