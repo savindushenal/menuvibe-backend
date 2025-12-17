@@ -53,7 +53,7 @@ class FranchiseContextController extends Controller
     }
 
     /**
-     * Get franchise branches (locations grouped by branch)
+     * Get franchise branches (now unified with locations)
      */
     public function branches(Request $request, string $franchiseSlug)
     {
@@ -61,17 +61,18 @@ class FranchiseContextController extends Controller
         $user = $request->user();
         $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
 
-        // For branch managers, only show their branch
-        $query = FranchiseBranch::where('franchise_id', $franchise->id)
-            ->with(['location', 'accounts']);
+        // Branches are now locations with branch_code set
+        $query = Location::where('franchise_id', $franchise->id)
+            ->whereNotNull('branch_code')
+            ->with(['accounts', 'menus']);
 
         if ($role === 'branch_manager') {
             $account = FranchiseAccount::where('user_id', $user->id)
                 ->where('franchise_id', $franchise->id)
                 ->first();
             
-            if ($account && $account->branch_id) {
-                $query->where('id', $account->branch_id);
+            if ($account && $account->location_id) {
+                $query->where('id', $account->location_id);
             }
         }
 
@@ -95,14 +96,14 @@ class FranchiseContextController extends Controller
         $query = Location::where('franchise_id', $franchise->id)
             ->with(['menus:id,location_id,name']);
 
-        // For branch managers, filter by their branch
+        // For branch managers, filter by their location
         if ($role === 'branch_manager') {
             $account = FranchiseAccount::where('user_id', $user->id)
                 ->where('franchise_id', $franchise->id)
                 ->first();
             
-            if ($account && $account->branch_id) {
-                $query->where('branch_id', $account->branch_id);
+            if ($account && $account->location_id) {
+                $query->where('id', $account->location_id);
             }
         }
 
@@ -125,17 +126,17 @@ class FranchiseContextController extends Controller
 
         $query = Menu::whereHas('location', function ($q) use ($franchise) {
             $q->where('franchise_id', $franchise->id);
-        })->with(['location:id,name,branch_id', 'categories.items']);
+        })->with(['location:id,name,branch_name,branch_code', 'categories.items']);
 
-        // For branch managers, filter by their branch
+        // For branch managers, filter by their location
         if ($role === 'branch_manager') {
             $account = FranchiseAccount::where('user_id', $user->id)
                 ->where('franchise_id', $franchise->id)
                 ->first();
             
-            if ($account && $account->branch_id) {
+            if ($account && $account->location_id) {
                 $query->whereHas('location', function ($q) use ($account) {
-                    $q->where('branch_id', $account->branch_id);
+                    $q->where('id', $account->location_id);
                 });
             }
         }
@@ -340,7 +341,7 @@ class FranchiseContextController extends Controller
     }
 
     /**
-     * Create a new branch
+     * Create a new branch (now creates a Location with branch fields)
      */
     public function createBranch(Request $request, string $franchiseSlug)
     {
@@ -365,15 +366,23 @@ class FranchiseContextController extends Controller
             'is_active' => 'nullable|boolean',
         ]);
 
-        $branch = FranchiseBranch::create([
+        // Create a unified Location that serves as both branch and location
+        $branch = Location::create([
+            'user_id' => $franchise->owner_id,
             'franchise_id' => $franchise->id,
+            'name' => $request->branch_name,
             'branch_name' => $request->branch_name,
-            'branch_code' => FranchiseBranch::generateBranchCode($franchise->id),
-            'address' => $request->address,
-            'city' => $request->city,
+            'branch_code' => Location::generateBranchCode($franchise->id),
+            'address_line_1' => $request->address ?? 'To be updated',
+            'city' => $request->city ?? 'To be updated',
+            'state' => 'To be updated',
+            'postal_code' => 'To be updated',
+            'country' => 'Sri Lanka',
             'phone' => $request->phone,
             'is_active' => $request->is_active ?? true,
+            'is_default' => false,
             'added_by' => $user->id,
+            'activated_at' => now(),
         ]);
 
         return response()->json([
@@ -401,7 +410,9 @@ class FranchiseContextController extends Controller
             ], 403);
         }
 
-        $branch = FranchiseBranch::where('franchise_id', $franchise->id)
+        // Branches are now unified as Locations
+        $branch = Location::where('franchise_id', $franchise->id)
+            ->whereNotNull('branch_code')
             ->where('id', $branchId)
             ->first();
 
@@ -420,9 +431,25 @@ class FranchiseContextController extends Controller
             'is_active' => 'nullable|boolean',
         ]);
 
-        $branch->update($request->only([
-            'branch_name', 'address', 'city', 'phone', 'is_active'
-        ]));
+        $updateData = [];
+        if ($request->has('branch_name')) {
+            $updateData['branch_name'] = $request->branch_name;
+            $updateData['name'] = $request->branch_name; // Sync name with branch_name
+        }
+        if ($request->has('address')) {
+            $updateData['address_line_1'] = $request->address;
+        }
+        if ($request->has('city')) {
+            $updateData['city'] = $request->city;
+        }
+        if ($request->has('phone')) {
+            $updateData['phone'] = $request->phone;
+        }
+        if ($request->has('is_active')) {
+            $updateData['is_active'] = $request->is_active;
+        }
+
+        $branch->update($updateData);
 
         return response()->json([
             'success' => true,
@@ -449,7 +476,9 @@ class FranchiseContextController extends Controller
             ], 403);
         }
 
-        $branch = FranchiseBranch::where('franchise_id', $franchise->id)
+        // Branches are now unified as Locations
+        $branch = Location::where('franchise_id', $franchise->id)
+            ->whereNotNull('branch_code')
             ->where('id', $branchId)
             ->first();
 
@@ -463,6 +492,7 @@ class FranchiseContextController extends Controller
         // Delete related records
         $branch->accounts()->delete();
         $branch->invitations()->delete();
+        $branch->menus()->delete();
         $branch->delete();
 
         return response()->json([
@@ -493,19 +523,23 @@ class FranchiseContextController extends Controller
             'email' => 'required|email|max:255',
             'name' => 'required|string|max:255',
             'role' => 'required|in:franchise_admin,branch_manager,staff',
-            'branch_id' => 'nullable|integer',
+            'branch_id' => 'nullable|integer', // Now refers to location_id
+            'location_id' => 'nullable|integer',
         ]);
 
-        // Check if branch belongs to franchise
-        if ($request->branch_id) {
-            $branch = FranchiseBranch::where('franchise_id', $franchise->id)
-                ->where('id', $request->branch_id)
+        // Accept both branch_id and location_id (branch_id for backwards compatibility)
+        $locationId = $request->location_id ?? $request->branch_id;
+
+        // Check if location/branch belongs to franchise
+        if ($locationId) {
+            $location = Location::where('franchise_id', $franchise->id)
+                ->where('id', $locationId)
                 ->first();
             
-            if (!$branch) {
+            if (!$location) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Branch not found'
+                    'message' => 'Branch/Location not found'
                 ], 404);
             }
         }
@@ -535,12 +569,12 @@ class FranchiseContextController extends Controller
             ], 400);
         }
 
-        // Create franchise account
+        // Create franchise account with location_id
         $account = FranchiseAccount::create([
             'franchise_id' => $franchise->id,
             'user_id' => $invitedUser->id,
             'role' => $request->role,
-            'branch_id' => $request->branch_id,
+            'location_id' => $locationId,
             'is_active' => true,
             'created_by' => $user->id,
         ]);
@@ -556,7 +590,7 @@ class FranchiseContextController extends Controller
                 'name' => $invitedUser->name,
                 'email' => $invitedUser->email,
                 'role' => $account->role,
-                'branch' => $account->branch?->branch_name,
+                'branch' => $account->location?->branch_name,
             ]
         ], 201);
     }
@@ -600,30 +634,39 @@ class FranchiseContextController extends Controller
 
         $request->validate([
             'role' => 'sometimes|in:franchise_admin,branch_manager,staff',
-            'branch_id' => 'nullable|integer',
+            'branch_id' => 'nullable|integer', // For backwards compatibility
+            'location_id' => 'nullable|integer',
             'is_active' => 'sometimes|boolean',
         ]);
 
-        // Check if branch belongs to franchise
-        if ($request->has('branch_id') && $request->branch_id) {
-            $branch = FranchiseBranch::where('franchise_id', $franchise->id)
-                ->where('id', $request->branch_id)
+        // Accept both branch_id and location_id (branch_id for backwards compatibility)
+        $locationId = $request->location_id ?? $request->branch_id;
+
+        // Check if location/branch belongs to franchise
+        if ($locationId) {
+            $location = Location::where('franchise_id', $franchise->id)
+                ->where('id', $locationId)
                 ->first();
             
-            if (!$branch) {
+            if (!$location) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Branch not found'
+                    'message' => 'Branch/Location not found'
                 ], 404);
             }
         }
 
-        $account->update($request->only(['role', 'branch_id', 'is_active']));
+        $updateData = $request->only(['role', 'is_active']);
+        if ($locationId !== null) {
+            $updateData['location_id'] = $locationId;
+        }
+        
+        $account->update($updateData);
 
         return response()->json([
             'success' => true,
             'message' => 'Staff member updated successfully',
-            'data' => $account->load(['user:id,name,email', 'branch:id,branch_name'])
+            'data' => $account->load(['user:id,name,email', 'location:id,name,branch_name'])
         ]);
     }
 

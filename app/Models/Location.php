@@ -38,6 +38,13 @@ class Location extends Model
         'latitude',
         'longitude',
         'is_default',
+        // Branch-specific fields (unified from FranchiseBranch)
+        'branch_name',
+        'branch_code',
+        'is_paid',
+        'activated_at',
+        'deactivated_at',
+        'added_by',
     ];
 
     protected $casts = [
@@ -46,10 +53,13 @@ class Location extends Model
         'social_media' => 'array',
         'is_active' => 'boolean',
         'is_default' => 'boolean',
+        'is_paid' => 'boolean',
         'sort_order' => 'integer',
         'seating_capacity' => 'integer',
         'latitude' => 'decimal:8',
         'longitude' => 'decimal:8',
+        'activated_at' => 'date',
+        'deactivated_at' => 'date',
     ];
 
     /**
@@ -66,6 +76,46 @@ class Location extends Model
     public function franchise(): BelongsTo
     {
         return $this->belongsTo(Franchise::class);
+    }
+
+    /**
+     * Get the user who added this branch
+     */
+    public function addedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'added_by');
+    }
+
+    /**
+     * Get the franchise accounts (staff) for this location
+     */
+    public function accounts(): HasMany
+    {
+        return $this->hasMany(FranchiseAccount::class, 'location_id');
+    }
+
+    /**
+     * Get the invitations for this location
+     */
+    public function invitations(): HasMany
+    {
+        return $this->hasMany(FranchiseInvitation::class, 'location_id');
+    }
+
+    /**
+     * Get the menu overrides for this location
+     */
+    public function menuOverrides(): HasMany
+    {
+        return $this->hasMany(BranchMenuOverride::class, 'location_id');
+    }
+
+    /**
+     * Get the sync logs for this location
+     */
+    public function syncLogs(): HasMany
+    {
+        return $this->hasMany(MenuSyncLog::class, 'location_id');
     }
 
     /**
@@ -114,6 +164,22 @@ class Location extends Model
     public function scopeForFranchise($query, int $franchiseId)
     {
         return $query->where('franchise_id', $franchiseId);
+    }
+
+    /**
+     * Scope for franchise branches (locations with branch_code)
+     */
+    public function scopeBranches($query)
+    {
+        return $query->whereNotNull('franchise_id')->whereNotNull('branch_code');
+    }
+
+    /**
+     * Scope for paid branches
+     */
+    public function scopePaid($query)
+    {
+        return $query->where('is_paid', true);
     }
 
     /**
@@ -170,6 +236,48 @@ class Location extends Model
             ->withCount('menuItems')
             ->get()
             ->sum('menu_items_count');
+    }
+
+    /**
+     * Check if this is a franchise branch
+     */
+    public function isBranch(): bool
+    {
+        return !is_null($this->franchise_id) && !is_null($this->branch_code);
+    }
+
+    /**
+     * Generate a unique branch code for a franchise
+     */
+    public static function generateBranchCode(int $franchiseId): string
+    {
+        $count = self::where('franchise_id', $franchiseId)
+            ->whereNotNull('branch_code')
+            ->count();
+        return 'BR' . str_pad($count + 1, 3, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Activate the branch
+     */
+    public function activate(): void
+    {
+        $this->update([
+            'is_active' => true,
+            'activated_at' => now(),
+            'deactivated_at' => null,
+        ]);
+    }
+
+    /**
+     * Deactivate the branch
+     */
+    public function deactivate(): void
+    {
+        $this->update([
+            'is_active' => false,
+            'deactivated_at' => now(),
+        ]);
     }
 
     /**

@@ -9,6 +9,7 @@ use App\Models\FranchisePayment;
 use App\Models\FranchiseBranch;
 use App\Models\FranchiseInvitation;
 use App\Models\FranchiseAccount;
+use App\Models\Location;
 use App\Models\User;
 use App\Mail\FranchiseInvitationMail;
 use App\Mail\FranchiseCredentialsMail;
@@ -270,16 +271,22 @@ class AdminFranchiseOnboardingController extends Controller
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        $branch = FranchiseBranch::create([
+        // Create a unified Location that serves as both branch and location
+        $branch = Location::create([
+            'user_id' => $franchise->owner_id ?? $request->user()->id,
             'franchise_id' => $franchiseId,
-            'location_id' => $request->location_id,
+            'name' => $request->branch_name,
             'branch_name' => $request->branch_name,
-            'branch_code' => FranchiseBranch::generateBranchCode($franchiseId),
-            'address' => $request->address,
-            'city' => $request->city,
+            'branch_code' => Location::generateBranchCode($franchiseId),
+            'address_line_1' => $request->address ?? 'To be updated',
+            'city' => $request->city ?? 'To be updated',
+            'state' => 'To be updated',
+            'postal_code' => 'To be updated',
+            'country' => 'Sri Lanka',
             'phone' => $request->phone,
             'is_active' => true,
             'is_paid' => false,
+            'is_default' => false,
             'activated_at' => now(),
             'added_by' => $request->user()->id,
         ]);
@@ -308,12 +315,13 @@ class AdminFranchiseOnboardingController extends Controller
     }
 
     /**
-     * Get franchise branches
+     * Get franchise branches (now unified as Locations)
      */
     public function getBranches($franchiseId)
     {
-        $branches = FranchiseBranch::where('franchise_id', $franchiseId)
-            ->with(['location', 'addedBy:id,name'])
+        $branches = Location::where('franchise_id', $franchiseId)
+            ->whereNotNull('branch_code')
+            ->with(['addedBy:id,name'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -324,11 +332,12 @@ class AdminFranchiseOnboardingController extends Controller
     }
 
     /**
-     * Update branch
+     * Update branch (now unified as Location)
      */
     public function updateBranch(Request $request, $franchiseId, $branchId)
     {
-        $branch = FranchiseBranch::where('franchise_id', $franchiseId)
+        $branch = Location::where('franchise_id', $franchiseId)
+            ->whereNotNull('branch_code')
             ->findOrFail($branchId);
 
         $validator = Validator::make($request->all(), [
@@ -348,9 +357,28 @@ class AdminFranchiseOnboardingController extends Controller
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        $branch->update($request->only([
-            'branch_name', 'address', 'city', 'phone', 'is_active', 'is_paid'
-        ]));
+        $updateData = [];
+        if ($request->has('branch_name')) {
+            $updateData['branch_name'] = $request->branch_name;
+            $updateData['name'] = $request->branch_name;
+        }
+        if ($request->has('address')) {
+            $updateData['address_line_1'] = $request->address;
+        }
+        if ($request->has('city')) {
+            $updateData['city'] = $request->city;
+        }
+        if ($request->has('phone')) {
+            $updateData['phone'] = $request->phone;
+        }
+        if ($request->has('is_active')) {
+            $updateData['is_active'] = $request->is_active;
+        }
+        if ($request->has('is_paid')) {
+            $updateData['is_paid'] = $request->is_paid;
+        }
+
+        $branch->update($updateData);
 
         return response()->json([
             'success' => true,
@@ -360,11 +388,12 @@ class AdminFranchiseOnboardingController extends Controller
     }
 
     /**
-     * Delete branch
+     * Delete branch (now unified as Location)
      */
     public function deleteBranch(Request $request, $franchiseId, $branchId)
     {
-        $branch = FranchiseBranch::where('franchise_id', $franchiseId)
+        $branch = Location::where('franchise_id', $franchiseId)
+            ->whereNotNull('branch_code')
             ->findOrFail($branchId);
 
         $branch->delete();
@@ -421,9 +450,10 @@ class AdminFranchiseOnboardingController extends Controller
             'recorded_by' => $request->user()->id,
         ]);
 
-        // If paid, update branch payment status
+        // If paid, update branch (location) payment status
         if ($request->status === 'paid' && $request->branches_count) {
-            FranchiseBranch::where('franchise_id', $franchiseId)
+            Location::where('franchise_id', $franchiseId)
+                ->whereNotNull('branch_code')
                 ->where('is_paid', false)
                 ->limit($request->branches_count)
                 ->update(['is_paid' => true]);
@@ -490,9 +520,10 @@ class AdminFranchiseOnboardingController extends Controller
             'status', 'paid_date', 'payment_method', 'transaction_reference', 'notes'
         ]));
 
-        // If marking as paid, update branch status
+        // If marking as paid, update branch (location) status
         if ($request->status === 'paid' && $oldStatus !== 'paid' && $payment->branches_count) {
-            FranchiseBranch::where('franchise_id', $franchiseId)
+            Location::where('franchise_id', $franchiseId)
+                ->whereNotNull('branch_code')
                 ->where('is_paid', false)
                 ->limit($payment->branches_count)
                 ->update(['is_paid' => true]);
@@ -829,7 +860,10 @@ class AdminFranchiseOnboardingController extends Controller
             'pricing' => fn($q) => $q->where('is_active', true),
         ])->findOrFail($franchiseId);
 
-        $branches = FranchiseBranch::where('franchise_id', $franchiseId)->get();
+        // Branches are now unified as Locations
+        $branches = Location::where('franchise_id', $franchiseId)
+            ->whereNotNull('branch_code')
+            ->get();
         $accounts = FranchiseAccount::where('franchise_id', $franchiseId)
             ->with('user:id,name,email')
             ->get();

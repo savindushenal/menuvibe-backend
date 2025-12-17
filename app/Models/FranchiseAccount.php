@@ -15,6 +15,7 @@ class FranchiseAccount extends Model
         'user_id',
         'role',
         'branch_id',
+        'location_id',
         'permissions',
         'is_active',
         'created_by',
@@ -43,6 +44,14 @@ class FranchiseAccount extends Model
     public function branch(): BelongsTo
     {
         return $this->belongsTo(FranchiseBranch::class, 'branch_id');
+    }
+
+    /**
+     * Get the location (unified with branch)
+     */
+    public function location(): BelongsTo
+    {
+        return $this->belongsTo(Location::class);
     }
 
     public function creator(): BelongsTo

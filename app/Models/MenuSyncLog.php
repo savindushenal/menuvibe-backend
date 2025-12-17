@@ -13,6 +13,7 @@ class MenuSyncLog extends Model
     protected $fillable = [
         'master_menu_id',
         'branch_id',
+        'location_id',
         'sync_type',
         'status',
         'items_synced',
@@ -46,6 +47,14 @@ class MenuSyncLog extends Model
     public function branch(): BelongsTo
     {
         return $this->belongsTo(FranchiseBranch::class, 'branch_id');
+    }
+
+    /**
+     * Get the location (unified with branch)
+     */
+    public function location(): BelongsTo
+    {
+        return $this->belongsTo(Location::class);
     }
 
     /**

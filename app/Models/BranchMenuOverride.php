@@ -12,6 +12,7 @@ class BranchMenuOverride extends Model
 
     protected $fillable = [
         'branch_id',
+        'location_id',
         'master_item_id',
         'price_override',
         'is_available',
@@ -33,6 +34,14 @@ class BranchMenuOverride extends Model
     public function branch(): BelongsTo
     {
         return $this->belongsTo(FranchiseBranch::class, 'branch_id');
+    }
+
+    /**
+     * Get the location (unified with branch)
+     */
+    public function location(): BelongsTo
+    {
+        return $this->belongsTo(Location::class);
     }
 
     /**

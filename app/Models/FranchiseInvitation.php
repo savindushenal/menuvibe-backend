@@ -17,6 +17,7 @@ class FranchiseInvitation extends Model
         'name',
         'role',
         'branch_id',
+        'location_id',
         'token',
         'status',
         'expires_at',
@@ -55,6 +56,14 @@ class FranchiseInvitation extends Model
     public function branch(): BelongsTo
     {
         return $this->belongsTo(FranchiseBranch::class, 'branch_id');
+    }
+
+    /**
+     * Get the location (unified with branch)
+     */
+    public function location(): BelongsTo
+    {
+        return $this->belongsTo(Location::class);
     }
 
     public function inviter(): BelongsTo
