@@ -11,6 +11,9 @@ use App\Models\MasterMenuOffer;
 use App\Models\BranchMenuOverride;
 use App\Models\MenuSyncLog;
 use App\Models\MenuImage;
+use App\Models\Menu;
+use App\Models\MenuCategory;
+use App\Models\MenuItem;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -560,16 +563,16 @@ class MasterMenuController extends Controller
     // ===========================================
 
     /**
-     * Push master menu to all branches
+     * Push master menu to all branches - creates/updates actual Menu records
      */
     public function syncToAllBranches(Request $request, int $franchiseId, int $menuId)
     {
-        $menu = MasterMenu::where('franchise_id', $franchiseId)
+        $masterMenu = MasterMenu::where('franchise_id', $franchiseId)
             ->where('id', $menuId)
             ->with(['categories.items'])
             ->first();
 
-        if (!$menu) {
+        if (!$masterMenu) {
             return response()->json([
                 'success' => false,
                 'message' => 'Menu not found'
@@ -578,6 +581,7 @@ class MasterMenuController extends Controller
 
         $branches = FranchiseBranch::where('franchise_id', $franchiseId)
             ->where('is_active', true)
+            ->with('location')
             ->get();
 
         if ($branches->isEmpty()) {
@@ -597,17 +601,114 @@ class MasterMenuController extends Controller
         ]);
 
         try {
+            DB::beginTransaction();
+            
+            $branchesSynced = 0;
             $itemsSynced = 0;
-            $categoriesSynced = $menu->categories->count();
+            $categoriesSynced = 0;
 
-            // The "sync" here means making the master menu available to all branches
-            // Branch overrides are preserved - we just update the last_synced_at timestamp
-            foreach ($menu->items as $item) {
-                $itemsSynced++;
+            foreach ($branches as $branch) {
+                // Skip if branch doesn't have a location
+                if (!$branch->location_id) {
+                    continue;
+                }
+
+                // Find or create menu for this location
+                $menu = Menu::updateOrCreate(
+                    [
+                        'location_id' => $branch->location_id,
+                        'slug' => Str::slug($masterMenu->name),
+                    ],
+                    [
+                        'name' => $masterMenu->name,
+                        'description' => $masterMenu->description,
+                        'currency' => $masterMenu->currency ?? 'USD',
+                        'is_active' => $masterMenu->is_active,
+                        'image_url' => $masterMenu->image_url,
+                        'availability_hours' => $masterMenu->availability_hours,
+                        'settings' => $masterMenu->settings,
+                    ]
+                );
+
+                // Map to track category IDs (master -> local)
+                $categoryMap = [];
+
+                // Sync categories
+                foreach ($masterMenu->categories as $masterCategory) {
+                    $category = MenuCategory::updateOrCreate(
+                        [
+                            'menu_id' => $menu->id,
+                            'slug' => Str::slug($masterCategory->name),
+                        ],
+                        [
+                            'name' => $masterCategory->name,
+                            'description' => $masterCategory->description,
+                            'icon' => $masterCategory->icon,
+                            'image_url' => $masterCategory->image_url,
+                            'is_active' => $masterCategory->is_active ?? true,
+                            'sort_order' => $masterCategory->sort_order,
+                        ]
+                    );
+                    
+                    $categoryMap[$masterCategory->id] = $category->id;
+                    $categoriesSynced++;
+
+                    // Sync items for this category
+                    foreach ($masterCategory->items as $masterItem) {
+                        // Check for branch-specific override
+                        $override = BranchMenuOverride::where('branch_id', $branch->id)
+                            ->where('master_item_id', $masterItem->id)
+                            ->first();
+
+                        $itemData = [
+                            'name' => $masterItem->name,
+                            'description' => $masterItem->description,
+                            'price' => $override?->price ?? $masterItem->price,
+                            'image_url' => $masterItem->image_url,
+                            'is_available' => $override?->is_available ?? ($masterItem->is_available ?? true),
+                            'is_featured' => $masterItem->is_featured ?? false,
+                            'sort_order' => $masterItem->sort_order,
+                            'preparation_time' => $masterItem->preparation_time,
+                            'dietary_info' => $masterItem->dietary_info,
+                            'allergens' => $masterItem->allergens,
+                            'calories' => $masterItem->calories,
+                            'customization_options' => $masterItem->customization_options,
+                        ];
+
+                        MenuItem::updateOrCreate(
+                            [
+                                'menu_id' => $menu->id,
+                                'category_id' => $category->id,
+                                'slug' => Str::slug($masterItem->name),
+                            ],
+                            $itemData
+                        );
+                        
+                        $itemsSynced++;
+                    }
+                }
+
+                // Remove categories and items that no longer exist in master
+                $masterCategoryIds = $masterMenu->categories->pluck('id')->toArray();
+                $localCategoryIds = array_values($categoryMap);
+                
+                // Delete items from removed categories
+                MenuItem::where('menu_id', $menu->id)
+                    ->whereNotIn('category_id', $localCategoryIds)
+                    ->delete();
+                
+                // Delete removed categories
+                MenuCategory::where('menu_id', $menu->id)
+                    ->whereNotIn('id', $localCategoryIds)
+                    ->delete();
+
+                $branchesSynced++;
             }
 
-            // Update menu sync timestamp
-            $menu->update(['last_synced_at' => now()]);
+            // Update master menu sync timestamp
+            $masterMenu->update(['last_synced_at' => now()]);
+
+            DB::commit();
 
             $syncLog->update([
                 'status' => 'completed',
@@ -615,7 +716,7 @@ class MasterMenuController extends Controller
                 'categories_synced' => $categoriesSynced,
                 'completed_at' => now(),
                 'changes' => [
-                    'branches_count' => $branches->count(),
+                    'branches_count' => $branchesSynced,
                     'items_count' => $itemsSynced,
                     'categories_count' => $categoriesSynced,
                 ]
@@ -623,15 +724,17 @@ class MasterMenuController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "Menu synced to {$branches->count()} branches successfully",
+                'message' => "Menu synced to {$branchesSynced} branches successfully",
                 'data' => [
-                    'branches_synced' => $branches->count(),
+                    'branches_synced' => $branchesSynced,
                     'items_synced' => $itemsSynced,
                     'categories_synced' => $categoriesSynced,
                     'sync_log_id' => $syncLog->id,
                 ]
             ]);
         } catch (\Exception $e) {
+            DB::rollBack();
+            
             $syncLog->update([
                 'status' => 'failed',
                 'error_message' => $e->getMessage(),
@@ -651,6 +754,178 @@ class MasterMenuController extends Controller
     public function syncToBranches(Request $request, int $franchiseId, int $menuId)
     {
         return $this->syncToAllBranches($request, $franchiseId, $menuId);
+    }
+
+    /**
+     * Sync master menu to a single branch
+     */
+    public function syncToSingleBranch(Request $request, int $franchiseId, int $menuId, int $branchId)
+    {
+        $masterMenu = MasterMenu::where('franchise_id', $franchiseId)
+            ->where('id', $menuId)
+            ->with(['categories.items'])
+            ->first();
+
+        if (!$masterMenu) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Menu not found'
+            ], 404);
+        }
+
+        $branch = FranchiseBranch::where('franchise_id', $franchiseId)
+            ->where('id', $branchId)
+            ->where('is_active', true)
+            ->with('location')
+            ->first();
+
+        if (!$branch) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Branch not found or inactive'
+            ], 404);
+        }
+
+        if (!$branch->location_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Branch has no location assigned'
+            ], 400);
+        }
+
+        // Create sync log
+        $syncLog = MenuSyncLog::create([
+            'master_menu_id' => $menuId,
+            'branch_id' => $branchId,
+            'sync_type' => 'single',
+            'status' => 'in_progress',
+            'synced_by' => $request->user()->id,
+            'started_at' => now(),
+        ]);
+
+        try {
+            DB::beginTransaction();
+            
+            $itemsSynced = 0;
+            $categoriesSynced = 0;
+
+            // Find or create menu for this location
+            $menu = Menu::updateOrCreate(
+                [
+                    'location_id' => $branch->location_id,
+                    'slug' => Str::slug($masterMenu->name),
+                ],
+                [
+                    'name' => $masterMenu->name,
+                    'description' => $masterMenu->description,
+                    'currency' => $masterMenu->currency ?? 'USD',
+                    'is_active' => $masterMenu->is_active,
+                    'image_url' => $masterMenu->image_url,
+                    'availability_hours' => $masterMenu->availability_hours,
+                    'settings' => $masterMenu->settings,
+                ]
+            );
+
+            // Map to track category IDs
+            $categoryMap = [];
+
+            // Sync categories
+            foreach ($masterMenu->categories as $masterCategory) {
+                $category = MenuCategory::updateOrCreate(
+                    [
+                        'menu_id' => $menu->id,
+                        'slug' => Str::slug($masterCategory->name),
+                    ],
+                    [
+                        'name' => $masterCategory->name,
+                        'description' => $masterCategory->description,
+                        'icon' => $masterCategory->icon,
+                        'image_url' => $masterCategory->image_url,
+                        'is_active' => $masterCategory->is_active ?? true,
+                        'sort_order' => $masterCategory->sort_order,
+                    ]
+                );
+                
+                $categoryMap[$masterCategory->id] = $category->id;
+                $categoriesSynced++;
+
+                // Sync items
+                foreach ($masterCategory->items as $masterItem) {
+                    // Check for branch-specific override
+                    $override = BranchMenuOverride::where('branch_id', $branch->id)
+                        ->where('master_item_id', $masterItem->id)
+                        ->first();
+
+                    $itemData = [
+                        'name' => $masterItem->name,
+                        'description' => $masterItem->description,
+                        'price' => $override?->price ?? $masterItem->price,
+                        'image_url' => $masterItem->image_url,
+                        'is_available' => $override?->is_available ?? ($masterItem->is_available ?? true),
+                        'is_featured' => $masterItem->is_featured ?? false,
+                        'sort_order' => $masterItem->sort_order,
+                        'preparation_time' => $masterItem->preparation_time,
+                        'dietary_info' => $masterItem->dietary_info,
+                        'allergens' => $masterItem->allergens,
+                        'calories' => $masterItem->calories,
+                        'customization_options' => $masterItem->customization_options,
+                    ];
+
+                    MenuItem::updateOrCreate(
+                        [
+                            'menu_id' => $menu->id,
+                            'category_id' => $category->id,
+                            'slug' => Str::slug($masterItem->name),
+                        ],
+                        $itemData
+                    );
+                    
+                    $itemsSynced++;
+                }
+            }
+
+            // Remove old categories and items
+            $localCategoryIds = array_values($categoryMap);
+            MenuItem::where('menu_id', $menu->id)
+                ->whereNotIn('category_id', $localCategoryIds)
+                ->delete();
+            MenuCategory::where('menu_id', $menu->id)
+                ->whereNotIn('id', $localCategoryIds)
+                ->delete();
+
+            DB::commit();
+
+            $syncLog->update([
+                'status' => 'completed',
+                'items_synced' => $itemsSynced,
+                'categories_synced' => $categoriesSynced,
+                'completed_at' => now(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Menu synced to {$branch->branch_name} successfully",
+                'data' => [
+                    'branch_id' => $branchId,
+                    'branch_name' => $branch->branch_name,
+                    'items_synced' => $itemsSynced,
+                    'categories_synced' => $categoriesSynced,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            $syncLog->update([
+                'status' => 'failed',
+                'error_message' => $e->getMessage(),
+                'completed_at' => now(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Sync failed: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
