@@ -14,6 +14,7 @@ use App\Models\MenuImage;
 use App\Models\Menu;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
+use App\Models\Location;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -600,6 +601,9 @@ class MasterMenuController extends Controller
             'started_at' => now(),
         ]);
 
+        // Get franchise for owner info
+        $franchise = Franchise::find($franchiseId);
+
         try {
             DB::beginTransaction();
             
@@ -608,9 +612,22 @@ class MasterMenuController extends Controller
             $categoriesSynced = 0;
 
             foreach ($branches as $branch) {
-                // Skip if branch doesn't have a location
+                // Auto-create location if branch doesn't have one
                 if (!$branch->location_id) {
-                    continue;
+                    $location = Location::create([
+                        'user_id' => $franchise->owner_id ?? $request->user()->id,
+                        'franchise_id' => $franchiseId,
+                        'name' => $branch->branch_name,
+                        'city' => $branch->city,
+                        'address_line_1' => $branch->address,
+                        'phone' => $branch->phone,
+                        'is_active' => true,
+                        'is_default' => false,
+                    ]);
+                    
+                    // Update branch with new location
+                    $branch->update(['location_id' => $location->id]);
+                    $branch->location_id = $location->id;
                 }
 
                 // Find or create menu for this location
@@ -786,11 +803,24 @@ class MasterMenuController extends Controller
             ], 404);
         }
 
+        // Get franchise for owner info
+        $franchise = Franchise::find($franchiseId);
+
+        // Auto-create location if branch doesn't have one
         if (!$branch->location_id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Branch has no location assigned'
-            ], 400);
+            $location = Location::create([
+                'user_id' => $franchise->owner_id ?? $request->user()->id,
+                'franchise_id' => $franchiseId,
+                'name' => $branch->branch_name,
+                'city' => $branch->city,
+                'address_line_1' => $branch->address,
+                'phone' => $branch->phone,
+                'is_active' => true,
+                'is_default' => false,
+            ]);
+            
+            $branch->update(['location_id' => $location->id]);
+            $branch->location_id = $location->id;
         }
 
         // Create sync log
