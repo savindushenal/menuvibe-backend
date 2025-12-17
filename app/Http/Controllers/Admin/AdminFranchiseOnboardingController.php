@@ -272,8 +272,11 @@ class AdminFranchiseOnboardingController extends Controller
         }
 
         // Create a unified Location that serves as both branch and location
+        // Get owner from pivot table (franchise_users)
+        $ownerId = $franchise->owner?->id ?? $request->user()->id;
+        
         $branch = Location::create([
-            'user_id' => $franchise->owner_id ?? $request->user()->id,
+            'user_id' => $ownerId,
             'franchise_id' => $franchiseId,
             'name' => $request->branch_name,
             'branch_name' => $request->branch_name,

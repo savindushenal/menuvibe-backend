@@ -159,7 +159,7 @@ class FranchiseContextController extends Controller
         $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
 
         // Only franchise_admin and above can see staff
-        if (!in_array($role, ['franchise_owner', 'franchise_admin']) && 
+        if (!in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin']) && 
             !in_array($user->role, ['admin', 'super_admin'])) {
             return response()->json([
                 'success' => false,
@@ -199,7 +199,7 @@ class FranchiseContextController extends Controller
         $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
 
         // Only owners and admins can see full settings
-        $canViewFullSettings = in_array($role, ['franchise_owner', 'franchise_admin']) || 
+        $canViewFullSettings = in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin']) || 
                                in_array($user->role, ['admin', 'super_admin']);
 
         $settings = [
@@ -242,7 +242,7 @@ class FranchiseContextController extends Controller
         $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
 
         // Only owners and admins can update settings
-        if (!in_array($role, ['franchise_owner', 'franchise_admin']) && 
+        if (!in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin']) && 
             !in_array($user->role, ['admin', 'super_admin'])) {
             return response()->json([
                 'success' => false,
@@ -350,7 +350,7 @@ class FranchiseContextController extends Controller
         $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
 
         // Only owners and admins can create branches
-        if (!in_array($role, ['franchise_owner', 'franchise_admin']) && 
+        if (!in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin']) && 
             !in_array($user->role, ['admin', 'super_admin'])) {
             return response()->json([
                 'success' => false,
@@ -367,8 +367,11 @@ class FranchiseContextController extends Controller
         ]);
 
         // Create a unified Location that serves as both branch and location
+        // Get owner from pivot table (franchise_users)
+        $ownerId = $franchise->owner?->id ?? $user->id;
+        
         $branch = Location::create([
-            'user_id' => $franchise->owner_id,
+            'user_id' => $ownerId,
             'franchise_id' => $franchise->id,
             'name' => $request->branch_name,
             'branch_name' => $request->branch_name,
@@ -402,7 +405,7 @@ class FranchiseContextController extends Controller
         $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
 
         // Only owners and admins can update branches
-        if (!in_array($role, ['franchise_owner', 'franchise_admin']) && 
+        if (!in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin']) && 
             !in_array($user->role, ['admin', 'super_admin'])) {
             return response()->json([
                 'success' => false,
@@ -468,7 +471,7 @@ class FranchiseContextController extends Controller
         $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
 
         // Only owners can delete branches
-        if (!in_array($role, ['franchise_owner']) && 
+        if (!in_array($role, ['owner', 'franchise_owner']) && 
             !in_array($user->role, ['admin', 'super_admin'])) {
             return response()->json([
                 'success' => false,
@@ -511,7 +514,7 @@ class FranchiseContextController extends Controller
         $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
 
         // Only owners and admins can invite staff
-        if (!in_array($role, ['franchise_owner', 'franchise_admin']) && 
+        if (!in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin']) && 
             !in_array($user->role, ['admin', 'super_admin'])) {
             return response()->json([
                 'success' => false,
@@ -605,7 +608,7 @@ class FranchiseContextController extends Controller
         $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
 
         // Only owners and admins can update staff
-        if (!in_array($role, ['franchise_owner', 'franchise_admin']) && 
+        if (!in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin']) && 
             !in_array($user->role, ['admin', 'super_admin'])) {
             return response()->json([
                 'success' => false,
@@ -625,7 +628,7 @@ class FranchiseContextController extends Controller
         }
 
         // Can't update franchise owner
-        if ($account->role === 'franchise_owner') {
+        if (in_array($account->role, ['owner', 'franchise_owner'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Cannot modify franchise owner'
@@ -680,7 +683,7 @@ class FranchiseContextController extends Controller
         $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
 
         // Only owners and admins can remove staff
-        if (!in_array($role, ['franchise_owner', 'franchise_admin']) && 
+        if (!in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin']) && 
             !in_array($user->role, ['admin', 'super_admin'])) {
             return response()->json([
                 'success' => false,
@@ -700,7 +703,7 @@ class FranchiseContextController extends Controller
         }
 
         // Can't remove franchise owner
-        if ($account->role === 'franchise_owner') {
+        if (in_array($account->role, ['owner', 'franchise_owner'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Cannot remove franchise owner'
