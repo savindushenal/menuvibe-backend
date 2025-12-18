@@ -14,13 +14,16 @@ class MenuItem extends Model
         'menu_id',
         'category_id',
         'name',
+        'slug',
         'description',
         'price',
+        'compare_at_price',
         'currency',
         'card_color',
         'text_color',
         'heading_color',
         'image_url',
+        'gallery_images',
         'is_available',
         'is_featured',
         'sort_order',
@@ -30,19 +33,26 @@ class MenuItem extends Model
         'is_spicy',
         'spice_level',
         'variations',
+        'addons',
+        'sku',
+        'calories',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'compare_at_price' => 'decimal:2',
         'is_available' => 'boolean',
         'is_featured' => 'boolean',
         'is_spicy' => 'boolean',
         'sort_order' => 'integer',
         'preparation_time' => 'integer',
         'spice_level' => 'integer',
+        'calories' => 'integer',
         'allergens' => 'array',
         'dietary_info' => 'array',
         'variations' => 'array',
+        'gallery_images' => 'array',
+        'addons' => 'array',
     ];
 
     /**

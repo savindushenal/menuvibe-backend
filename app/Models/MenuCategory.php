@@ -12,7 +12,10 @@ class MenuCategory extends Model
     protected $fillable = [
         'menu_id',
         'name',
+        'slug',
         'description',
+        'image_url',
+        'icon',
         'background_color',
         'text_color',
         'heading_color',
@@ -37,6 +40,14 @@ class MenuCategory extends Model
      * Get the menu items for the category.
      */
     public function menuItems()
+    {
+        return $this->hasMany(MenuItem::class, 'category_id');
+    }
+
+    /**
+     * Alias for menuItems (for consistency with master menu categories)
+     */
+    public function items()
     {
         return $this->hasMany(MenuItem::class, 'category_id');
     }
