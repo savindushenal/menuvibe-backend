@@ -7,6 +7,7 @@ use App\Mail\PasswordResetByAdminMail;
 use App\Models\AdminActivityLog;
 use App\Models\User;
 use App\Models\UserSubscription;
+use App\Services\EmailService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -488,15 +489,33 @@ class AdminUserController extends Controller
             // Check if OpenSSL is loaded
             \Log::info('OpenSSL loaded: ' . (extension_loaded('openssl') ? 'YES' : 'NO'));
             
-            // Create the mailable
-            $mailable = new PasswordResetByAdminMail($user, $password);
+            // Send email via Email API service
+            \Log::info('Sending email via Email API...');
+            $emailService = new EmailService();
+            $result = $emailService->sendPasswordReset(
+                $user->email,
+                $user->name,
+                config('app.frontend_url') . '/login',
+                'This is your new password'
+            );
             
-            // Force synchronous sending (bypass queue)
-            \Log::info('Sending email synchronously...');
-            Mail::mailer('smtp')->to($user->email)->send($mailable);
+            // If template doesn't exist, send a basic email with the password
+            if (!$result['success']) {
+                // Fallback: send credentials email with password
+                $result = $emailService->send($user->email, 'password-reset', [
+                    'user_name' => $user->name,
+                    'platform_name' => 'MenuVibe',
+                    'new_password' => $password,
+                    'login_link' => config('app.frontend_url') . '/login',
+                ]);
+            }
             
-            $emailSent = true;
-            \Log::info('=== PASSWORD EMAIL SENT SUCCESSFULLY ===', ['to' => $user->email]);
+            $emailSent = $result['success'];
+            if ($emailSent) {
+                \Log::info('=== PASSWORD EMAIL SENT SUCCESSFULLY ===', ['to' => $user->email]);
+            } else {
+                throw new \Exception($result['message'] ?? 'Email API failed');
+            }
         } catch (\Throwable $e) {
             $emailSent = false;
             \Log::error('=== PASSWORD EMAIL FAILED ===', [

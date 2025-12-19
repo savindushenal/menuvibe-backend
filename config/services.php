@@ -11,4 +11,9 @@ return [
         'base_url' => env('VERCEL_BLOB_BASE_URL', 'https://blob.vercel-storage.com'),
         'prefix' => env('VERCEL_BLOB_PREFIX', 'logos'),
     ],
+    'email_api' => [
+        'base_url' => env('EMAIL_API_BASE_URL', 'https://email.absterco.com'),
+        'api_key' => env('EMAIL_API_KEY'),
+        'domain' => env('EMAIL_API_DOMAIN', 'menuvire.com'),
+    ],
 ];

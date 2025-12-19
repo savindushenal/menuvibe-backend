@@ -13,6 +13,7 @@ use App\Models\Location;
 use App\Models\User;
 use App\Mail\FranchiseInvitationMail;
 use App\Mail\FranchiseCredentialsMail;
+use App\Services\EmailService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -163,11 +164,15 @@ class AdminFranchiseOnboardingController extends Controller
             // Send credentials email if requested
             if ($isNewUser && $request->send_credentials && $tempPassword) {
                 try {
-                    Mail::to($owner->email)->send(new FranchiseCredentialsMail(
-                        $owner,
-                        $franchise,
-                        $tempPassword
-                    ));
+                    $emailService = new EmailService();
+                    $emailService->sendFranchiseCredentials(
+                        $owner->email,
+                        $owner->name,
+                        $franchise->name,
+                        $owner->email,
+                        $tempPassword,
+                        config('app.frontend_url') . '/login'
+                    );
                 } catch (\Exception $e) {
                     // Log but don't fail
                     \Log::error('Failed to send credentials email: ' . $e->getMessage());
@@ -610,12 +615,15 @@ class AdminFranchiseOnboardingController extends Controller
             // Send credentials email
             if ($request->send_credentials !== false) {
                 try {
-                    Mail::to($user->email)->send(new FranchiseCredentialsMail(
-                        $user,
-                        $franchise,
+                    $emailService = new EmailService();
+                    $emailService->sendFranchiseCredentials(
+                        $user->email,
+                        $user->name,
+                        $franchise->name,
+                        $user->email,
                         $password,
-                        $request->role
-                    ));
+                        config('app.frontend_url') . '/login'
+                    );
                     \Log::info('Credentials email sent to: ' . $user->email);
                 } catch (\Exception $e) {
                     \Log::error('Failed to send credentials email to ' . $user->email . ': ' . $e->getMessage());
@@ -733,11 +741,16 @@ class AdminFranchiseOnboardingController extends Controller
 
         // Send invitation email
         try {
-            Mail::to($request->email)->send(new FranchiseInvitationMail(
-                $invitation,
-                $franchise,
-                $tempPassword
-            ));
+            $emailService = new EmailService();
+            $acceptLink = config('app.frontend_url') . '/franchise/accept-invitation?token=' . $invitation->token;
+            $emailService->sendFranchiseInvitation(
+                $request->email,
+                $request->name,
+                $franchise->name,
+                $request->role,
+                $request->user()->name,
+                $acceptLink
+            );
         } catch (\Exception $e) {
             \Log::error('Failed to send invitation email: ' . $e->getMessage());
         }
@@ -783,12 +796,15 @@ class AdminFranchiseOnboardingController extends Controller
                 $user->update(['password' => Hash::make($newPassword)]);
 
                 try {
-                    Mail::to($user->email)->send(new FranchiseCredentialsMail(
-                        $user,
-                        $franchise,
+                    $emailService = new EmailService();
+                    $emailService->sendFranchiseCredentials(
+                        $user->email,
+                        $user->name,
+                        $franchise->name,
+                        $user->email,
                         $newPassword,
-                        $invitation->role
-                    ));
+                        config('app.frontend_url') . '/login'
+                    );
                 } catch (\Exception $e) {
                     \Log::error('Failed to resend credentials email: ' . $e->getMessage());
                     return response()->json([
@@ -822,11 +838,16 @@ class AdminFranchiseOnboardingController extends Controller
 
         // Resend email
         try {
-            Mail::to($invitation->email)->send(new FranchiseInvitationMail(
-                $invitation,
-                $franchise,
-                $tempPassword
-            ));
+            $emailService = new EmailService();
+            $acceptLink = config('app.frontend_url') . '/franchise/accept-invitation?token=' . $invitation->token;
+            $emailService->sendFranchiseInvitation(
+                $invitation->email,
+                $invitation->name,
+                $franchise->name,
+                $invitation->role,
+                $request->user()->name,
+                $acceptLink
+            );
         } catch (\Exception $e) {
             \Log::error('Failed to resend invitation email: ' . $e->getMessage());
         }
