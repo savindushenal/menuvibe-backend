@@ -149,6 +149,14 @@ class AdminSupportController extends Controller
             ], 403);
         }
 
+        // Support officers cannot assign tickets to others
+        if ($admin->isSupportOfficer()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Support officers can only self-assign tickets. Use the "Take Ticket" option instead.',
+            ], 403);
+        }
+
         $ticket = SupportTicket::find($id);
 
         if (!$ticket) {
@@ -212,6 +220,14 @@ class AdminSupportController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        // Support officers cannot use auto-assign
+        if ($admin->isSupportOfficer()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Support officers cannot use auto-assign. Use the "Take Ticket" option instead.',
             ], 403);
         }
 

@@ -239,4 +239,32 @@ class NotificationController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Helper to get authenticated user with manual token check
+     */
+    private function getAuthenticatedUser(Request $request): ?User
+    {
+        $token = $request->bearerToken();
+        
+        if (!$token) {
+            return null;
+        }
+
+        // Parse the token (format: id|plainTextToken)
+        if (str_contains($token, '|')) {
+            [$id, $plainTextToken] = explode('|', $token, 2);
+            $hashedToken = hash('sha256', $plainTextToken);
+        } else {
+            $hashedToken = hash('sha256', $token);
+        }
+
+        $tokenRecord = \Laravel\Sanctum\PersonalAccessToken::where('token', $hashedToken)->first();
+
+        if (!$tokenRecord) {
+            return null;
+        }
+
+        return User::find($tokenRecord->tokenable_id);
+    }
 }
