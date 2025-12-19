@@ -23,7 +23,7 @@ class AdminDashboardController extends Controller
     {
         $user = $this->getAuthenticatedUser($request);
         
-        if (!$user || !$user->isAdmin()) {
+        if (!$user || !$user->canAccessAdminPanel()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
@@ -108,7 +108,7 @@ class AdminDashboardController extends Controller
     {
         $user = $this->getAuthenticatedUser($request);
         
-        if (!$user || !$user->isAdmin()) {
+        if (!$user || !$user->canAccessAdminPanel()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',

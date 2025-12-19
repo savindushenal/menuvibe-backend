@@ -19,7 +19,7 @@ class AdminSubscriptionController extends Controller
     {
         $admin = $this->getAuthenticatedUser($request);
         
-        if (!$admin || !$admin->isAdmin()) {
+        if (!$admin || !$admin->canAccessAdminPanel()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
@@ -93,7 +93,7 @@ class AdminSubscriptionController extends Controller
     {
         $admin = $this->getAuthenticatedUser($request);
         
-        if (!$admin || !$admin->isAdmin()) {
+        if (!$admin || !$admin->canAccessAdminPanel()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
@@ -160,7 +160,7 @@ class AdminSubscriptionController extends Controller
     {
         $admin = $this->getAuthenticatedUser($request);
         
-        if (!$admin || !$admin->isAdmin()) {
+        if (!$admin || !$admin->canManageSubscriptions()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
@@ -225,7 +225,7 @@ class AdminSubscriptionController extends Controller
     {
         $admin = $this->getAuthenticatedUser($request);
         
-        if (!$admin || !$admin->isAdmin()) {
+        if (!$admin || !$admin->canManageSubscriptions()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
@@ -276,7 +276,7 @@ class AdminSubscriptionController extends Controller
     {
         $admin = $this->getAuthenticatedUser($request);
         
-        if (!$admin || !$admin->isAdmin()) {
+        if (!$admin || !$admin->canAccessAdminPanel()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',

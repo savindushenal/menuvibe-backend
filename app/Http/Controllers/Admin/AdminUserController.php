@@ -24,7 +24,7 @@ class AdminUserController extends Controller
     {
         $admin = $this->getAuthenticatedUser($request);
         
-        if (!$admin || !$admin->isAdmin()) {
+        if (!$admin || !$admin->canAccessAdminPanel()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
@@ -85,7 +85,7 @@ class AdminUserController extends Controller
     {
         $admin = $this->getAuthenticatedUser($request);
         
-        if (!$admin || !$admin->isAdmin()) {
+        if (!$admin || !$admin->canAccessAdminPanel()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
@@ -138,7 +138,7 @@ class AdminUserController extends Controller
     {
         $admin = $this->getAuthenticatedUser($request);
         
-        if (!$admin || !$admin->isAdmin()) {
+        if (!$admin || !$admin->canManageBusinessUsers()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
@@ -207,7 +207,7 @@ class AdminUserController extends Controller
     {
         $admin = $this->getAuthenticatedUser($request);
         
-        if (!$admin || !$admin->isAdmin()) {
+        if (!$admin || !$admin->canManageBusinessUsers()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
@@ -381,7 +381,7 @@ class AdminUserController extends Controller
     {
         $admin = $this->getAuthenticatedUser($request);
         
-        if (!$admin || !$admin->isAdmin()) {
+        if (!$admin || !$admin->canManageBusinessUsers()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
@@ -437,7 +437,7 @@ class AdminUserController extends Controller
     {
         $admin = $this->getAuthenticatedUser($request);
         
-        if (!$admin || !$admin->isAdmin()) {
+        if (!$admin || !$admin->canManageBusinessUsers()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',

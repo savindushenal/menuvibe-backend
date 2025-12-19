@@ -94,9 +94,58 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user can access the admin panel
+     * Admins, super admins, and support officers can access
+     */
+    public function canAccessAdminPanel(): bool
+    {
+        return in_array($this->role, [
+            self::ROLE_ADMIN, 
+            self::ROLE_SUPER_ADMIN, 
+            self::ROLE_SUPPORT_OFFICER
+        ]);
+    }
+
+    /**
      * Check if user can handle support tickets (admin, super_admin, or support_officer)
      */
     public function canHandleSupportTickets(): bool
+    {
+        return in_array($this->role, [
+            self::ROLE_ADMIN, 
+            self::ROLE_SUPER_ADMIN, 
+            self::ROLE_SUPPORT_OFFICER
+        ]);
+    }
+
+    /**
+     * Check if user can manage business users (support officers can help reset passwords, etc.)
+     */
+    public function canManageBusinessUsers(): bool
+    {
+        return in_array($this->role, [
+            self::ROLE_ADMIN, 
+            self::ROLE_SUPER_ADMIN, 
+            self::ROLE_SUPPORT_OFFICER
+        ]);
+    }
+
+    /**
+     * Check if user can manage franchises (support officers can view and help)
+     */
+    public function canManageFranchises(): bool
+    {
+        return in_array($this->role, [
+            self::ROLE_ADMIN, 
+            self::ROLE_SUPER_ADMIN, 
+            self::ROLE_SUPPORT_OFFICER
+        ]);
+    }
+
+    /**
+     * Check if user can manage subscriptions
+     */
+    public function canManageSubscriptions(): bool
     {
         return in_array($this->role, [
             self::ROLE_ADMIN, 
@@ -131,8 +180,13 @@ class User extends Authenticatable
             return true;
         }
         
-        // Admin can manage regular users but not other admins
-        if ($this->isAdmin() && $target->isRegularUser()) {
+        // Admin can manage regular users and support officers but not other admins
+        if ($this->isAdmin()) {
+            return $target->isRegularUser() || $target->isSupportOfficer();
+        }
+        
+        // Support officers can manage regular users (for password resets, account help, etc.)
+        if ($this->isSupportOfficer() && $target->isRegularUser()) {
             return true;
         }
         
