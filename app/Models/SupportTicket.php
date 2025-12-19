@@ -238,4 +238,109 @@ class SupportTicket extends Model
     {
         return $query->where('category', $category);
     }
+
+    /**
+     * Get assignment history for this ticket
+     */
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(TicketAssignment::class, 'ticket_id')->orderBy('assigned_at', 'desc');
+    }
+
+    /**
+     * Get views for this ticket
+     */
+    public function views(): HasMany
+    {
+        return $this->hasMany(TicketView::class, 'ticket_id')->orderBy('viewed_at', 'desc');
+    }
+
+    /**
+     * Get users who viewed this ticket
+     */
+    public function viewedBy()
+    {
+        return $this->belongsToMany(User::class, 'ticket_views', 'ticket_id', 'user_id')
+            ->withPivot('viewed_at')
+            ->orderByPivot('viewed_at', 'desc');
+    }
+
+    /**
+     * Record a view of this ticket
+     */
+    public function recordView(User $user): TicketView
+    {
+        return TicketView::recordView($this->id, $user->id);
+    }
+
+    /**
+     * Assign ticket with full tracking
+     */
+    public function assignToWithTracking(User $assignee, ?User $assigner = null, string $type = 'manual', ?string $notes = null): self
+    {
+        // End current assignment if exists
+        TicketAssignment::where('ticket_id', $this->id)
+            ->whereNull('unassigned_at')
+            ->update(['unassigned_at' => now()]);
+
+        // Create new assignment record
+        TicketAssignment::create([
+            'ticket_id' => $this->id,
+            'assigned_to' => $assignee->id,
+            'assigned_by' => $assigner?->id,
+            'assignment_type' => $type,
+            'notes' => $notes,
+        ]);
+
+        // Update the ticket
+        $this->update([
+            'assigned_to' => $assignee->id,
+            'status' => self::STATUS_IN_PROGRESS,
+        ]);
+
+        // Update assignee's active ticket count
+        $assignee->updateActiveTicketsCount();
+
+        // Create notification for assignee
+        if ($assignee->id !== $assigner?->id) {
+            Notification::ticketAssigned($assignee->id, $this, $assigner);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Auto-assign ticket to best available support staff
+     */
+    public function autoAssign(): ?self
+    {
+        $staff = User::getBestAvailableSupportStaff();
+        
+        if ($staff) {
+            return $this->assignToWithTracking($staff, null, 'auto', 'Auto-assigned based on availability');
+        }
+
+        return null;
+    }
+
+    /**
+     * Notify all support staff about this ticket
+     */
+    public function notifySupportStaff(): void
+    {
+        $staffIds = User::supportStaff()
+            ->where('is_active', true)
+            ->pluck('id');
+
+        foreach ($staffIds as $staffId) {
+            Notification::newTicket($staffId, $this);
+        }
+
+        // Special notification for urgent tickets
+        if ($this->priority === self::PRIORITY_URGENT) {
+            foreach ($staffIds as $staffId) {
+                Notification::urgentTicket($staffId, $this);
+            }
+        }
+    }
 }

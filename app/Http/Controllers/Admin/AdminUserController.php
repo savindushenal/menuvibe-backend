@@ -345,7 +345,7 @@ class AdminUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
-            'role' => ['required', Rule::in(['admin', 'super_admin'])],
+            'role' => ['required', Rule::in(['admin', 'super_admin', 'support_officer'])],
         ]);
 
         $user = User::create([

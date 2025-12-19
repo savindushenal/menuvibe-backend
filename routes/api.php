@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\AdminSubscriptionController;
 use App\Http\Controllers\Admin\AdminActivityController;
 use App\Http\Controllers\Admin\AdminFranchiseController;
 use App\Http\Controllers\Admin\AdminFranchiseOnboardingController;
+use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\MasterMenuController;
 use App\Http\Controllers\MasterMenuOfferController;
 use App\Http\Controllers\MenuTemplateController;
@@ -222,11 +223,24 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'admin'])->group(function ()
     // Support Tickets
     Route::get('/tickets', [AdminSupportController::class, 'index']);
     Route::get('/tickets/statistics', [AdminSupportController::class, 'statistics']);
+    Route::get('/tickets/available-staff', [AdminSupportController::class, 'getAvailableStaff']);
     Route::get('/tickets/{id}', [AdminSupportController::class, 'show']);
     Route::post('/tickets/{id}/assign', [AdminSupportController::class, 'assign']);
+    Route::post('/tickets/{id}/auto-assign', [AdminSupportController::class, 'autoAssign']);
+    Route::post('/tickets/{id}/self-assign', [AdminSupportController::class, 'selfAssign']);
     Route::post('/tickets/{id}/status', [AdminSupportController::class, 'updateStatus']);
     Route::post('/tickets/{id}/priority', [AdminSupportController::class, 'updatePriority']);
     Route::post('/tickets/{id}/messages', [AdminSupportController::class, 'addMessage']);
+    
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
+    Route::delete('/notifications', [NotificationController::class, 'clearAll']);
+    Route::post('/status/heartbeat', [NotificationController::class, 'heartbeat']);
+    Route::post('/status/offline', [NotificationController::class, 'goOffline']);
     
     // Activity Logs
     Route::get('/activity', [AdminActivityController::class, 'index']);

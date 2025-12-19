@@ -28,6 +28,9 @@ class User extends Authenticatable
         'email_verified_at',
         'role',
         'is_active',
+        'is_online',
+        'last_seen_at',
+        'active_tickets_count',
         'last_login_at',
         'last_login_ip',
         'created_by',
@@ -39,6 +42,7 @@ class User extends Authenticatable
     const ROLE_USER = 'user';
     const ROLE_ADMIN = 'admin';
     const ROLE_SUPER_ADMIN = 'super_admin';
+    const ROLE_SUPPORT_OFFICER = 'support_officer';
 
     /**
      * The attributes that should be hidden for serialization.
@@ -59,7 +63,9 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_active' => 'boolean',
+        'is_online' => 'boolean',
         'last_login_at' => 'datetime',
+        'last_seen_at' => 'datetime',
     ];
 
     /**
@@ -76,6 +82,26 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return in_array($this->role, [self::ROLE_ADMIN, self::ROLE_SUPER_ADMIN]);
+    }
+
+    /**
+     * Check if user is a support officer
+     */
+    public function isSupportOfficer(): bool
+    {
+        return $this->role === self::ROLE_SUPPORT_OFFICER;
+    }
+
+    /**
+     * Check if user can handle support tickets (admin, super_admin, or support_officer)
+     */
+    public function canHandleSupportTickets(): bool
+    {
+        return in_array($this->role, [
+            self::ROLE_ADMIN, 
+            self::ROLE_SUPER_ADMIN, 
+            self::ROLE_SUPPORT_OFFICER
+        ]);
     }
 
     /**
@@ -398,5 +424,115 @@ class User extends Authenticatable
     public function createDefaultSettings(): UserSettings
     {
         return $this->settings()->create(UserSettings::getDefaultSettings());
+    }
+
+    /**
+     * Get notifications for this user
+     */
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class)->latest();
+    }
+
+    /**
+     * Get unread notifications
+     */
+    public function unreadNotifications(): HasMany
+    {
+        return $this->notifications()->unread();
+    }
+
+    /**
+     * Get assigned tickets
+     */
+    public function assignedTickets(): HasMany
+    {
+        return $this->hasMany(SupportTicket::class, 'assigned_to');
+    }
+
+    /**
+     * Mark user as online
+     */
+    public function goOnline(): void
+    {
+        $this->update([
+            'is_online' => true,
+            'last_seen_at' => now(),
+        ]);
+    }
+
+    /**
+     * Mark user as offline
+     */
+    public function goOffline(): void
+    {
+        $this->update([
+            'is_online' => false,
+            'last_seen_at' => now(),
+        ]);
+    }
+
+    /**
+     * Update last seen timestamp (heartbeat)
+     */
+    public function heartbeat(): void
+    {
+        $this->update(['last_seen_at' => now()]);
+    }
+
+    /**
+     * Update active tickets count
+     */
+    public function updateActiveTicketsCount(): void
+    {
+        $count = SupportTicket::where('assigned_to', $this->id)
+            ->whereIn('status', ['open', 'in_progress', 'waiting_on_customer'])
+            ->count();
+        
+        $this->update(['active_tickets_count' => $count]);
+    }
+
+    /**
+     * Scope for online support staff
+     */
+    public function scopeOnlineSupportStaff($query)
+    {
+        return $query->where('is_online', true)
+            ->where('is_active', true)
+            ->whereIn('role', [self::ROLE_ADMIN, self::ROLE_SUPER_ADMIN, self::ROLE_SUPPORT_OFFICER]);
+    }
+
+    /**
+     * Scope for support staff (admin, super_admin, support_officer)
+     */
+    public function scopeSupportStaff($query)
+    {
+        return $query->whereIn('role', [
+            self::ROLE_ADMIN, 
+            self::ROLE_SUPER_ADMIN, 
+            self::ROLE_SUPPORT_OFFICER
+        ]);
+    }
+
+    /**
+     * Get the best available support staff for auto-assignment
+     * Prioritizes online staff with fewest active tickets
+     */
+    public static function getBestAvailableSupportStaff(): ?self
+    {
+        // First try online staff
+        $staff = self::onlineSupportStaff()
+            ->orderBy('active_tickets_count', 'asc')
+            ->first();
+
+        // If no online staff, get any active support staff with fewest tickets
+        if (!$staff) {
+            $staff = self::supportStaff()
+                ->where('is_active', true)
+                ->orderBy('active_tickets_count', 'asc')
+                ->first();
+        }
+
+        return $staff;
     }
 }

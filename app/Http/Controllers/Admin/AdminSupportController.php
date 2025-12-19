@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AdminActivityLog;
+use App\Models\Notification;
 use App\Models\SupportTicket;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -18,14 +19,14 @@ class AdminSupportController extends Controller
     {
         $admin = $this->getAuthenticatedUser($request);
         
-        if (!$admin || !$admin->isAdmin()) {
+        if (!$admin || !$admin->canHandleSupportTickets()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
             ], 403);
         }
 
-        $query = SupportTicket::with(['user:id,name,email', 'assignedTo:id,name,email']);
+        $query = SupportTicket::with(['user:id,name,email', 'assignedTo:id,name,email,role']);
 
         // Status filter
         if ($status = $request->get('status')) {
@@ -98,7 +99,7 @@ class AdminSupportController extends Controller
     {
         $admin = $this->getAuthenticatedUser($request);
         
-        if (!$admin || !$admin->isAdmin()) {
+        if (!$admin || !$admin->canHandleSupportTickets()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
@@ -109,6 +110,12 @@ class AdminSupportController extends Controller
             'user:id,name,email',
             'assignedTo:id,name,email',
             'messages.user:id,name,email,role',
+            'views.user:id,name,email,role',
+            'assignments' => function ($q) {
+                $q->with(['assignee:id,name,email', 'assigner:id,name,email'])
+                  ->orderBy('assigned_at', 'desc')
+                  ->take(10);
+            },
         ])->find($id);
 
         if (!$ticket) {
@@ -118,6 +125,9 @@ class AdminSupportController extends Controller
             ], 404);
         }
 
+        // Record that this admin viewed the ticket
+        $ticket->recordView($admin);
+
         return response()->json([
             'success' => true,
             'data' => $ticket,
@@ -125,13 +135,13 @@ class AdminSupportController extends Controller
     }
 
     /**
-     * Assign ticket to admin
+     * Assign ticket to admin/support officer
      */
     public function assign(Request $request, int $id): JsonResponse
     {
         $admin = $this->getAuthenticatedUser($request);
         
-        if (!$admin || !$admin->isAdmin()) {
+        if (!$admin || !$admin->canHandleSupportTickets()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
@@ -149,19 +159,27 @@ class AdminSupportController extends Controller
 
         $validated = $request->validate([
             'admin_id' => 'required|exists:users,id',
+            'notes' => 'nullable|string|max:500',
         ]);
 
         $assignee = User::find($validated['admin_id']);
         
-        if (!$assignee->isAdmin()) {
+        if (!$assignee->canHandleSupportTickets()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Can only assign to admin users',
+                'message' => 'Can only assign to admin or support officer users',
             ], 400);
         }
 
         $oldAssignee = $ticket->assigned_to;
-        $ticket->assignTo($assignee);
+        
+        // Use the new tracking method
+        $ticket->assignToWithTracking(
+            $assignee, 
+            $admin, 
+            'manual', 
+            $validated['notes'] ?? null
+        );
 
         AdminActivityLog::log(
             $admin,
@@ -180,13 +198,130 @@ class AdminSupportController extends Controller
     }
 
     /**
+     * Auto-assign ticket to best available support staff
+     */
+    public function autoAssign(Request $request, int $id): JsonResponse
+    {
+        $admin = $this->getAuthenticatedUser($request);
+        
+        if (!$admin || !$admin->canHandleSupportTickets()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        $ticket = SupportTicket::find($id);
+
+        if (!$ticket) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ticket not found',
+            ], 404);
+        }
+
+        $result = $ticket->autoAssign();
+
+        if (!$result) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No available support staff to assign',
+            ], 400);
+        }
+
+        AdminActivityLog::log(
+            $admin,
+            'ticket.auto_assigned',
+            $ticket,
+            null,
+            ['assigned_to' => $ticket->assigned_to],
+            "Auto-assigned ticket {$ticket->ticket_number} to {$ticket->assignedTo->name}"
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ticket auto-assigned successfully',
+            'data' => $ticket->fresh(['user:id,name,email', 'assignedTo:id,name,email']),
+        ]);
+    }
+
+    /**
+     * Self-assign ticket (take ownership)
+     */
+    public function selfAssign(Request $request, int $id): JsonResponse
+    {
+        $admin = $this->getAuthenticatedUser($request);
+        
+        if (!$admin || !$admin->canHandleSupportTickets()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        $ticket = SupportTicket::find($id);
+
+        if (!$ticket) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ticket not found',
+            ], 404);
+        }
+
+        $oldAssignee = $ticket->assigned_to;
+        $ticket->assignToWithTracking($admin, $admin, 'self', 'Self-assigned');
+
+        AdminActivityLog::log(
+            $admin,
+            'ticket.self_assigned',
+            $ticket,
+            ['assigned_to' => $oldAssignee],
+            ['assigned_to' => $admin->id],
+            "Self-assigned ticket {$ticket->ticket_number}"
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ticket assigned to you',
+            'data' => $ticket->fresh(['user:id,name,email', 'assignedTo:id,name,email']),
+        ]);
+    }
+
+    /**
+     * Get available support staff for assignment
+     */
+    public function getAvailableStaff(Request $request): JsonResponse
+    {
+        $admin = $this->getAuthenticatedUser($request);
+        
+        if (!$admin || !$admin->canHandleSupportTickets()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        $staff = User::supportStaff()
+            ->where('is_active', true)
+            ->select('id', 'name', 'email', 'role', 'is_online', 'last_seen_at', 'active_tickets_count')
+            ->orderBy('is_online', 'desc')
+            ->orderBy('active_tickets_count', 'asc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $staff,
+        ]);
+    }
+
+    /**
      * Update ticket status
      */
     public function updateStatus(Request $request, int $id): JsonResponse
     {
         $admin = $this->getAuthenticatedUser($request);
         
-        if (!$admin || !$admin->isAdmin()) {
+        if (!$admin || !$admin->canHandleSupportTickets()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
@@ -245,7 +380,7 @@ class AdminSupportController extends Controller
     {
         $admin = $this->getAuthenticatedUser($request);
         
-        if (!$admin || !$admin->isAdmin()) {
+        if (!$admin || !$admin->canHandleSupportTickets()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
@@ -291,7 +426,7 @@ class AdminSupportController extends Controller
     {
         $admin = $this->getAuthenticatedUser($request);
         
-        if (!$admin || !$admin->isAdmin()) {
+        if (!$admin || !$admin->canHandleSupportTickets()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
@@ -337,7 +472,7 @@ class AdminSupportController extends Controller
     {
         $admin = $this->getAuthenticatedUser($request);
         
-        if (!$admin || !$admin->isAdmin()) {
+        if (!$admin || !$admin->canHandleSupportTickets()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
