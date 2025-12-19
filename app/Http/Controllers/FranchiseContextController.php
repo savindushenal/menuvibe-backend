@@ -526,10 +526,20 @@ class FranchiseContextController extends Controller
         $request->validate([
             'email' => 'required|email|max:255',
             'name' => 'required|string|max:255',
-            'role' => 'required|in:franchise_admin,branch_manager,staff',
+            'role' => 'required|in:franchise_admin,branch_manager,staff,admin,manager',
             'branch_id' => 'nullable|integer', // Now refers to location_id
             'location_id' => 'nullable|integer',
         ]);
+
+        // Map frontend role names to backend role names
+        $roleMapping = [
+            'admin' => 'franchise_admin',
+            'manager' => 'branch_manager',
+            'staff' => 'staff',
+            'franchise_admin' => 'franchise_admin',
+            'branch_manager' => 'branch_manager',
+        ];
+        $mappedRole = $roleMapping[$request->role] ?? $request->role;
 
         // Accept both branch_id and location_id (branch_id for backwards compatibility)
         $locationId = $request->location_id ?? $request->branch_id;
@@ -577,7 +587,7 @@ class FranchiseContextController extends Controller
         $account = FranchiseAccount::create([
             'franchise_id' => $franchise->id,
             'user_id' => $invitedUser->id,
-            'role' => $request->role,
+            'role' => $mappedRole,
             'location_id' => $locationId,
             'is_active' => true,
             'created_by' => $user->id,
@@ -593,7 +603,7 @@ class FranchiseContextController extends Controller
                 $invitedUser->email,
                 $invitedUser->name,
                 $franchise->name,
-                $request->role,
+                $mappedRole,
                 $user->name,
                 $invitationLink
             );
