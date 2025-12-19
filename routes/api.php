@@ -29,6 +29,7 @@ use App\Http\Controllers\MenuOfferController;
 use App\Http\Controllers\PublicMenuController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Broadcast;
 
 
 /*
@@ -41,6 +42,9 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+
+// Broadcasting auth route (for Pusher private channels)
+Broadcast::routes(['middleware' => ['api']]);
 
 // Public routes
 Route::post('/register', [AuthController::class, 'register']);
