@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\StaffStatusChanged;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -459,6 +460,11 @@ class User extends Authenticatable
             'is_online' => true,
             'last_seen_at' => now(),
         ]);
+        
+        // Broadcast status change to other admins
+        if ($this->canHandleSupportTickets()) {
+            broadcast(new StaffStatusChanged($this, 'online'))->toOthers();
+        }
     }
 
     /**
@@ -470,6 +476,11 @@ class User extends Authenticatable
             'is_online' => false,
             'last_seen_at' => now(),
         ]);
+        
+        // Broadcast status change to other admins
+        if ($this->canHandleSupportTickets()) {
+            broadcast(new StaffStatusChanged($this, 'offline'))->toOthers();
+        }
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\NewNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -26,6 +27,19 @@ class Notification extends Model
         'is_read' => 'boolean',
         'read_at' => 'datetime',
     ];
+
+    /**
+     * Boot the model
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Broadcast notification when created
+        static::created(function (Notification $notification) {
+            broadcast(new NewNotification($notification))->toOthers();
+        });
+    }
 
     /**
      * Notification types

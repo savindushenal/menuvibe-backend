@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\TicketUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\AdminActivityLog;
 use App\Models\Notification;
@@ -190,6 +191,9 @@ class AdminSupportController extends Controller
             "Assigned ticket {$ticket->ticket_number} to {$assignee->name}"
         );
 
+        // Broadcast ticket update to all admins
+        broadcast(new TicketUpdated($ticket->fresh(), 'assigned', $admin))->toOthers();
+
         return response()->json([
             'success' => true,
             'message' => 'Ticket assigned successfully',
@@ -238,6 +242,9 @@ class AdminSupportController extends Controller
             "Auto-assigned ticket {$ticket->ticket_number} to {$ticket->assignedTo->name}"
         );
 
+        // Broadcast ticket update to all admins
+        broadcast(new TicketUpdated($ticket->fresh(), 'auto_assigned', $admin))->toOthers();
+
         return response()->json([
             'success' => true,
             'message' => 'Ticket auto-assigned successfully',
@@ -279,6 +286,9 @@ class AdminSupportController extends Controller
             ['assigned_to' => $admin->id],
             "Self-assigned ticket {$ticket->ticket_number}"
         );
+
+        // Broadcast ticket update to all admins
+        broadcast(new TicketUpdated($ticket->fresh(), 'self_assigned', $admin))->toOthers();
 
         return response()->json([
             'success' => true,
@@ -366,6 +376,9 @@ class AdminSupportController extends Controller
             "Changed ticket {$ticket->ticket_number} status from {$oldStatus} to {$validated['status']}"
         );
 
+        // Broadcast ticket update to all admins
+        broadcast(new TicketUpdated($ticket->fresh(), 'status_changed', $admin))->toOthers();
+
         return response()->json([
             'success' => true,
             'message' => 'Ticket status updated successfully',
@@ -412,6 +425,9 @@ class AdminSupportController extends Controller
             $ticket->assignTo($admin);
         }
 
+        // Broadcast message added to all admins
+        broadcast(new TicketUpdated($ticket->fresh(), 'new_message', $admin))->toOthers();
+
         return response()->json([
             'success' => true,
             'message' => 'Message added successfully',
@@ -457,6 +473,9 @@ class AdminSupportController extends Controller
             ['priority' => $validated['priority']],
             "Changed ticket {$ticket->ticket_number} priority from {$oldPriority} to {$validated['priority']}"
         );
+
+        // Broadcast ticket update to all admins
+        broadcast(new TicketUpdated($ticket->fresh(), 'priority_changed', $admin))->toOthers();
 
         return response()->json([
             'success' => true,
