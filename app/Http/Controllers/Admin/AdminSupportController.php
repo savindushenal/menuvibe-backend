@@ -200,7 +200,7 @@ class AdminSupportController extends Controller
         );
 
         // Broadcast ticket update to all admins
-        broadcast(new TicketUpdated($ticket->fresh(), 'assigned', $admin))->toOthers();
+        broadcast(new TicketUpdated($ticket->fresh(), 'assigned', $admin->id))->toOthers();
 
         return response()->json([
             'success' => true,
@@ -259,7 +259,7 @@ class AdminSupportController extends Controller
         );
 
         // Broadcast ticket update to all admins
-        broadcast(new TicketUpdated($ticket->fresh(), 'auto_assigned', $admin))->toOthers();
+        broadcast(new TicketUpdated($ticket->fresh(), 'auto_assigned', $admin->id))->toOthers();
 
         return response()->json([
             'success' => true,
@@ -304,7 +304,7 @@ class AdminSupportController extends Controller
         );
 
         // Broadcast ticket update to all admins
-        broadcast(new TicketUpdated($ticket->fresh(), 'self_assigned', $admin))->toOthers();
+        broadcast(new TicketUpdated($ticket->fresh(), 'self_assigned', $admin->id))->toOthers();
 
         return response()->json([
             'success' => true,
@@ -393,7 +393,7 @@ class AdminSupportController extends Controller
         );
 
         // Broadcast ticket update to all admins
-        broadcast(new TicketUpdated($ticket->fresh(), 'status_changed', $admin))->toOthers();
+        broadcast(new TicketUpdated($ticket->fresh(), 'status_changed', $admin->id))->toOthers();
 
         return response()->json([
             'success' => true,
@@ -442,7 +442,7 @@ class AdminSupportController extends Controller
         }
 
         // Broadcast message added to all admins
-        broadcast(new TicketUpdated($ticket->fresh(), 'new_message', $admin))->toOthers();
+        broadcast(new TicketUpdated($ticket->fresh(), 'new_message', $admin->id))->toOthers();
 
         return response()->json([
             'success' => true,
@@ -491,7 +491,7 @@ class AdminSupportController extends Controller
         );
 
         // Broadcast ticket update to all admins
-        broadcast(new TicketUpdated($ticket->fresh(), 'priority_changed', $admin))->toOthers();
+        broadcast(new TicketUpdated($ticket->fresh(), 'priority_changed', $admin->id))->toOthers();
 
         return response()->json([
             'success' => true,
