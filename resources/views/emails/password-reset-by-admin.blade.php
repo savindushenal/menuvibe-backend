@@ -123,7 +123,7 @@
 <body>
     <div class="container">
         <div class="logo">
-            <h1>🍽️ MenuVibe</h1>
+            <h1>🍽️ MenuVire</h1>
         </div>
         
         <h2>Your Password Has Been Reset</h2>
@@ -156,7 +156,7 @@
         <p>If you did not expect this password reset, please contact our support team immediately.</p>
         
         <div class="footer">
-            <p>&copy; {{ date('Y') }} MenuVibe. All rights reserved.</p>
+            <p>&copy; {{ date('Y') }} MenuVire. All rights reserved.</p>
             <p>This is an automated message, please do not reply directly to this email.</p>
         </div>
     </div>

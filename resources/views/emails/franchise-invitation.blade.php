@@ -127,12 +127,12 @@
 <body>
     <div class="container">
         <div class="logo">
-            <h1>🍽️ MenuVibe</h1>
+            <h1>🍽️ MenuVire</h1>
         </div>
         
         <h2>You're Invited, {{ $inviteeName }}!</h2>
         
-        <p><strong>{{ $invitedByName }}</strong> has invited you to join <strong>{{ $franchiseName }}</strong> on MenuVibe.</p>
+        <p><strong>{{ $invitedByName }}</strong> has invited you to join <strong>{{ $franchiseName }}</strong> on MenuVire.</p>
         
         <div class="invite-card">
             <h3>{{ $franchiseName }}</h3>

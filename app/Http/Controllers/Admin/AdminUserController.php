@@ -504,7 +504,7 @@ class AdminUserController extends Controller
                 // Fallback: send credentials email with password
                 $result = $emailService->send($user->email, 'password-reset', [
                     'user_name' => $user->name,
-                    'platform_name' => 'MenuVibe',
+                    'platform_name' => 'MenuVire',
                     'new_password' => $password,
                     'login_link' => config('app.frontend_url') . '/login',
                 ]);

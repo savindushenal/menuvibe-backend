@@ -80,7 +80,7 @@ class EmailService
     {
         return $this->send($to, 'welcome', [
             'user_name' => $userName,
-            'platform_name' => 'MenuVibe',
+            'platform_name' => 'MenuVire',
             'verification_link' => $verificationLink ?? config('app.frontend_url') . '/verify',
         ]);
     }
@@ -92,7 +92,7 @@ class EmailService
     {
         return $this->send($to, 'password-reset', [
             'user_name' => $userName,
-            'platform_name' => 'MenuVibe',
+            'platform_name' => 'MenuVire',
             'reset_link' => $resetLink,
             'expires_at' => $expiresAt,
         ]);
@@ -105,7 +105,7 @@ class EmailService
     {
         return $this->send($to, 'otp', [
             'user_name' => $userName,
-            'platform_name' => 'MenuVibe',
+            'platform_name' => 'MenuVire',
             'otp_code' => $otpCode,
             'expires_in' => $expiresIn,
         ]);
@@ -125,7 +125,7 @@ class EmailService
         return $this->send($to, 'franchise-credentials', [
             'owner_name' => $ownerName,
             'franchise_name' => $franchiseName,
-            'platform_name' => 'MenuVibe',
+            'platform_name' => 'MenuVire',
             'email' => $email,
             'password' => $password,
             'login_url' => $loginUrl,
@@ -147,7 +147,7 @@ class EmailService
         return $this->send($to, 'franchise-invitation', [
             'invitee_name' => $inviteeName,
             'franchise_name' => $franchiseName,
-            'platform_name' => 'MenuVibe',
+            'platform_name' => 'MenuVire',
             'role' => $this->formatRoleName($role),
             'inviter_name' => $inviterName,
             'invitation_link' => $invitationLink,

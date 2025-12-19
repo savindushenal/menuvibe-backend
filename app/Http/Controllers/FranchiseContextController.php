@@ -583,7 +583,7 @@ class FranchiseContextController extends Controller
             ], 400);
         }
 
-        // Create franchise account with location_id
+        // Create franchise account with location_id and invitation token
         $account = FranchiseAccount::create([
             'franchise_id' => $franchise->id,
             'user_id' => $invitedUser->id,
@@ -593,11 +593,14 @@ class FranchiseContextController extends Controller
             'created_by' => $user->id,
         ]);
 
+        // Generate invitation token
+        $invitationToken = $account->generateInvitationToken(7); // 7 days expiry
+
         // Send invitation email
         try {
             $emailService = app(EmailService::class);
             $frontendUrl = config('app.frontend_url', 'https://staging.app.menuvire.com');
-            $invitationLink = $frontendUrl . '/franchise/' . $franchise->slug . '/join?email=' . urlencode($invitedUser->email);
+            $invitationLink = $frontendUrl . '/franchise/' . $franchise->slug . '/join?token=' . $invitationToken . '&email=' . urlencode($invitedUser->email);
             
             $emailService->sendFranchiseInvitation(
                 $invitedUser->email,

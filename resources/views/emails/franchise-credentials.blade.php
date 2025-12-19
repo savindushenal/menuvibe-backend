@@ -89,7 +89,7 @@
 <body>
     <div class="container">
         <div class="logo">
-            <h1>🍽️ MenuVibe</h1>
+            <h1>🍽️ MenuVire</h1>
         </div>
         
         <h2>Welcome, {{ $userName }}!</h2>

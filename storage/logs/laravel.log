@@ -3223,3 +3223,7 @@ Did you mean one of these?
 #18 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\artisan(35): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
 #19 {main}
 "} 
+[2025-12-19 11:26:05] local.ERROR: Declaration of App\Http\Controllers\Api\FranchiseInvitationController::validate(Illuminate\Http\Request $request): Illuminate\Http\JsonResponse must be compatible with App\Http\Controllers\Controller::validate(Illuminate\Http\Request $request, array $rules, array $messages = [], array $attributes = []) {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Declaration of App\\Http\\Controllers\\Api\\FranchiseInvitationController::validate(Illuminate\\Http\\Request $request): Illuminate\\Http\\JsonResponse must be compatible with App\\Http\\Controllers\\Controller::validate(Illuminate\\Http\\Request $request, array $rules, array $messages = [], array $attributes = []) at E:\\githubNew\\menuvibe-full\\menuvibe-backend\\app\\Http\\Controllers\\Api\\FranchiseInvitationController.php:19)
+[stacktrace]
+#0 {main}
+"} 

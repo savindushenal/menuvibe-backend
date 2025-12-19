@@ -682,8 +682,12 @@ Route::prefix('public/franchise')->group(function () {
     Route::get('/{franchiseSlug}/location/{locationSlug}/menu', [FranchiseController::class, 'getPublicMenu']);
 });
 
-// Franchise invitation acceptance (can be public or auth based on token)
-Route::post('/franchise-invitations/accept', [FranchiseUserController::class, 'acceptInvitation']);
+// Franchise invitation validation and acceptance (public routes)
+Route::post('/franchise-invitations/validate', [App\Http\Controllers\Api\FranchiseInvitationController::class, 'validateInvitation']);
+Route::post('/franchise-invitations/accept', [App\Http\Controllers\Api\FranchiseInvitationController::class, 'accept']);
+
+// Legacy route for FranchiseUser-based invitations
+Route::post('/franchise-user-invitations/accept', [FranchiseUserController::class, 'acceptInvitation']);
 
 // Franchise management routes (with manual token auth)
 Route::get('/franchises', function (Request $request) {
