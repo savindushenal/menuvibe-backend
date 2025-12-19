@@ -159,8 +159,8 @@ class FranchiseContextController extends Controller
         $user = $request->user();
         $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
 
-        // Only franchise_admin and above can see staff
-        if (!in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin']) && 
+        // franchise_admin, branch_manager, and above can see staff
+        if (!in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin', 'branch_manager', 'manager']) && 
             !in_array($user->role, ['admin', 'super_admin'])) {
             return response()->json([
                 'success' => false,
@@ -168,10 +168,23 @@ class FranchiseContextController extends Controller
             ], 403);
         }
 
-        $staff = FranchiseAccount::where('franchise_id', $franchise->id)
+        // Build query based on role
+        $query = FranchiseAccount::where('franchise_id', $franchise->id)
             ->where('is_active', true)
-            ->with(['user:id,name,email', 'branch:id,branch_name'])
-            ->get()
+            ->with(['user:id,name,email', 'branch:id,branch_name', 'location:id,name,branch_name']);
+
+        // Branch managers can only see staff from their location
+        if (in_array($role, ['branch_manager', 'manager'])) {
+            $account = FranchiseAccount::where('franchise_id', $franchise->id)
+                ->where('user_id', $user->id)
+                ->first();
+            
+            if ($account && $account->location_id) {
+                $query->where('location_id', $account->location_id);
+            }
+        }
+
+        $staff = $query->get()
             ->map(function ($account) {
                 return [
                     'id' => $account->id,
@@ -179,7 +192,8 @@ class FranchiseContextController extends Controller
                     'name' => $account->user?->name,
                     'email' => $account->user?->email,
                     'role' => $account->role,
-                    'branch' => $account->branch?->branch_name,
+                    'branch' => $account->branch?->branch_name ?? $account->location?->branch_name ?? $account->location?->name,
+                    'location_id' => $account->location_id,
                     'permissions' => $account->permissions,
                 ];
             });
