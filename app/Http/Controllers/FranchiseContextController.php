@@ -25,17 +25,54 @@ class FranchiseContextController extends Controller
         $user = $request->user();
         $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
 
-        // Get basic stats
-        $stats = [
-            'branches' => FranchiseBranch::where('franchise_id', $franchise->id)->count(),
-            'locations' => Location::where('franchise_id', $franchise->id)->count(),
-            'menus' => Menu::whereHas('location', function ($q) use ($franchise) {
-                $q->where('franchise_id', $franchise->id);
-            })->count(),
-            'staff' => FranchiseAccount::where('franchise_id', $franchise->id)
-                ->where('is_active', true)
-                ->count(),
-        ];
+        // Get user's franchise account to determine their location
+        $userAccount = FranchiseAccount::where('franchise_id', $franchise->id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        // Check if user is branch-restricted (branch_manager or staff)
+        $isBranchRestricted = in_array($role, ['branch_manager', 'manager', 'staff']);
+        $userLocationId = $userAccount?->location_id;
+
+        // Get stats based on user role
+        if ($isBranchRestricted && $userLocationId) {
+            // Branch managers/staff only see stats for their location
+            $stats = [
+                'branches' => 1, // Just their branch
+                'locations' => 1,
+                'menus' => Menu::where('location_id', $userLocationId)->count(),
+                'staff' => FranchiseAccount::where('franchise_id', $franchise->id)
+                    ->where('location_id', $userLocationId)
+                    ->where('is_active', true)
+                    ->count(),
+            ];
+        } else {
+            // Owners/admins see all stats
+            $stats = [
+                'branches' => FranchiseBranch::where('franchise_id', $franchise->id)->count(),
+                'locations' => Location::where('franchise_id', $franchise->id)->count(),
+                'menus' => Menu::whereHas('location', function ($q) use ($franchise) {
+                    $q->where('franchise_id', $franchise->id);
+                })->count(),
+                'staff' => FranchiseAccount::where('franchise_id', $franchise->id)
+                    ->where('is_active', true)
+                    ->count(),
+            ];
+        }
+
+        // Get user's location info if branch-restricted
+        $userLocation = null;
+        if ($isBranchRestricted && $userLocationId) {
+            $location = Location::find($userLocationId);
+            if ($location) {
+                $userLocation = [
+                    'id' => $location->id,
+                    'name' => $location->name,
+                    'branch_name' => $location->branch_name,
+                    'branch_code' => $location->branch_code,
+                ];
+            }
+        }
 
         return response()->json([
             'success' => true,
@@ -48,6 +85,8 @@ class FranchiseContextController extends Controller
                     'brand_color' => $franchise->brand_color,
                 ],
                 'user_role' => $role,
+                'user_location' => $userLocation,
+                'is_branch_restricted' => $isBranchRestricted,
                 'stats' => $stats,
             ]
         ]);
@@ -62,22 +101,35 @@ class FranchiseContextController extends Controller
         $user = $request->user();
         $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
 
-        // Branches are now locations with branch_code set
-        $query = Location::where('franchise_id', $franchise->id)
-            ->whereNotNull('branch_code')
-            ->with(['accounts', 'menus']);
-
-        if ($role === 'branch_manager') {
+        // Branch managers and staff can only see their own branch
+        if (in_array($role, ['branch_manager', 'manager', 'staff'])) {
             $account = FranchiseAccount::where('user_id', $user->id)
                 ->where('franchise_id', $franchise->id)
                 ->first();
             
-            if ($account && $account->location_id) {
-                $query->where('id', $account->location_id);
+            if (!$account || !$account->location_id) {
+                return response()->json([
+                    'success' => true,
+                    'data' => []
+                ]);
             }
+
+            $branches = Location::where('franchise_id', $franchise->id)
+                ->where('id', $account->location_id)
+                ->with(['accounts', 'menus'])
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $branches
+            ]);
         }
 
-        $branches = $query->get();
+        // Owners and admins can see all branches
+        $branches = Location::where('franchise_id', $franchise->id)
+            ->whereNotNull('branch_code')
+            ->with(['accounts', 'menus'])
+            ->get();
 
         return response()->json([
             'success' => true,
@@ -97,8 +149,8 @@ class FranchiseContextController extends Controller
         $query = Location::where('franchise_id', $franchise->id)
             ->with(['menus:id,location_id,name']);
 
-        // For branch managers, filter by their location
-        if ($role === 'branch_manager') {
+        // For branch managers and staff, filter by their location
+        if (in_array($role, ['branch_manager', 'manager', 'staff'])) {
             $account = FranchiseAccount::where('user_id', $user->id)
                 ->where('franchise_id', $franchise->id)
                 ->first();
@@ -129,8 +181,8 @@ class FranchiseContextController extends Controller
             $q->where('franchise_id', $franchise->id);
         })->with(['location:id,name,branch_name,branch_code', 'categories.items']);
 
-        // For branch managers, filter by their location
-        if ($role === 'branch_manager') {
+        // For branch managers and staff, filter by their location
+        if (in_array($role, ['branch_manager', 'manager', 'staff'])) {
             $account = FranchiseAccount::where('user_id', $user->id)
                 ->where('franchise_id', $franchise->id)
                 ->first();
