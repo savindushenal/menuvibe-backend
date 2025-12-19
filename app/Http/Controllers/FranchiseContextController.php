@@ -528,9 +528,25 @@ class FranchiseContextController extends Controller
         $user = $request->user();
         $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
 
-        // Only owners and admins can invite staff
-        if (!in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin']) && 
-            !in_array($user->role, ['admin', 'super_admin'])) {
+        // Get user's account to check their location
+        $userAccount = FranchiseAccount::where('franchise_id', $franchise->id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        // Owners, admins can invite any role; branch managers can only invite staff to their branch
+        $canInvite = false;
+        $restrictToLocation = null;
+
+        if (in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin']) || 
+            in_array($user->role, ['admin', 'super_admin'])) {
+            $canInvite = true;
+        } elseif (in_array($role, ['branch_manager', 'manager'])) {
+            // Branch managers can only invite staff to their own location
+            $canInvite = true;
+            $restrictToLocation = $userAccount?->location_id;
+        }
+
+        if (!$canInvite) {
             return response()->json([
                 'success' => false,
                 'message' => 'You do not have permission to invite staff'
@@ -555,8 +571,21 @@ class FranchiseContextController extends Controller
         ];
         $mappedRole = $roleMapping[$request->role] ?? $request->role;
 
+        // Branch managers can only invite staff role, not admins or other managers
+        if ($restrictToLocation !== null && $mappedRole !== 'staff') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Branch managers can only invite staff members'
+            ], 403);
+        }
+
         // Accept both branch_id and location_id (branch_id for backwards compatibility)
         $locationId = $request->location_id ?? $request->branch_id;
+
+        // If branch manager, force the location to their own location
+        if ($restrictToLocation !== null) {
+            $locationId = $restrictToLocation;
+        }
 
         // Check if location/branch belongs to franchise
         if ($locationId) {
