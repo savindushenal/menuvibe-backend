@@ -43,8 +43,24 @@ use Illuminate\Support\Facades\Broadcast;
 |
 */
 
-// Broadcasting auth route (for Pusher private channels)
-Broadcast::routes(['middleware' => ['api']]);
+// Custom Broadcasting auth route (handles Sanctum token manually)
+Route::post('/broadcasting/auth', function (Request $request) {
+    $token = $request->bearerToken();
+    if (!$token) {
+        return response()->json(['error' => 'Token required'], 401);
+    }
+    
+    $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$personalAccessToken) {
+        return response()->json(['error' => 'Invalid token'], 403);
+    }
+    
+    $user = $personalAccessToken->tokenable;
+    $request->setUserResolver(fn() => $user);
+    
+    // Use Laravel's broadcast auth
+    return Broadcast::auth($request);
+});
 
 // Public routes
 Route::post('/register', [AuthController::class, 'register']);
