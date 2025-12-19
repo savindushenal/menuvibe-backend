@@ -116,19 +116,19 @@ class EmailService
      */
     public function sendFranchiseCredentials(
         string $to,
-        string $userName,
+        string $ownerName,
         string $franchiseName,
         string $email,
         string $password,
-        string $loginLink
+        string $loginUrl
     ): array {
         return $this->send($to, 'franchise-credentials', [
-            'user_name' => $userName,
+            'owner_name' => $ownerName,
             'franchise_name' => $franchiseName,
             'platform_name' => 'MenuVibe',
             'email' => $email,
             'password' => $password,
-            'login_link' => $loginLink,
+            'login_url' => $loginUrl,
         ]);
     }
 
@@ -140,17 +140,38 @@ class EmailService
         string $inviteeName,
         string $franchiseName,
         string $role,
-        string $invitedBy,
-        string $acceptLink
+        string $inviterName,
+        string $invitationLink,
+        string $expiresIn = '7 days'
     ): array {
         return $this->send($to, 'franchise-invitation', [
             'invitee_name' => $inviteeName,
             'franchise_name' => $franchiseName,
             'platform_name' => 'MenuVibe',
-            'role' => $role,
-            'invited_by' => $invitedBy,
-            'accept_link' => $acceptLink,
+            'role' => $this->formatRoleName($role),
+            'inviter_name' => $inviterName,
+            'invitation_link' => $invitationLink,
+            'expires_in' => $expiresIn,
         ]);
+    }
+
+    /**
+     * Format role name for display
+     */
+    protected function formatRoleName(string $role): string
+    {
+        $roleNames = [
+            'owner' => 'Owner',
+            'franchise_owner' => 'Franchise Owner',
+            'franchise_admin' => 'Franchise Admin',
+            'admin' => 'Admin',
+            'manager' => 'Manager',
+            'branch_manager' => 'Branch Manager',
+            'staff' => 'Staff',
+            'viewer' => 'Viewer',
+        ];
+
+        return $roleNames[$role] ?? ucfirst(str_replace('_', ' ', $role));
     }
 
     /**

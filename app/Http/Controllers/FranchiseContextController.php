@@ -9,6 +9,7 @@ use App\Models\Location;
 use App\Models\Menu;
 use App\Models\FranchiseAccount;
 use App\Models\User;
+use App\Services\EmailService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Str;
@@ -582,7 +583,27 @@ class FranchiseContextController extends Controller
             'created_by' => $user->id,
         ]);
 
-        // TODO: Send invitation email
+        // Send invitation email
+        try {
+            $emailService = app(EmailService::class);
+            $frontendUrl = config('app.frontend_url', 'https://staging.app.menuvire.com');
+            $invitationLink = $frontendUrl . '/franchise/' . $franchise->slug . '/join?email=' . urlencode($invitedUser->email);
+            
+            $emailService->sendFranchiseInvitation(
+                $invitedUser->email,
+                $invitedUser->name,
+                $franchise->name,
+                $request->role,
+                $user->name,
+                $invitationLink
+            );
+        } catch (\Exception $e) {
+            \Log::error('Failed to send franchise invitation email', [
+                'error' => $e->getMessage(),
+                'user_email' => $invitedUser->email,
+                'franchise' => $franchise->name,
+            ]);
+        }
 
         return response()->json([
             'success' => true,

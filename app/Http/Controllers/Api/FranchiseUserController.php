@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Franchise;
 use App\Models\FranchiseUser;
 use App\Models\User;
+use App\Services\EmailService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
@@ -159,8 +160,27 @@ class FranchiseUserController extends Controller
             'invited_by' => $user->id,
         ]);
 
-        // TODO: Send invitation email
-        // Mail::to($invitedUser)->send(new FranchiseInvitation($franchise, $franchiseUser));
+        // Send invitation email
+        try {
+            $emailService = app(EmailService::class);
+            $frontendUrl = config('app.frontend_url', 'https://staging.app.menuvire.com');
+            $invitationLink = $frontendUrl . '/franchise/' . $franchise->slug . '/join?token=' . $franchiseUser->invitation_token;
+            
+            $emailService->sendFranchiseInvitation(
+                $invitedUser->email,
+                $invitedUser->name,
+                $franchise->name,
+                $request->role,
+                $user->name,
+                $invitationLink
+            );
+        } catch (\Exception $e) {
+            \Log::error('Failed to send franchise invitation email', [
+                'error' => $e->getMessage(),
+                'user_email' => $invitedUser->email,
+                'franchise' => $franchise->name,
+            ]);
+        }
 
         return response()->json([
             'success' => true,
