@@ -282,6 +282,15 @@ class AdminSupportController extends Controller
             ], 403);
         }
 
+        // Check if the staff member has capacity
+        if ($admin->isAtMaxCapacity()) {
+            $maxTickets = User::getMaxTicketsPerStaff();
+            return response()->json([
+                'success' => false,
+                'message' => "You have reached the maximum of {$maxTickets} active tickets. Please close or resolve some tickets first.",
+            ], 400);
+        }
+
         $ticket = SupportTicket::find($id);
 
         if (!$ticket) {
@@ -327,16 +336,34 @@ class AdminSupportController extends Controller
             ], 403);
         }
 
+        $maxTickets = User::getMaxTicketsPerStaff();
+
         $staff = User::supportStaff()
             ->where('is_active', true)
-            ->select('id', 'name', 'email', 'role', 'is_online', 'last_seen_at', 'active_tickets_count')
+            ->select('id', 'name', 'email', 'role', 'is_online', 'last_seen_at')
             ->orderBy('is_online', 'desc')
-            ->orderBy('active_tickets_count', 'asc')
-            ->get();
+            ->get()
+            ->map(function ($user) use ($maxTickets) {
+                $openTickets = $user->getOpenTicketCount();
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role,
+                    'is_online' => $user->is_online,
+                    'last_seen_at' => $user->last_seen_at,
+                    'open_tickets_count' => $openTickets,
+                    'max_tickets' => $maxTickets,
+                    'has_capacity' => $openTickets < $maxTickets,
+                ];
+            })
+            ->sortBy('open_tickets_count')
+            ->values();
 
         return response()->json([
             'success' => true,
             'data' => $staff,
+            'max_tickets_per_staff' => $maxTickets,
         ]);
     }
 
@@ -368,6 +395,7 @@ class AdminSupportController extends Controller
         ]);
 
         $oldStatus = $ticket->status;
+        $wasAssignedTo = $ticket->assigned_to;
         
         switch ($validated['status']) {
             case 'resolved':
@@ -395,10 +423,34 @@ class AdminSupportController extends Controller
         // Broadcast ticket update to all admins
         broadcast(new TicketUpdated($ticket->fresh(), 'status_changed', $admin->id))->toOthers();
 
+        // If ticket was resolved/closed, try to auto-assign an unassigned ticket to the staff member
+        $autoAssignedTicket = null;
+        if (in_array($validated['status'], ['resolved', 'closed']) && $wasAssignedTo) {
+            $assignee = User::find($wasAssignedTo);
+            if ($assignee && $assignee->hasTicketCapacity()) {
+                $autoAssignedTicket = $assignee->tryAssignUnassignedTicket();
+                
+                if ($autoAssignedTicket) {
+                    // Notify the staff member about the new auto-assigned ticket
+                    Notification::create([
+                        'user_id' => $assignee->id,
+                        'type' => 'ticket_auto_assigned',
+                        'title' => 'New Ticket Auto-Assigned',
+                        'message' => "Ticket #{$autoAssignedTicket->ticket_number} has been auto-assigned to you.",
+                        'data' => ['ticket_id' => $autoAssignedTicket->id],
+                    ]);
+                    
+                    // Broadcast the auto-assignment
+                    broadcast(new TicketUpdated($autoAssignedTicket->fresh(), 'auto_assigned', null))->toOthers();
+                }
+            }
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Ticket status updated successfully',
             'data' => $ticket->fresh(),
+            'auto_assigned_ticket' => $autoAssignedTicket ? $autoAssignedTicket->fresh(['user:id,name,email', 'assignedTo:id,name,email']) : null,
         ]);
     }
 

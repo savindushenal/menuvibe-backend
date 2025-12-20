@@ -580,24 +580,133 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the maximum tickets allowed per support staff member
+     */
+    public static function getMaxTicketsPerStaff(): int
+    {
+        return (int) PlatformSetting::get('support.max_tickets_per_staff', 5);
+    }
+
+    /**
+     * Check if this staff member has capacity for more tickets
+     */
+    public function hasTicketCapacity(): bool
+    {
+        if (!$this->canHandleSupportTickets()) {
+            return false;
+        }
+        return $this->getOpenTicketCount() < self::getMaxTicketsPerStaff();
+    }
+
+    /**
+     * Get actual open ticket count for this user
+     */
+    public function getOpenTicketCount(): int
+    {
+        return SupportTicket::where('assigned_to', $this->id)
+            ->whereNotIn('status', [SupportTicket::STATUS_RESOLVED, SupportTicket::STATUS_CLOSED])
+            ->count();
+    }
+
+    /**
+     * Check if this staff member is at max capacity
+     */
+    public function isAtMaxCapacity(): bool
+    {
+        return $this->getOpenTicketCount() >= self::getMaxTicketsPerStaff();
+    }
+
+    /**
      * Get the best available support staff for auto-assignment
-     * Prioritizes online staff with fewest active tickets
+     * Prioritizes: 1) Support officers first, 2) Online, 3) Lowest ticket count, 4) Has capacity
      */
     public static function getBestAvailableSupportStaff(): ?self
     {
-        // First try online staff
-        $staff = self::onlineSupportStaff()
-            ->orderBy('active_tickets_count', 'asc')
-            ->first();
-
-        // If no online staff, get any active support staff with fewest tickets
-        if (!$staff) {
-            $staff = self::supportStaff()
-                ->where('is_active', true)
-                ->orderBy('active_tickets_count', 'asc')
-                ->first();
+        // Check if auto-assign is enabled
+        if (!PlatformSetting::get('support.auto_assign_enabled', true)) {
+            return null;
         }
 
+        $maxTickets = self::getMaxTicketsPerStaff();
+        $prioritizeOnline = PlatformSetting::get('support.prioritize_online_staff', true);
+
+        // First try online support officers with capacity (if prioritizing online)
+        if ($prioritizeOnline) {
+            $staff = self::where('role', self::ROLE_SUPPORT_OFFICER)
+                ->where('is_online', true)
+                ->where('is_active', true)
+                ->whereRaw('(SELECT COUNT(*) FROM support_tickets WHERE assigned_to = users.id AND status NOT IN (?, ?)) < ?', 
+                    [SupportTicket::STATUS_RESOLVED, SupportTicket::STATUS_CLOSED, $maxTickets])
+                ->orderByRaw('(SELECT COUNT(*) FROM support_tickets WHERE assigned_to = users.id AND status NOT IN (?, ?)) ASC',
+                    [SupportTicket::STATUS_RESOLVED, SupportTicket::STATUS_CLOSED])
+                ->first();
+
+            if ($staff) {
+                return $staff;
+            }
+
+            // Then try online admins/super_admins with capacity
+            $staff = self::whereIn('role', [self::ROLE_ADMIN, self::ROLE_SUPER_ADMIN])
+                ->where('is_online', true)
+                ->where('is_active', true)
+                ->whereRaw('(SELECT COUNT(*) FROM support_tickets WHERE assigned_to = users.id AND status NOT IN (?, ?)) < ?', 
+                    [SupportTicket::STATUS_RESOLVED, SupportTicket::STATUS_CLOSED, $maxTickets])
+                ->orderByRaw('(SELECT COUNT(*) FROM support_tickets WHERE assigned_to = users.id AND status NOT IN (?, ?)) ASC',
+                    [SupportTicket::STATUS_RESOLVED, SupportTicket::STATUS_CLOSED])
+                ->first();
+
+            if ($staff) {
+                return $staff;
+            }
+        }
+
+        // Finally try any active support staff with capacity (includes offline if prioritizing online,
+        // or all staff if not prioritizing online)
+        $staff = self::supportStaff()
+            ->where('is_active', true)
+            ->whereRaw('(SELECT COUNT(*) FROM support_tickets WHERE assigned_to = users.id AND status NOT IN (?, ?)) < ?', 
+                [SupportTicket::STATUS_RESOLVED, SupportTicket::STATUS_CLOSED, $maxTickets])
+            ->orderByRaw('(SELECT COUNT(*) FROM support_tickets WHERE assigned_to = users.id AND status NOT IN (?, ?)) ASC',
+                [SupportTicket::STATUS_RESOLVED, SupportTicket::STATUS_CLOSED])
+            ->first();
+
         return $staff;
+    }
+
+    /**
+     * Get the oldest unassigned ticket
+     */
+    public static function getOldestUnassignedTicket(): ?SupportTicket
+    {
+        return SupportTicket::whereNull('assigned_to')
+            ->whereNotIn('status', [SupportTicket::STATUS_RESOLVED, SupportTicket::STATUS_CLOSED])
+            ->orderBy('priority', 'desc') // Urgent first
+            ->orderBy('created_at', 'asc') // Oldest first
+            ->first();
+    }
+
+    /**
+     * Try to assign an unassigned ticket to this staff member
+     * Called when a ticket is closed and staff has capacity
+     */
+    public function tryAssignUnassignedTicket(): ?SupportTicket
+    {
+        // Check if auto-reassign on close is enabled
+        if (!PlatformSetting::get('support.auto_reassign_on_close', true)) {
+            return null;
+        }
+
+        if (!$this->hasTicketCapacity()) {
+            return null;
+        }
+
+        $ticket = self::getOldestUnassignedTicket();
+        
+        if ($ticket) {
+            $ticket->assignToWithTracking($this, null, 'auto', 'Auto-assigned when staff capacity became available');
+            return $ticket;
+        }
+
+        return null;
     }
 }

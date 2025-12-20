@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\TicketUpdated;
+use App\Models\Notification;
 use App\Models\SupportTicket;
 use App\Models\SupportTicketMessage;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -96,6 +99,16 @@ class HelpTicketController extends Controller
                 'message' => $request->description,
                 'is_internal' => false,
             ]);
+
+            // Notify all support staff about the new ticket
+            $ticket->notifySupportStaff();
+
+            // Try to auto-assign to best available support staff
+            $ticket->autoAssign();
+            $ticket->refresh();
+
+            // Broadcast ticket created event
+            broadcast(new TicketUpdated($ticket, 'created', null))->toOthers();
 
             return response()->json([
                 'success' => true,
