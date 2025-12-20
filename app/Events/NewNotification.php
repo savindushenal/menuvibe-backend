@@ -48,14 +48,17 @@ class NewNotification implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
-            'id' => $this->notification->id,
-            'type' => $this->notification->type,
-            'title' => $this->notification->title,
-            'message' => $this->notification->message,
-            'link' => $this->notification->link,
-            'data' => $this->notification->data,
-            'is_read' => $this->notification->is_read,
-            'created_at' => $this->notification->created_at->toISOString(),
+            'notification' => [
+                'id' => $this->notification->id,
+                'type' => $this->notification->type,
+                'title' => $this->notification->title,
+                'message' => $this->notification->message,
+                'link' => $this->notification->link,
+                'data' => $this->notification->data,
+                'is_read' => $this->notification->is_read,
+                'read_at' => $this->notification->read_at?->toISOString(),
+                'created_at' => $this->notification->created_at->toISOString(),
+            ],
         ];
     }
 }
