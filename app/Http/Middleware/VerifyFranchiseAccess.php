@@ -13,6 +13,7 @@ class VerifyFranchiseAccess
     /**
      * Handle an incoming request.
      * Verify that the user has access to the franchise specified by slug
+     * OPTIMIZED: Now attaches franchise account to request to avoid repeated queries
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -41,29 +42,42 @@ class VerifyFranchiseAccess
 
         // Super admins and admins have access to all franchises
         if (in_array($user->role, ['super_admin', 'admin'])) {
-            $request->merge(['franchise' => $franchise]);
+            $request->merge([
+                'franchise' => $franchise,
+                'franchise_account' => null,
+                'franchise_role' => $user->role,
+            ]);
             return $next($request);
         }
 
-        // Check franchise_accounts table
-        $hasAccountAccess = FranchiseAccount::where('user_id', $user->id)
+        // OPTIMIZED: Get the full account record (not just exists check)
+        // This is reused by controllers instead of querying again
+        $account = FranchiseAccount::where('user_id', $user->id)
             ->where('franchise_id', $franchise->id)
             ->where('is_active', true)
-            ->exists();
+            ->first();
 
-        if ($hasAccountAccess) {
-            $request->merge(['franchise' => $franchise]);
+        if ($account) {
+            $request->merge([
+                'franchise' => $franchise,
+                'franchise_account' => $account,
+                'franchise_role' => $account->role,
+            ]);
             return $next($request);
         }
 
         // Check franchise_users pivot table
-        $hasPivotAccess = $user->franchises()
+        $pivotFranchise = $user->franchises()
             ->where('franchises.id', $franchise->id)
             ->where('franchise_users.is_active', true)
-            ->exists();
+            ->first();
 
-        if ($hasPivotAccess) {
-            $request->merge(['franchise' => $franchise]);
+        if ($pivotFranchise) {
+            $request->merge([
+                'franchise' => $franchise,
+                'franchise_account' => null,
+                'franchise_role' => $pivotFranchise->pivot->role,
+            ]);
             return $next($request);
         }
 
@@ -75,10 +89,16 @@ class VerifyFranchiseAccess
 
     /**
      * Get the user's role within the franchise
+     * OPTIMIZED: Can use cached data from request if available
      */
-    public static function getUserFranchiseRole($user, $franchise): ?string
+    public static function getUserFranchiseRole($user, $franchise, ?Request $request = null): ?string
     {
-        // Check franchise_accounts first
+        // Check if role is already cached in request (from middleware)
+        if ($request && $request->has('franchise_role')) {
+            return $request->get('franchise_role');
+        }
+
+        // Fallback: query database (for cases where called outside middleware context)
         $account = FranchiseAccount::where('user_id', $user->id)
             ->where('franchise_id', $franchise->id)
             ->where('is_active', true)
@@ -99,5 +119,13 @@ class VerifyFranchiseAccess
         }
 
         return null;
+    }
+
+    /**
+     * Get the user's franchise account from request (if available)
+     */
+    public static function getFranchiseAccount(Request $request): ?FranchiseAccount
+    {
+        return $request->get('franchise_account');
     }
 }

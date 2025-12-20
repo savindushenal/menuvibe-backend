@@ -325,22 +325,21 @@ class SupportTicket extends Model
 
     /**
      * Notify all support staff about this ticket
+     * OPTIMIZED: Use batch insert instead of individual creates
      */
     public function notifySupportStaff(): void
     {
         $staffIds = User::supportStaff()
             ->where('is_active', true)
-            ->pluck('id');
+            ->pluck('id')
+            ->toArray();
 
-        foreach ($staffIds as $staffId) {
-            Notification::newTicket($staffId, $this);
-        }
+        // Batch create notifications
+        Notification::batchNewTicket($staffIds, $this);
 
         // Special notification for urgent tickets
         if ($this->priority === self::PRIORITY_URGENT) {
-            foreach ($staffIds as $staffId) {
-                Notification::urgentTicket($staffId, $this);
-            }
+            Notification::batchUrgentTicket($staffIds, $this);
         }
     }
 }

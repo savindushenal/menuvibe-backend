@@ -339,13 +339,17 @@ class AdminSupportController extends Controller
 
         $maxTickets = User::getMaxTicketsPerStaff();
 
+        // Optimized: Use withCount to avoid N+1 query problem
         $staff = User::supportStaff()
             ->where('is_active', true)
             ->select('id', 'name', 'email', 'role', 'is_online', 'last_seen_at')
+            ->withCount(['assignedTickets as open_tickets_count' => function ($query) {
+                $query->whereNotIn('status', [SupportTicket::STATUS_RESOLVED, SupportTicket::STATUS_CLOSED]);
+            }])
             ->orderBy('is_online', 'desc')
+            ->orderBy('open_tickets_count', 'asc')
             ->get()
             ->map(function ($user) use ($maxTickets) {
-                $openTickets = $user->getOpenTicketCount();
                 return [
                     'id' => $user->id,
                     'name' => $user->name,
@@ -353,12 +357,11 @@ class AdminSupportController extends Controller
                     'role' => $user->role,
                     'is_online' => $user->is_online,
                     'last_seen_at' => $user->last_seen_at,
-                    'open_tickets_count' => $openTickets,
+                    'open_tickets_count' => $user->open_tickets_count,
                     'max_tickets' => $maxTickets,
-                    'has_capacity' => $openTickets < $maxTickets,
+                    'has_capacity' => $user->open_tickets_count < $maxTickets,
                 ];
             })
-            ->sortBy('open_tickets_count')
             ->values();
 
         return response()->json([
@@ -558,6 +561,7 @@ class AdminSupportController extends Controller
 
     /**
      * Get ticket statistics
+     * Optimized: Uses grouped queries instead of multiple individual COUNT queries
      */
     public function statistics(Request $request): JsonResponse
     {
@@ -570,29 +574,60 @@ class AdminSupportController extends Controller
             ], 403);
         }
 
+        // Optimized: Single query for all status counts
+        $statusCounts = SupportTicket::query()
+            ->selectRaw('status, COUNT(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status');
+
+        $openStatuses = ['open', 'in_progress', 'waiting_on_customer'];
+
+        // Optimized: Single query for priority counts (only open tickets)
+        $priorityCounts = SupportTicket::query()
+            ->whereIn('status', $openStatuses)
+            ->selectRaw('priority, COUNT(*) as count')
+            ->groupBy('priority')
+            ->pluck('count', 'priority');
+
+        // Optimized: Single query for category counts (only open tickets)
+        $categoryCounts = SupportTicket::query()
+            ->whereIn('status', $openStatuses)
+            ->selectRaw('category, COUNT(*) as count')
+            ->groupBy('category')
+            ->pluck('count', 'category');
+
+        // Optimized: Single query for unassigned and my tickets
+        $assignmentCounts = SupportTicket::query()
+            ->whereIn('status', $openStatuses)
+            ->selectRaw("
+                SUM(CASE WHEN assigned_to IS NULL THEN 1 ELSE 0 END) as unassigned,
+                SUM(CASE WHEN assigned_to = ? THEN 1 ELSE 0 END) as my_tickets
+            ", [$admin->id])
+            ->first();
+
         $stats = [
             'by_status' => [
-                'open' => SupportTicket::where('status', 'open')->count(),
-                'in_progress' => SupportTicket::where('status', 'in_progress')->count(),
-                'waiting_on_customer' => SupportTicket::where('status', 'waiting_on_customer')->count(),
-                'resolved' => SupportTicket::where('status', 'resolved')->count(),
-                'closed' => SupportTicket::where('status', 'closed')->count(),
+                'open' => $statusCounts['open'] ?? 0,
+                'in_progress' => $statusCounts['in_progress'] ?? 0,
+                'waiting_on_customer' => $statusCounts['waiting_on_customer'] ?? 0,
+                'resolved' => $statusCounts['resolved'] ?? 0,
+                'closed' => $statusCounts['closed'] ?? 0,
             ],
             'by_priority' => [
-                'low' => SupportTicket::open()->where('priority', 'low')->count(),
-                'medium' => SupportTicket::open()->where('priority', 'medium')->count(),
-                'high' => SupportTicket::open()->where('priority', 'high')->count(),
-                'urgent' => SupportTicket::open()->where('priority', 'urgent')->count(),
+                'low' => $priorityCounts['low'] ?? 0,
+                'medium' => $priorityCounts['medium'] ?? 0,
+                'high' => $priorityCounts['high'] ?? 0,
+                'urgent' => $priorityCounts['urgent'] ?? 0,
             ],
             'by_category' => [
-                'billing' => SupportTicket::open()->where('category', 'billing')->count(),
-                'technical' => SupportTicket::open()->where('category', 'technical')->count(),
-                'feature_request' => SupportTicket::open()->where('category', 'feature_request')->count(),
-                'account' => SupportTicket::open()->where('category', 'account')->count(),
-                'other' => SupportTicket::open()->where('category', 'other')->count(),
+                'billing' => $categoryCounts['billing'] ?? 0,
+                'technical' => $categoryCounts['technical'] ?? 0,
+                'feature_request' => $categoryCounts['feature_request'] ?? 0,
+                'account' => $categoryCounts['account'] ?? 0,
+                'other' => $categoryCounts['other'] ?? 0,
             ],
-            'unassigned' => SupportTicket::open()->unassigned()->count(),
-            'my_tickets' => SupportTicket::open()->where('assigned_to', $admin->id)->count(),
+            'unassigned' => (int) ($assignmentCounts->unassigned ?? 0),
+            'my_tickets' => (int) ($assignmentCounts->my_tickets ?? 0),
             'average_resolution_time' => $this->calculateAverageResolutionTime(),
         ];
 

@@ -18,17 +18,16 @@ class FranchiseContextController extends Controller
 {
     /**
      * Get franchise dashboard data
+     * OPTIMIZED: Use cached franchise account from middleware instead of re-querying
      */
     public function dashboard(Request $request, string $franchiseSlug)
     {
         $franchise = $request->get('franchise');
         $user = $request->user();
-        $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
-
-        // Get user's franchise account to determine their location
-        $userAccount = FranchiseAccount::where('franchise_id', $franchise->id)
-            ->where('user_id', $user->id)
-            ->first();
+        
+        // OPTIMIZED: Use cached role and account from middleware
+        $role = $request->get('franchise_role');
+        $userAccount = $request->get('franchise_account');
 
         // Check if user is branch-restricted (branch_manager or staff)
         $isBranchRestricted = in_array($role, ['branch_manager', 'manager', 'staff']);
@@ -94,18 +93,16 @@ class FranchiseContextController extends Controller
 
     /**
      * Get franchise branches (now unified with locations)
+     * OPTIMIZED: Use cached franchise account from middleware
      */
     public function branches(Request $request, string $franchiseSlug)
     {
         $franchise = $request->get('franchise');
-        $user = $request->user();
-        $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
+        $role = $request->get('franchise_role');
 
         // Branch managers and staff can only see their own branch
         if (in_array($role, ['branch_manager', 'manager', 'staff'])) {
-            $account = FranchiseAccount::where('user_id', $user->id)
-                ->where('franchise_id', $franchise->id)
-                ->first();
+            $account = $request->get('franchise_account');
             
             if (!$account || !$account->location_id) {
                 return response()->json([
@@ -139,21 +136,19 @@ class FranchiseContextController extends Controller
 
     /**
      * Get franchise locations
+     * OPTIMIZED: Use cached franchise account from middleware
      */
     public function locations(Request $request, string $franchiseSlug)
     {
         $franchise = $request->get('franchise');
-        $user = $request->user();
-        $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
+        $role = $request->get('franchise_role');
 
         $query = Location::where('franchise_id', $franchise->id)
             ->with(['menus:id,location_id,name']);
 
         // For branch managers and staff, filter by their location
         if (in_array($role, ['branch_manager', 'manager', 'staff'])) {
-            $account = FranchiseAccount::where('user_id', $user->id)
-                ->where('franchise_id', $franchise->id)
-                ->first();
+            $account = $request->get('franchise_account');
             
             if ($account && $account->location_id) {
                 $query->where('id', $account->location_id);
@@ -170,12 +165,12 @@ class FranchiseContextController extends Controller
 
     /**
      * Get franchise menus
+     * OPTIMIZED: Use cached franchise account from middleware
      */
     public function menus(Request $request, string $franchiseSlug)
     {
         $franchise = $request->get('franchise');
-        $user = $request->user();
-        $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
+        $role = $request->get('franchise_role');
 
         $query = Menu::whereHas('location', function ($q) use ($franchise) {
             $q->where('franchise_id', $franchise->id);
@@ -183,9 +178,7 @@ class FranchiseContextController extends Controller
 
         // For branch managers and staff, filter by their location
         if (in_array($role, ['branch_manager', 'manager', 'staff'])) {
-            $account = FranchiseAccount::where('user_id', $user->id)
-                ->where('franchise_id', $franchise->id)
-                ->first();
+            $account = $request->get('franchise_account');
             
             if ($account && $account->location_id) {
                 $query->whereHas('location', function ($q) use ($account) {
@@ -209,7 +202,7 @@ class FranchiseContextController extends Controller
     {
         $franchise = $request->get('franchise');
         $user = $request->user();
-        $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
+        $role = $request->get('franchise_role');
 
         // franchise_admin, branch_manager, and above can see staff
         if (!in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin', 'branch_manager', 'manager']) && 
@@ -263,7 +256,7 @@ class FranchiseContextController extends Controller
     {
         $franchise = $request->get('franchise');
         $user = $request->user();
-        $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
+        $role = $request->get('franchise_role');
 
         // Only owners and admins can see full settings
         $canViewFullSettings = in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin']) || 
@@ -306,7 +299,7 @@ class FranchiseContextController extends Controller
     {
         $franchise = $request->get('franchise');
         $user = $request->user();
-        $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
+        $role = $request->get('franchise_role');
 
         // Only owners and admins can update settings
         if (!in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin']) && 
@@ -414,7 +407,7 @@ class FranchiseContextController extends Controller
     {
         $franchise = $request->get('franchise');
         $user = $request->user();
-        $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
+        $role = $request->get('franchise_role');
 
         // Only owners and admins can create branches
         if (!in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin']) && 
@@ -469,7 +462,7 @@ class FranchiseContextController extends Controller
     {
         $franchise = $request->get('franchise');
         $user = $request->user();
-        $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
+        $role = $request->get('franchise_role');
 
         // Only owners and admins can update branches
         if (!in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin']) && 
@@ -535,7 +528,7 @@ class FranchiseContextController extends Controller
     {
         $franchise = $request->get('franchise');
         $user = $request->user();
-        $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
+        $role = $request->get('franchise_role');
 
         // Only owners can delete branches
         if (!in_array($role, ['owner', 'franchise_owner']) && 
@@ -573,17 +566,14 @@ class FranchiseContextController extends Controller
 
     /**
      * Invite a staff member to the franchise
+     * OPTIMIZED: Use cached franchise account from middleware
      */
     public function inviteStaff(Request $request, string $franchiseSlug)
     {
         $franchise = $request->get('franchise');
         $user = $request->user();
-        $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
-
-        // Get user's account to check their location
-        $userAccount = FranchiseAccount::where('franchise_id', $franchise->id)
-            ->where('user_id', $user->id)
-            ->first();
+        $role = $request->get('franchise_role');
+        $userAccount = $request->get('franchise_account');
 
         // Owners, admins can invite any role; branch managers can only invite staff to their branch
         $canInvite = false;
@@ -734,7 +724,7 @@ class FranchiseContextController extends Controller
     {
         $franchise = $request->get('franchise');
         $user = $request->user();
-        $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
+        $role = $request->get('franchise_role');
 
         // Only owners and admins can update staff
         if (!in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin']) && 
@@ -809,7 +799,7 @@ class FranchiseContextController extends Controller
     {
         $franchise = $request->get('franchise');
         $user = $request->user();
-        $role = VerifyFranchiseAccess::getUserFranchiseRole($user, $franchise);
+        $role = $request->get('franchise_role');
 
         // Only owners and admins can remove staff
         if (!in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin']) && 

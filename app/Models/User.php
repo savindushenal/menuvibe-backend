@@ -338,6 +338,7 @@ class User extends Authenticatable
 
     /**
      * Get the current subscription plan
+     * OPTIMIZED: Cache free plan lookup to avoid repeated queries
      */
     public function getCurrentSubscriptionPlan(): ?SubscriptionPlan
     {
@@ -346,8 +347,10 @@ class User extends Authenticatable
             return $activeSubscription->subscriptionPlan;
         }
 
-        // Default to free plan if no active subscription
-        return SubscriptionPlan::where('slug', 'free')->first();
+        // Default to free plan if no active subscription - cached for 1 hour
+        return \Illuminate\Support\Facades\Cache::remember('subscription_plan_free', 3600, function () {
+            return SubscriptionPlan::where('slug', 'free')->first();
+        });
     }
 
     /**
@@ -447,14 +450,19 @@ class User extends Authenticatable
 
     /**
      * Get the total number of menu items across all locations
+     * Optimized: Single query instead of N+1
      */
     public function getTotalMenuItemsCount(): int
     {
-        $total = 0;
-        foreach ($this->locations as $location) {
-            $total += $location->getTotalMenuItemsCount();
-        }
-        return $total;
+        return MenuItem::whereIn('menu_id', function ($query) {
+            $query->select('id')
+                  ->from('menus')
+                  ->whereIn('location_id', function ($q) {
+                      $q->select('id')
+                        ->from('locations')
+                        ->where('user_id', $this->id);
+                  });
+        })->count();
     }
 
     /**

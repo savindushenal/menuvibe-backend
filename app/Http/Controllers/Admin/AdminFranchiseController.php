@@ -170,14 +170,25 @@ class AdminFranchiseController extends Controller
 
     /**
      * Get franchise statistics
+     * Optimized: Single query for counts using conditional aggregation
      */
     public function statistics()
     {
+        // Optimized: Single query for all franchise counts
+        $franchiseStats = \Illuminate\Support\Facades\DB::table('franchises')
+            ->selectRaw("
+                COUNT(*) as total,
+                SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active,
+                SUM(CASE WHEN is_active = 0 THEN 1 ELSE 0 END) as inactive,
+                SUM(CASE WHEN custom_domain IS NOT NULL THEN 1 ELSE 0 END) as with_custom_domain
+            ")
+            ->first();
+
         $stats = [
-            'total' => Franchise::count(),
-            'active' => Franchise::where('is_active', true)->count(),
-            'inactive' => Franchise::where('is_active', false)->count(),
-            'with_custom_domain' => Franchise::whereNotNull('custom_domain')->count(),
+            'total' => (int) $franchiseStats->total,
+            'active' => (int) $franchiseStats->active,
+            'inactive' => (int) $franchiseStats->inactive,
+            'with_custom_domain' => (int) $franchiseStats->with_custom_domain,
             'total_locations' => \App\Models\Location::whereNotNull('franchise_id')->count(),
         ];
 

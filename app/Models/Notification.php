@@ -172,4 +172,97 @@ class Notification extends Model
             ],
         ]);
     }
+
+    /**
+     * OPTIMIZED: Batch create new ticket notifications for multiple users
+     * Uses insert() for efficiency but still broadcasts events
+     */
+    public static function batchNewTicket(array $userIds, SupportTicket $ticket): void
+    {
+        if (empty($userIds)) {
+            return;
+        }
+
+        $now = now();
+        $records = [];
+        
+        foreach ($userIds as $userId) {
+            $records[] = [
+                'user_id' => $userId,
+                'type' => self::TYPE_TICKET_NEW,
+                'title' => 'New Support Ticket',
+                'message' => "New ticket #{$ticket->ticket_number}: {$ticket->subject}",
+                'link' => "/admin/tickets?view={$ticket->id}",
+                'data' => json_encode([
+                    'ticket_id' => $ticket->id,
+                    'ticket_number' => $ticket->ticket_number,
+                    'subject' => $ticket->subject,
+                    'priority' => $ticket->priority,
+                    'category' => $ticket->category,
+                ]),
+                'is_read' => false,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+
+        // Batch insert
+        self::insert($records);
+
+        // Broadcast to each user (still needed for real-time)
+        $insertedNotifications = self::where('type', self::TYPE_TICKET_NEW)
+            ->whereIn('user_id', $userIds)
+            ->where('created_at', '>=', $now->subSecond())
+            ->whereJsonContains('data->ticket_id', $ticket->id)
+            ->get();
+
+        foreach ($insertedNotifications as $notification) {
+            broadcast(new \App\Events\NewNotification($notification))->toOthers();
+        }
+    }
+
+    /**
+     * OPTIMIZED: Batch create urgent ticket notifications for multiple users
+     */
+    public static function batchUrgentTicket(array $userIds, SupportTicket $ticket): void
+    {
+        if (empty($userIds)) {
+            return;
+        }
+
+        $now = now();
+        $records = [];
+        
+        foreach ($userIds as $userId) {
+            $records[] = [
+                'user_id' => $userId,
+                'type' => self::TYPE_TICKET_URGENT,
+                'title' => '🚨 Urgent Ticket',
+                'message' => "Urgent ticket #{$ticket->ticket_number} requires immediate attention",
+                'link' => "/admin/tickets?view={$ticket->id}",
+                'data' => json_encode([
+                    'ticket_id' => $ticket->id,
+                    'ticket_number' => $ticket->ticket_number,
+                    'subject' => $ticket->subject,
+                ]),
+                'is_read' => false,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+
+        // Batch insert
+        self::insert($records);
+
+        // Broadcast to each user
+        $insertedNotifications = self::where('type', self::TYPE_TICKET_URGENT)
+            ->whereIn('user_id', $userIds)
+            ->where('created_at', '>=', $now->subSecond())
+            ->whereJsonContains('data->ticket_id', $ticket->id)
+            ->get();
+
+        foreach ($insertedNotifications as $notification) {
+            broadcast(new \App\Events\NewNotification($notification))->toOthers();
+        }
+    }
 }

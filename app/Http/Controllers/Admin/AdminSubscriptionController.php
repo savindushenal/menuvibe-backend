@@ -283,28 +283,39 @@ class AdminSubscriptionController extends Controller
             ], 403);
         }
 
-        $stats = [
-            'by_plan' => SubscriptionPlan::withCount([
-                'subscriptions as active_count' => function ($q) {
-                    $q->where('is_active', true)->where('status', 'active');
-                },
-            ])->get()->map(fn($p) => [
-                'plan' => $p->name,
-                'slug' => $p->slug,
-                'active_count' => $p->active_count,
-            ]),
-            'by_status' => [
-                'active' => UserSubscription::where('status', 'active')->count(),
-                'trialing' => UserSubscription::where('status', 'trialing')->count(),
-                'cancelled' => UserSubscription::where('status', 'cancelled')->count(),
-                'expired' => UserSubscription::where('status', 'expired')->count(),
-            ],
-            'expiring_soon' => UserSubscription::where('is_active', true)
-                ->where('ends_at', '<=', now()->addDays(7))
-                ->where('ends_at', '>', now())
-                ->count(),
-            'mrr' => $this->calculateMRR(),
-        ];
+        // OPTIMIZED: Cache statistics for 5 minutes and consolidate queries
+        $stats = \Illuminate\Support\Facades\Cache::remember('admin_subscription_stats', 300, function () {
+            // Single query for all status counts + expiring soon
+            $statusCounts = DB::table('user_subscriptions')
+                ->selectRaw("
+                    SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active,
+                    SUM(CASE WHEN status = 'trialing' THEN 1 ELSE 0 END) as trialing,
+                    SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled,
+                    SUM(CASE WHEN status = 'expired' THEN 1 ELSE 0 END) as expired,
+                    SUM(CASE WHEN is_active = 1 AND ends_at <= ? AND ends_at > ? THEN 1 ELSE 0 END) as expiring_soon
+                ", [now()->addDays(7), now()])
+                ->first();
+
+            return [
+                'by_plan' => SubscriptionPlan::withCount([
+                    'subscriptions as active_count' => function ($q) {
+                        $q->where('is_active', true)->where('status', 'active');
+                    },
+                ])->get()->map(fn($p) => [
+                    'plan' => $p->name,
+                    'slug' => $p->slug,
+                    'active_count' => $p->active_count,
+                ]),
+                'by_status' => [
+                    'active' => (int) ($statusCounts->active ?? 0),
+                    'trialing' => (int) ($statusCounts->trialing ?? 0),
+                    'cancelled' => (int) ($statusCounts->cancelled ?? 0),
+                    'expired' => (int) ($statusCounts->expired ?? 0),
+                ],
+                'expiring_soon' => (int) ($statusCounts->expiring_soon ?? 0),
+                'mrr' => $this->calculateMRR(),
+            ];
+        });
 
         return response()->json([
             'success' => true,
@@ -314,22 +325,17 @@ class AdminSubscriptionController extends Controller
 
     /**
      * Calculate Monthly Recurring Revenue
+     * OPTIMIZED: Single JOIN query instead of loading all subscriptions
      */
     private function calculateMRR(): float
     {
-        $activeSubscriptions = UserSubscription::with('subscriptionPlan')
-            ->where('is_active', true)
-            ->where('status', 'active')
-            ->get();
+        $mrr = DB::table('user_subscriptions')
+            ->join('subscription_plans', 'user_subscriptions.subscription_plan_id', '=', 'subscription_plans.id')
+            ->where('user_subscriptions.is_active', true)
+            ->where('user_subscriptions.status', 'active')
+            ->sum('subscription_plans.price_monthly');
 
-        $mrr = 0;
-        foreach ($activeSubscriptions as $sub) {
-            if ($sub->subscriptionPlan) {
-                $mrr += $sub->subscriptionPlan->price_monthly ?? 0;
-            }
-        }
-
-        return round($mrr, 2);
+        return round((float) $mrr, 2);
     }
 
     /**
