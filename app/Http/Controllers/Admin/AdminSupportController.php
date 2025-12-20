@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\TicketMessageSent;
 use App\Events\TicketUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\AdminActivityLog;
@@ -493,7 +494,10 @@ class AdminSupportController extends Controller
             $ticket->assignTo($admin);
         }
 
-        // Broadcast message added to all admins
+        // Broadcast message to ticket channel for real-time updates
+        broadcast(new TicketMessageSent($message, $ticket))->toOthers();
+
+        // Broadcast ticket update notification to all admins
         broadcast(new TicketUpdated($ticket->fresh(), 'new_message', $admin->id))->toOthers();
 
         return response()->json([

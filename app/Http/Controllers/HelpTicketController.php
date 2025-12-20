@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\TicketMessageSent;
 use App\Events\TicketUpdated;
 use App\Models\Notification;
 use App\Models\SupportTicket;
@@ -230,10 +231,19 @@ class HelpTicketController extends Controller
 
         $ticket->touch(); // Update updated_at
 
+        // Load the message with user relation
+        $message->load('user:id,name,email,role');
+
+        // Broadcast message to ticket channel for real-time updates
+        broadcast(new TicketMessageSent($message, $ticket))->toOthers();
+
+        // Notify support staff about new message
+        broadcast(new TicketUpdated($ticket->fresh(), 'new_message', $user->id))->toOthers();
+
         return response()->json([
             'success' => true,
             'message' => 'Message added successfully',
-            'data' => $message->load('user:id,name,email,role')
+            'data' => $message
         ]);
     }
 
