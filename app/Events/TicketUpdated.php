@@ -56,6 +56,18 @@ class TicketUpdated implements ShouldBroadcast
      */
     public function broadcastWith(): array
     {
+        // Get the actor (user who triggered the action)
+        $actor = null;
+        if ($this->triggeredBy) {
+            $triggeredByUser = \App\Models\User::find($this->triggeredBy);
+            if ($triggeredByUser) {
+                $actor = [
+                    'id' => $triggeredByUser->id,
+                    'name' => $triggeredByUser->name,
+                ];
+            }
+        }
+
         return [
             'ticket' => [
                 'id' => $this->ticket->id,
@@ -66,6 +78,11 @@ class TicketUpdated implements ShouldBroadcast
                 'category' => $this->ticket->category,
                 'assigned_to' => $this->ticket->assigned_to,
                 'assigned_to_name' => $this->ticket->assignedTo?->name,
+                'assignedTo' => $this->ticket->assignedTo ? [
+                    'id' => $this->ticket->assignedTo->id,
+                    'name' => $this->ticket->assignedTo->name,
+                    'email' => $this->ticket->assignedTo->email,
+                ] : null,
                 'user' => [
                     'id' => $this->ticket->user?->id,
                     'name' => $this->ticket->user?->name,
@@ -75,6 +92,7 @@ class TicketUpdated implements ShouldBroadcast
                 'updated_at' => $this->ticket->updated_at->toISOString(),
             ],
             'action' => $this->action,
+            'actor' => $actor,
             'triggered_by' => $this->triggeredBy,
         ];
     }
