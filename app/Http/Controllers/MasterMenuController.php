@@ -15,6 +15,7 @@ use App\Models\Menu;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
 use App\Models\Location;
+use App\Services\MenuSyncService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +24,13 @@ use Illuminate\Support\Str;
 
 class MasterMenuController extends Controller
 {
+    private MenuSyncService $syncService;
+
+    public function __construct(MenuSyncService $syncService)
+    {
+        $this->syncService = $syncService;
+    }
+
     // ===========================================
     // MASTER MENUS
     // ===========================================
@@ -406,6 +414,15 @@ class MasterMenuController extends Controller
 
         $item = MasterMenuItem::create($data);
 
+        // Create version for this change
+        $masterMenu = $category->masterMenu;
+        $this->syncService->createVersion(
+            $masterMenu,
+            MenuSyncService::CHANGE_ITEM_ADDED,
+            ['added_items' => [$item->id], 'item_name' => $item->name],
+            $request->user()
+        );
+
         return response()->json([
             'success' => true,
             'message' => 'Item added successfully',
@@ -476,7 +493,35 @@ class MasterMenuController extends Controller
             $data['slug'] = Str::slug($data['name']);
         }
 
+        // Track what changed for version control
+        $changedFields = [];
+        $priceChanged = isset($data['price']) && $data['price'] != $item->price;
+        foreach ($data as $key => $value) {
+            if ($item->$key != $value) {
+                $changedFields[$key] = ['old' => $item->$key, 'new' => $value];
+            }
+        }
+
         $item->update($data);
+
+        // Create version for this change (only if something actually changed)
+        if (!empty($changedFields)) {
+            $changeType = $priceChanged 
+                ? MenuSyncService::CHANGE_PRICE_CHANGED 
+                : MenuSyncService::CHANGE_ITEM_UPDATED;
+            
+            $masterMenu = MasterMenu::find($menuId);
+            $this->syncService->createVersion(
+                $masterMenu,
+                $changeType,
+                [
+                    'updated_items' => [$item->id => $changedFields],
+                    'price_changes' => $priceChanged ? [$item->id => $data['price']] : [],
+                    'item_name' => $item->name
+                ],
+                $request->user()
+            );
+        }
 
         return response()->json([
             'success' => true,
@@ -501,7 +546,19 @@ class MasterMenuController extends Controller
             ], 404);
         }
 
+        $itemId = $item->id;
+        $itemName = $item->name;
+        $masterMenu = MasterMenu::find($menuId);
+        
         $item->delete();
+
+        // Create version for this change
+        $this->syncService->createVersion(
+            $masterMenu,
+            MenuSyncService::CHANGE_ITEM_REMOVED,
+            ['removed_items' => [$itemId], 'item_name' => $itemName],
+            $request->user()
+        );
 
         return response()->json([
             'success' => true,

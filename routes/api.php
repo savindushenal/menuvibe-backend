@@ -1801,3 +1801,149 @@ Route::get('/menu-offers/type/{type}', function (Request $request, string $type)
     $request->setUserResolver(fn() => $pat->tokenable);
     return app(MenuOfferController::class)->byType($request, $type);
 });
+
+// ============================================
+// MENU VERSION CONTROL & SYNC ROUTES
+// ============================================
+
+use App\Http\Controllers\MenuSyncController;
+
+// Sync status for a branch
+Route::get('/menu-sync/status/{locationId}/{masterMenuId}', function (Request $request, int $locationId, int $masterMenuId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuSyncController::class)->getStatus($request, $locationId, $masterMenuId);
+});
+
+// Get pending changes preview
+Route::get('/menu-sync/{branchSyncId}/pending', function (Request $request, int $branchSyncId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuSyncController::class)->getPendingChanges($request, $branchSyncId);
+});
+
+// Manual sync trigger
+Route::post('/menu-sync/{branchSyncId}/sync', function (Request $request, int $branchSyncId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuSyncController::class)->syncBranch($request, $branchSyncId);
+});
+
+// Update sync mode
+Route::put('/menu-sync/{branchSyncId}/mode', function (Request $request, int $branchSyncId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuSyncController::class)->updateSyncMode($request, $branchSyncId);
+});
+
+// Set item override
+Route::post('/menu-sync/{branchSyncId}/override/{masterItemId}', function (Request $request, int $branchSyncId, int $masterItemId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuSyncController::class)->setItemOverride($request, $branchSyncId, $masterItemId);
+});
+
+// Remove item override
+Route::delete('/menu-sync/{branchSyncId}/override/{masterItemId}', function (Request $request, int $branchSyncId, int $masterItemId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuSyncController::class)->removeItemOverride($branchSyncId, $masterItemId);
+});
+
+// Get all overrides for a branch
+Route::get('/menu-sync/{branchSyncId}/overrides', function (Request $request, int $branchSyncId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuSyncController::class)->getOverrides($branchSyncId);
+});
+
+// Get sync history/logs
+Route::get('/menu-sync/{branchSyncId}/history', function (Request $request, int $branchSyncId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuSyncController::class)->getSyncHistory($branchSyncId);
+});
+
+// Get version history for a master menu
+Route::get('/menu-sync/versions/{masterMenuId}', function (Request $request, int $masterMenuId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuSyncController::class)->getVersionHistory($masterMenuId);
+});
+
+// Initialize branch sync link
+Route::post('/menu-sync/initialize', function (Request $request) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuSyncController::class)->initializeBranchSync($request);
+});
+
+// Franchise sync dashboard
+Route::get('/menu-sync/dashboard/{franchiseId}', function (Request $request, int $franchiseId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuSyncController::class)->getSyncDashboard($request, $franchiseId);
+});
+
+// Get specific version snapshot (view old menu)
+Route::get('/menu-sync/versions/{masterMenuId}/snapshot/{versionNumber}', function (Request $request, int $masterMenuId, int $versionNumber) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuSyncController::class)->getVersionSnapshot($masterMenuId, $versionNumber);
+});
+
+// Compare two versions
+Route::get('/menu-sync/versions/{masterMenuId}/compare/{fromVersion}/{toVersion}', function (Request $request, int $masterMenuId, int $fromVersion, int $toVersion) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuSyncController::class)->compareVersions($masterMenuId, $fromVersion, $toVersion);
+});
+
+// Bulk sync all branches
+Route::post('/menu-sync/bulk/{masterMenuId}', function (Request $request, int $masterMenuId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MenuSyncController::class)->bulkSyncAllBranches($request, $masterMenuId);
+});
