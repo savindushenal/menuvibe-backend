@@ -45,6 +45,34 @@ class FranchiseFeatureSeeder extends Seeder
             $this->command->info('✓ Barista features configured');
         }
 
+        // Hilton Colombo features
+        $hilton = Franchise::where('slug', 'hilton-colombo')->first();
+        if ($hilton) {
+            $hilton->update([
+                'features' => json_encode([
+                    'table_booking' => true,
+                    'room_service' => true,
+                    'event_catering' => true,
+                    'menu_versioning' => true,
+                    'qr_code_menus' => true,
+                ]),
+            ]);
+            $this->command->info('✓ Hilton Colombo features configured');
+        }
+
+        // GreenLeaf Café features
+        $greenleaf = Franchise::where('slug', 'greenleaf-cafe')->first();
+        if ($greenleaf) {
+            $greenleaf->update([
+                'features' => json_encode([
+                    'online_ordering' => true,
+                    'qr_code_menus' => true,
+                    'mobile_order' => true,
+                ]),
+            ]);
+            $this->command->info('✓ GreenLeaf Café features configured');
+        }
+
         $this->command->info('🎉 Franchise features seeded successfully!');
     }
 }
