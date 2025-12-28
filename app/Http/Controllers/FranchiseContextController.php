@@ -82,6 +82,8 @@ class FranchiseContextController extends Controller
                     'slug' => $franchise->slug,
                     'logo_url' => $franchise->logo_url,
                     'brand_color' => $franchise->brand_color,
+                    'template_type' => $franchise->template_type,
+                    'design_tokens' => $franchise->design_tokens,
                 ],
                 'user_role' => $role,
                 'user_location' => $userLocation,
