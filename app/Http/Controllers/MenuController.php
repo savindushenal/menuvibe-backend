@@ -355,4 +355,64 @@ class MenuController extends Controller
             'message' => 'Menu deleted successfully'
         ], Response::HTTP_OK);
     }
+
+    /**
+     * Sync menu to multiple locations
+     */
+    public function syncToLocations(Request $request, $id)
+    {
+        $user = $this->getUserFromToken($request);
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated'
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $request->validate([
+            'location_ids' => 'required|array',
+            'location_ids.*' => 'exists:locations,id',
+        ]);
+
+        $menu = Menu::findOrFail($id);
+
+        // Check if user owns this menu
+        if ($menu->location->user_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        // Verify all locations belong to user
+        $userLocationIds = $user->locations()->pluck('id')->toArray();
+        $requestedLocationIds = $request->location_ids;
+        
+        if (array_diff($requestedLocationIds, $userLocationIds)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Some locations do not belong to you'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        try {
+            $syncedMenus = $menu->syncToLocations($requestedLocationIds);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Menu synced successfully',
+                'data' => [
+                    'synced_count' => count($syncedMenus),
+                    'menus' => $syncedMenus,
+                ]
+            ], Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to sync menu',
+                'error' => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
 }

@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Traits\HasMenuSync;
+use App\Traits\HasQRCode;
+use App\Traits\HasVersioning;
+use App\Traits\TenantAware;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,10 +14,11 @@ use Illuminate\Support\Str;
 
 class Menu extends Model
 {
-    use HasFactory;
+    use HasFactory, TenantAware, HasMenuSync, HasQRCode, HasVersioning;
 
     protected $fillable = [
         'location_id',
+        'franchise_id', // Add franchise_id for TenantAware trait
         'name',
         'slug',
         'public_id',
@@ -26,6 +31,7 @@ class Menu extends Model
         'is_featured',
         'image_url',
         'settings',
+        'version', // Add version for HasVersioning trait
     ];
 
     protected $casts = [
