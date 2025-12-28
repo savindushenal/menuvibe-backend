@@ -118,6 +118,7 @@ Route::post('/logout-all', [AuthController::class, 'logoutAllManual']);
 
 // Menu management routes (manual auth)
 Route::apiResource('menus', MenuController::class);
+Route::post('/menus/{id}/sync', [MenuController::class, 'syncToLocations']); // Menu sync endpoint
 Route::get('/menus/{menu}/limits', [MenuItemController::class, 'checkLimits']);
 Route::put('/menus/{menu}/items/reorder', [MenuItemController::class, 'reorder']);
 Route::apiResource('menus.items', MenuItemController::class);
@@ -126,6 +127,19 @@ Route::post('/menus/{menu}/categories', [MenuCategoryController::class, 'store']
 Route::put('/menus/{menu}/categories/{category}', [MenuCategoryController::class, 'update']);
 Route::delete('/menus/{menu}/categories/{category}', [MenuCategoryController::class, 'destroy']);
 Route::post('/menus/{menu}/categories/reorder', [MenuCategoryController::class, 'reorder']);
+
+// Menu version control routes
+Route::get('/menus/{menuId}/versions', [\App\Http\Controllers\Api\MenuVersionController::class, 'index']);
+Route::post('/menus/{menuId}/versions', [\App\Http\Controllers\Api\MenuVersionController::class, 'store']);
+Route::get('/menus/{menuId}/versions/{versionNumber}', [\App\Http\Controllers\Api\MenuVersionController::class, 'show']);
+Route::post('/menus/{menuId}/versions/{versionNumber}/restore', [\App\Http\Controllers\Api\MenuVersionController::class, 'restore']);
+Route::delete('/menus/{menuId}/versions/{versionNumber}', [\App\Http\Controllers\Api\MenuVersionController::class, 'destroy']);
+
+// Franchise configuration routes
+Route::get('/franchise/features', [\App\Http\Controllers\Api\FranchiseConfigController::class, 'features']);
+Route::get('/franchise/config', [\App\Http\Controllers\Api\FranchiseConfigController::class, 'config']);
+Route::get('/franchise/custom-fields', [\App\Http\Controllers\Api\FranchiseConfigController::class, 'customFields']);
+Route::get('/franchise/features/{feature}', [\App\Http\Controllers\Api\FranchiseConfigController::class, 'hasFeature']);
 
 // Location management routes (manual auth)
 Route::apiResource('locations', LocationController::class);
