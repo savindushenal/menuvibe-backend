@@ -745,6 +745,14 @@ Route::prefix('public/franchise')->group(function () {
 // Public menu by endpoint code (for QR codes)
 Route::get('/public/menu/endpoint/{code}', [FranchiseController::class, 'getMenuByEndpointCode']);
 
+// DEMO: Barista Loyalty OTP Authentication (public routes)
+Route::prefix('{franchise}/loyalty')->group(function () {
+    Route::post('send-otp', [App\Http\Controllers\LoyaltyOtpController::class, 'sendOtp']);
+    Route::post('verify-otp', [App\Http\Controllers\LoyaltyOtpController::class, 'verifyOtp']);
+    Route::post('register', [App\Http\Controllers\LoyaltyOtpController::class, 'registerLoyalty']);
+    Route::post('save-card', [App\Http\Controllers\LoyaltyOtpController::class, 'saveCard']);
+});
+
 // Franchise invitation validation and acceptance (public routes)
 Route::post('/franchise-invitations/validate', [App\Http\Controllers\Api\FranchiseInvitationController::class, 'validateInvitation']);
 Route::post('/franchise-invitations/accept', [App\Http\Controllers\Api\FranchiseInvitationController::class, 'accept']);
