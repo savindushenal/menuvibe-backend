@@ -206,6 +206,8 @@ Route::prefix('franchise/{franchiseSlug}')
         
         // Menus
         Route::get('/menus', [FranchiseContextController::class, 'menus']);
+        Route::get('/menus/{menuId}', [FranchiseContextController::class, 'getMenu']);
+        Route::post('/menus/{menuId}/bulk-update', [FranchiseContextController::class, 'bulkUpdateMenuItems']);
         
         // Staff/Team
         Route::get('/staff', [FranchiseContextController::class, 'staff']);

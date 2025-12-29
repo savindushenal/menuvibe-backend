@@ -198,6 +198,139 @@ class FranchiseContextController extends Controller
     }
 
     /**
+     * Get a specific menu with items and override information
+     */
+    public function getMenu(Request $request, string $franchiseSlug, int $menuId)
+    {
+        $franchise = $request->get('franchise');
+        $role = $request->get('franchise_role');
+
+        $menu = Menu::whereHas('location', function ($q) use ($franchise) {
+            $q->where('franchise_id', $franchise->id);
+        })->with(['location:id,name,branch_name,branch_code', 'categories.items'])->find($menuId);
+
+        if (!$menu) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Menu not found'
+            ], 404);
+        }
+
+        // Check if branch manager has access
+        if (in_array($role, ['branch_manager', 'manager', 'staff'])) {
+            $account = $request->get('franchise_account');
+            
+            if ($account && $account->location_id && $menu->location_id !== $account->location_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You do not have access to this menu'
+                ], 403);
+            }
+        }
+
+        // Check for overrides on items
+        if ($menu->location_id) {
+            $overrides = \App\Models\BranchMenuOverride::where('location_id', $menu->location_id)
+                ->get()
+                ->keyBy('master_item_id');
+
+            foreach ($menu->categories as $category) {
+                foreach ($category->items as $item) {
+                    $override = $overrides->get($item->id);
+                    if ($override) {
+                        $item->has_override = true;
+                        $item->original_price = $item->price;
+                        if ($override->price !== null) {
+                            $item->price = $override->price;
+                        }
+                        if ($override->is_available !== null) {
+                            $item->is_available = $override->is_available;
+                        }
+                    }
+                }
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $menu
+        ]);
+    }
+
+    /**
+     * Bulk update menu items (availability and prices) for branch locations
+     */
+    public function bulkUpdateMenuItems(Request $request, string $franchiseSlug, int $menuId)
+    {
+        $franchise = $request->get('franchise');
+        $role = $request->get('franchise_role');
+        $user = $request->user();
+
+        $menu = Menu::whereHas('location', function ($q) use ($franchise) {
+            $q->where('franchise_id', $franchise->id);
+        })->find($menuId);
+
+        if (!$menu) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Menu not found'
+            ], 404);
+        }
+
+        // Check if branch manager has access
+        if (in_array($role, ['branch_manager', 'manager', 'staff'])) {
+            $account = $request->get('franchise_account');
+            
+            if ($account && $account->location_id && $menu->location_id !== $account->location_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You do not have access to this menu'
+                ], 403);
+            }
+        }
+
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'updates' => 'required|array',
+            'updates.*.item_id' => 'required|integer',
+            'updates.*.price' => 'nullable|numeric|min:0',
+            'updates.*.is_available' => 'nullable|boolean',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $updates = $request->input('updates');
+        $locationId = $menu->location_id;
+
+        foreach ($updates as $update) {
+            $itemId = $update['item_id'];
+            
+            // Find or create override
+            $override = \App\Models\BranchMenuOverride::updateOrCreate(
+                [
+                    'location_id' => $locationId,
+                    'master_item_id' => $itemId,
+                ],
+                [
+                    'price' => $update['price'] ?? null,
+                    'is_available' => $update['is_available'] ?? null,
+                    'updated_by' => $user->id,
+                ]
+            );
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Menu items updated successfully'
+        ]);
+    }
+
+    /**
      * Get franchise staff/team members
      */
     public function staff(Request $request, string $franchiseSlug)
