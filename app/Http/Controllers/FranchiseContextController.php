@@ -1106,6 +1106,9 @@ class FranchiseContextController extends Controller
         }
 
         $endpoint = \App\Models\MenuEndpoint::create([
+            'user_id' => $request->user()->id,
+            'location_id' => $locationId,
+            'franchise_id' => $franchise->id,
             'template_id' => $templateId,
             'type' => $validated['type'],
             'name' => $validated['name'],
@@ -1195,6 +1198,9 @@ class FranchiseContextController extends Controller
             $identifier = strtoupper($validated['prefix']) . '-' . $number;
 
             $endpoints[] = \App\Models\MenuEndpoint::create([
+                'user_id' => $request->user()->id,
+                'location_id' => $locationId,
+                'franchise_id' => $franchise->id,
                 'template_id' => $templateId,
                 'type' => $validated['type'],
                 'name' => $name,
