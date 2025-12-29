@@ -1011,11 +1011,11 @@ class FranchiseContextController extends Controller
             $locationId = $userAccount->location_id;
         }
 
-        // Get endpoints
+        // Get endpoints for franchise locations
         $query = \App\Models\MenuEndpoint::query()
             ->whereHas('template', function ($q) use ($franchise, $locationId) {
                 $q->whereHas('location', function ($l) use ($franchise, $locationId) {
-                    $l->where('user_id', $franchise->user_id);
+                    $l->where('franchise_id', $franchise->id);
                     if ($locationId) {
                         $l->where('id', $locationId);
                     }
@@ -1064,7 +1064,7 @@ class FranchiseContextController extends Controller
         // Get default location or user's location
         $locationId = $userAccount?->location_id;
         if (!$locationId) {
-            $location = Location::where('user_id', $franchise->user_id)->first();
+            $location = Location::where('franchise_id', $franchise->id)->first();
             if (!$location) {
                 return response()->json([
                     'success' => false,
@@ -1074,25 +1074,35 @@ class FranchiseContextController extends Controller
             $locationId = $location->id;
         }
 
-        // Get or create default template
+        // Get or create default template for franchise location
         $templateId = $validated['template_id'] ?? null;
         if (!$templateId) {
             $template = \App\Models\MenuTemplate::where('location_id', $locationId)
+                ->where('franchise_id', $franchise->id)
                 ->where('is_default', true)
                 ->first();
             
             if (!$template) {
-                $template = \App\Models\MenuTemplate::where('location_id', $locationId)->first();
+                $template = \App\Models\MenuTemplate::where('location_id', $locationId)
+                    ->where('franchise_id', $franchise->id)
+                    ->first();
             }
             
-            $templateId = $template?->id;
-        }
-
-        if (!$templateId) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No menu template found'
-            ], 404);
+            // If still no template, create one
+            if (!$template) {
+                $template = \App\Models\MenuTemplate::create([
+                    'franchise_id' => $franchise->id,
+                    'location_id' => $locationId,
+                    'user_id' => $franchise->user_id,
+                    'name' => 'Default Menu',
+                    'slug' => 'default-menu-' . \Str::random(8),
+                    'is_active' => true,
+                    'is_default' => true,
+                    'currency' => 'USD',
+                ]);
+            }
+            
+            $templateId = $template->id;
         }
 
         $endpoint = \App\Models\MenuEndpoint::create([
@@ -1138,7 +1148,7 @@ class FranchiseContextController extends Controller
 
         $locationId = $userAccount?->location_id;
         if (!$locationId) {
-            $location = Location::where('user_id', $franchise->user_id)->first();
+            $location = Location::where('franchise_id', $franchise->id)->first();
             if (!$location) {
                 return response()->json([
                     'success' => false,
@@ -1151,21 +1161,31 @@ class FranchiseContextController extends Controller
         $templateId = $validated['template_id'] ?? null;
         if (!$templateId) {
             $template = \App\Models\MenuTemplate::where('location_id', $locationId)
+                ->where('franchise_id', $franchise->id)
                 ->where('is_default', true)
                 ->first();
             
             if (!$template) {
-                $template = \App\Models\MenuTemplate::where('location_id', $locationId)->first();
+                $template = \App\Models\MenuTemplate::where('location_id', $locationId)
+                    ->where('franchise_id', $franchise->id)
+                    ->first();
             }
             
-            $templateId = $template?->id;
-        }
-
-        if (!$templateId) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No menu template found'
-            ], 404);
+            // If still no template, create one
+            if (!$template) {
+                $template = \App\Models\MenuTemplate::create([
+                    'franchise_id' => $franchise->id,
+                    'location_id' => $locationId,
+                    'user_id' => $franchise->user_id,
+                    'name' => 'Default Menu',
+                    'slug' => 'default-menu-' . \Str::random(8),
+                    'is_active' => true,
+                    'is_default' => true,
+                    'currency' => 'USD',
+                ]);
+            }
+            
+            $templateId = $template->id;
         }
 
         $endpoints = [];
@@ -1201,7 +1221,7 @@ class FranchiseContextController extends Controller
         $endpoint = \App\Models\MenuEndpoint::with('template')
             ->whereHas('template', function ($q) use ($franchise) {
                 $q->whereHas('location', function ($l) use ($franchise) {
-                    $l->where('user_id', $franchise->user_id);
+                    $l->where('franchise_id', $franchise->id);
                 });
             })
             ->find($endpointId);
@@ -1236,7 +1256,7 @@ class FranchiseContextController extends Controller
 
         $endpoint = \App\Models\MenuEndpoint::whereHas('template', function ($q) use ($franchise) {
             $q->whereHas('location', function ($l) use ($franchise) {
-                $l->where('user_id', $franchise->user_id);
+                $l->where('franchise_id', $franchise->id);
             });
         })->find($endpointId);
 
@@ -1281,7 +1301,7 @@ class FranchiseContextController extends Controller
 
         $endpoint = \App\Models\MenuEndpoint::whereHas('template', function ($q) use ($franchise) {
             $q->whereHas('location', function ($l) use ($franchise) {
-                $l->where('user_id', $franchise->user_id);
+                $l->where('franchise_id', $franchise->id);
             });
         })->find($endpointId);
 
@@ -1309,7 +1329,7 @@ class FranchiseContextController extends Controller
         
         $endpoint = \App\Models\MenuEndpoint::whereHas('template', function ($q) use ($franchise) {
             $q->whereHas('location', function ($l) use ($franchise) {
-                $l->where('user_id', $franchise->user_id);
+                $l->where('franchise_id', $franchise->id);
             });
         })->find($endpointId);
 
@@ -1359,7 +1379,7 @@ class FranchiseContextController extends Controller
 
         $endpoint = \App\Models\MenuEndpoint::whereHas('template', function ($q) use ($franchise) {
             $q->whereHas('location', function ($l) use ($franchise) {
-                $l->where('user_id', $franchise->user_id);
+                $l->where('franchise_id', $franchise->id);
             });
         })->find($endpointId);
 
