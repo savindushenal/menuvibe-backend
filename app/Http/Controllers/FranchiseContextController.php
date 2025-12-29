@@ -205,14 +205,29 @@ class FranchiseContextController extends Controller
         $franchise = $request->get('franchise');
         $role = $request->get('franchise_role');
 
-        $menu = Menu::whereHas('location', function ($q) use ($franchise) {
-            $q->where('franchise_id', $franchise->id);
-        })->with(['location:id,name,branch_name,branch_code', 'categories.items'])->find($menuId);
+        // First, check if menu exists at all
+        $menu = Menu::with(['location:id,name,branch_name,branch_code,franchise_id', 'categories.items'])
+            ->find($menuId);
+
+        \Log::info('Fetching menu', [
+            'menu_id' => $menuId,
+            'franchise_id' => $franchise->id,
+            'menu_exists' => $menu ? 'yes' : 'no',
+            'menu_location_franchise' => $menu && $menu->location ? $menu->location->franchise_id : 'N/A'
+        ]);
 
         if (!$menu) {
             return response()->json([
                 'success' => false,
-                'message' => 'Menu not found'
+                'message' => "Menu with ID {$menuId} not found. Please ensure the menu has been synced from your Master Menu to this branch."
+            ], 404);
+        }
+
+        // Check if menu belongs to this franchise
+        if (!$menu->location || $menu->location->franchise_id !== $franchise->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Menu does not belong to this franchise'
             ], 404);
         }
 
