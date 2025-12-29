@@ -703,4 +703,103 @@ class FranchiseController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Get menu by endpoint short code (for QR codes)
+     */
+    public function getMenuByEndpointCode(Request $request, string $code): JsonResponse
+    {
+        $endpoint = \App\Models\MenuEndpoint::where('short_code', $code)->first();
+
+        if (!$endpoint) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid menu code',
+            ], 404);
+        }
+
+        $template = $endpoint->template;
+        if (!$template) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Menu template not found',
+            ], 404);
+        }
+
+        $location = $template->location;
+        if (!$location || !$location->is_active) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Location not found or inactive',
+            ], 404);
+        }
+
+        $franchise = $location->franchise;
+        if (!$franchise || $franchise->status !== 'active') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Franchise not found or inactive',
+            ], 404);
+        }
+
+        // Get the location's active menu with categories and items
+        $menu = $location->menus()
+            ->where('is_active', true)
+            ->with(['categories' => function($query) {
+                $query->orderBy('sort_order')
+                    ->with(['items' => function($q) {
+                        $q->where('is_available', true)
+                            ->orderBy('sort_order');
+                    }]);
+            }])
+            ->first();
+
+        $menuItems = [];
+        if ($menu) {
+            foreach ($menu->categories as $category) {
+                foreach ($category->items as $item) {
+                    $menuItems[] = [
+                        'id' => $item->id,
+                        'name' => $item->name,
+                        'description' => $item->description,
+                        'price' => $item->price,
+                        'image_url' => $item->image_url,
+                        'is_available' => $item->is_available,
+                        'category' => [
+                            'id' => $category->id,
+                            'name' => $category->name,
+                        ],
+                        'customizations' => $item->customizations ?? [],
+                    ];
+                }
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'franchise' => [
+                    'id' => $franchise->id,
+                    'name' => $franchise->name,
+                    'slug' => $franchise->slug,
+                    'logo_url' => $franchise->logo_url,
+                    'design_tokens' => $franchise->design_tokens,
+                    'template_type' => $franchise->template_type,
+                ],
+                'location' => [
+                    'id' => $location->id,
+                    'name' => $location->name,
+                    'slug' => $location->slug,
+                    'address' => $location->address,
+                    'phone' => $location->phone,
+                ],
+                'endpoint' => [
+                    'id' => $endpoint->id,
+                    'identifier' => $endpoint->identifier,
+                    'table_number' => $endpoint->identifier, // Alias for compatibility
+                ],
+                'menu_items' => $menuItems,
+            ],
+        ]);
+    }
 }

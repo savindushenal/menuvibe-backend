@@ -1348,8 +1348,17 @@ class FranchiseContextController extends Controller
 
         // Generate QR code if not exists
         if (!$endpoint->qr_code_url) {
-            // Use location_id for the menu URL to match frontend route
-            $menuUrl = config('app.frontend_url') . '/' . $franchiseSlug . '/menu/' . $endpoint->location_id;
+            // Generate unique short code if not exists
+            if (!$endpoint->short_code) {
+                $endpoint->short_code = \Str::random(8);
+                $endpoint->save();
+            }
+            
+            // Use /m/{code}?table={identifier} format
+            $menuUrl = config('app.frontend_url') . '/m/' . $endpoint->short_code;
+            if ($endpoint->identifier) {
+                $menuUrl .= '?table=' . urlencode($endpoint->identifier);
+            }
             
             // Generate QR code using API
             $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=' . urlencode($menuUrl);
@@ -1398,8 +1407,14 @@ class FranchiseContextController extends Controller
             ], 404);
         }
 
-        // Use location_id for the menu URL to match frontend route
-        $menuUrl = config('app.frontend_url') . '/' . $franchiseSlug . '/menu/' . $endpoint->location_id;
+        // Generate new short code
+        $newShortCode = \Str::random(8);
+        
+        // Use /m/{code}?table={identifier} format
+        $menuUrl = config('app.frontend_url') . '/m/' . $newShortCode;
+        if ($endpoint->identifier) {
+            $menuUrl .= '?table=' . urlencode($endpoint->identifier);
+        }
         
         // Generate new QR code using API
         $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=' . urlencode($menuUrl);
@@ -1407,7 +1422,7 @@ class FranchiseContextController extends Controller
         $endpoint->update([
             'qr_code_url' => $qrCodeUrl,
             'short_url' => $menuUrl,
-            'short_code' => \Str::random(8),
+            'short_code' => $newShortCode,
         ]);
 
         return response()->json([

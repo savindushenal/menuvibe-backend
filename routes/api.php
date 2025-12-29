@@ -742,6 +742,9 @@ Route::prefix('public/franchise')->group(function () {
     Route::get('/{franchiseSlug}/location/{locationSlug}/menu', [FranchiseController::class, 'getPublicMenu']);
 });
 
+// Public menu by endpoint code (for QR codes)
+Route::get('/public/menu/endpoint/{code}', [FranchiseController::class, 'getMenuByEndpointCode']);
+
 // Franchise invitation validation and acceptance (public routes)
 Route::post('/franchise-invitations/validate', [App\Http\Controllers\Api\FranchiseInvitationController::class, 'validateInvitation']);
 Route::post('/franchise-invitations/accept', [App\Http\Controllers\Api\FranchiseInvitationController::class, 'accept']);
