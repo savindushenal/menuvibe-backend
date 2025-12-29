@@ -994,4 +994,400 @@ class FranchiseContextController extends Controller
             'message' => 'Staff member removed successfully'
         ]);
     }
+
+    /**
+     * Get menu endpoints (tables, QR codes, etc.) for franchise
+     */
+    public function endpoints(Request $request, string $franchiseSlug)
+    {
+        $franchise = $request->get('franchise');
+        $role = $request->get('franchise_role');
+        $userAccount = $request->get('franchise_account');
+
+        // Get location_id based on role
+        $locationId = null;
+        if (in_array($role, ['branch_manager', 'manager', 'staff']) && $userAccount?->location_id) {
+            // Branch restricted users only see their location's endpoints
+            $locationId = $userAccount->location_id;
+        }
+
+        // Get endpoints
+        $query = \App\Models\MenuEndpoint::query()
+            ->whereHas('template', function ($q) use ($franchise, $locationId) {
+                $q->whereHas('location', function ($l) use ($franchise, $locationId) {
+                    $l->where('user_id', $franchise->user_id);
+                    if ($locationId) {
+                        $l->where('id', $locationId);
+                    }
+                });
+            })
+            ->with('template');
+
+        $type = $request->query('type');
+        if ($type) {
+            $query->where('type', $type);
+        }
+
+        $endpoints = $query->orderBy('created_at', 'desc')->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $endpoints
+        ]);
+    }
+
+    /**
+     * Create a new endpoint
+     */
+    public function createEndpoint(Request $request, string $franchiseSlug)
+    {
+        $franchise = $request->get('franchise');
+        $role = $request->get('franchise_role');
+        $userAccount = $request->get('franchise_account');
+
+        // Only managers and above can create endpoints
+        if (!in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin', 'manager', 'branch_manager'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to create endpoints'
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'required|in:table,room,area,branch,kiosk,takeaway,event,delivery',
+            'identifier' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'template_id' => 'nullable|integer|exists:menu_templates,id',
+        ]);
+
+        // Get default location or user's location
+        $locationId = $userAccount?->location_id;
+        if (!$locationId) {
+            $location = Location::where('user_id', $franchise->user_id)->first();
+            if (!$location) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No location found for franchise'
+                ], 404);
+            }
+            $locationId = $location->id;
+        }
+
+        // Get or create default template
+        $templateId = $validated['template_id'] ?? null;
+        if (!$templateId) {
+            $template = \App\Models\MenuTemplate::where('location_id', $locationId)
+                ->where('is_default', true)
+                ->first();
+            
+            if (!$template) {
+                $template = \App\Models\MenuTemplate::where('location_id', $locationId)->first();
+            }
+            
+            $templateId = $template?->id;
+        }
+
+        if (!$templateId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No menu template found'
+            ], 404);
+        }
+
+        $endpoint = \App\Models\MenuEndpoint::create([
+            'template_id' => $templateId,
+            'type' => $validated['type'],
+            'name' => $validated['name'],
+            'identifier' => $validated['identifier'],
+            'description' => $validated['description'] ?? null,
+            'short_code' => \Str::random(8),
+            'is_active' => true,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $endpoint->load('template'),
+            'message' => 'Endpoint created successfully'
+        ]);
+    }
+
+    /**
+     * Bulk create endpoints
+     */
+    public function bulkCreateEndpoints(Request $request, string $franchiseSlug)
+    {
+        $franchise = $request->get('franchise');
+        $role = $request->get('franchise_role');
+        $userAccount = $request->get('franchise_account');
+
+        if (!in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin', 'manager', 'branch_manager'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to create endpoints'
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'type' => 'required|in:table,room,area,branch,kiosk,takeaway,event,delivery',
+            'prefix' => 'required|string|max:255',
+            'start' => 'required|integer|min:1',
+            'count' => 'required|integer|min:1|max:100',
+            'template_id' => 'nullable|integer|exists:menu_templates,id',
+        ]);
+
+        $locationId = $userAccount?->location_id;
+        if (!$locationId) {
+            $location = Location::where('user_id', $franchise->user_id)->first();
+            if (!$location) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No location found for franchise'
+                ], 404);
+            }
+            $locationId = $location->id;
+        }
+
+        $templateId = $validated['template_id'] ?? null;
+        if (!$templateId) {
+            $template = \App\Models\MenuTemplate::where('location_id', $locationId)
+                ->where('is_default', true)
+                ->first();
+            
+            if (!$template) {
+                $template = \App\Models\MenuTemplate::where('location_id', $locationId)->first();
+            }
+            
+            $templateId = $template?->id;
+        }
+
+        if (!$templateId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No menu template found'
+            ], 404);
+        }
+
+        $endpoints = [];
+        for ($i = 0; $i < $validated['count']; $i++) {
+            $number = $validated['start'] + $i;
+            $name = $validated['prefix'] . ' ' . $number;
+            $identifier = strtoupper($validated['prefix']) . '-' . $number;
+
+            $endpoints[] = \App\Models\MenuEndpoint::create([
+                'template_id' => $templateId,
+                'type' => $validated['type'],
+                'name' => $name,
+                'identifier' => $identifier,
+                'short_code' => \Str::random(8),
+                'is_active' => true,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $endpoints,
+            'message' => count($endpoints) . ' endpoints created successfully'
+        ]);
+    }
+
+    /**
+     * Get single endpoint
+     */
+    public function getEndpoint(Request $request, string $franchiseSlug, int $endpointId)
+    {
+        $franchise = $request->get('franchise');
+        
+        $endpoint = \App\Models\MenuEndpoint::with('template')
+            ->whereHas('template', function ($q) use ($franchise) {
+                $q->whereHas('location', function ($l) use ($franchise) {
+                    $l->where('user_id', $franchise->user_id);
+                });
+            })
+            ->find($endpointId);
+
+        if (!$endpoint) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Endpoint not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $endpoint
+        ]);
+    }
+
+    /**
+     * Update endpoint
+     */
+    public function updateEndpoint(Request $request, string $franchiseSlug, int $endpointId)
+    {
+        $franchise = $request->get('franchise');
+        $role = $request->get('franchise_role');
+
+        if (!in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin', 'manager', 'branch_manager'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to update endpoints'
+            ], 403);
+        }
+
+        $endpoint = \App\Models\MenuEndpoint::whereHas('template', function ($q) use ($franchise) {
+            $q->whereHas('location', function ($l) use ($franchise) {
+                $l->where('user_id', $franchise->user_id);
+            });
+        })->find($endpointId);
+
+        if (!$endpoint) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Endpoint not found'
+            ], 404);
+        }
+
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'type' => 'sometimes|in:table,room,area,branch,kiosk,takeaway,event,delivery',
+            'identifier' => 'sometimes|string|max:255',
+            'description' => 'nullable|string',
+            'is_active' => 'sometimes|boolean',
+        ]);
+
+        $endpoint->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'data' => $endpoint->load('template'),
+            'message' => 'Endpoint updated successfully'
+        ]);
+    }
+
+    /**
+     * Delete endpoint
+     */
+    public function deleteEndpoint(Request $request, string $franchiseSlug, int $endpointId)
+    {
+        $franchise = $request->get('franchise');
+        $role = $request->get('franchise_role');
+
+        if (!in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin', 'manager', 'branch_manager'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to delete endpoints'
+            ], 403);
+        }
+
+        $endpoint = \App\Models\MenuEndpoint::whereHas('template', function ($q) use ($franchise) {
+            $q->whereHas('location', function ($l) use ($franchise) {
+                $l->where('user_id', $franchise->user_id);
+            });
+        })->find($endpointId);
+
+        if (!$endpoint) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Endpoint not found'
+            ], 404);
+        }
+
+        $endpoint->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Endpoint deleted successfully'
+        ]);
+    }
+
+    /**
+     * Get QR code for endpoint
+     */
+    public function getEndpointQR(Request $request, string $franchiseSlug, int $endpointId)
+    {
+        $franchise = $request->get('franchise');
+        
+        $endpoint = \App\Models\MenuEndpoint::whereHas('template', function ($q) use ($franchise) {
+            $q->whereHas('location', function ($l) use ($franchise) {
+                $l->where('user_id', $franchise->user_id);
+            });
+        })->find($endpointId);
+
+        if (!$endpoint) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Endpoint not found'
+            ], 404);
+        }
+
+        // Generate QR code if not exists
+        if (!$endpoint->qr_code_url) {
+            $qrService = app(\App\Services\QRCodeService::class);
+            $url = config('app.url') . '/' . $franchiseSlug . '/menu/' . $endpoint->identifier;
+            $qrCodeUrl = $qrService->generate($url, $endpoint->id);
+            
+            $endpoint->update([
+                'qr_code_url' => $qrCodeUrl,
+                'short_url' => $url,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'url' => $endpoint->short_url,
+                'short_url' => $endpoint->short_url,
+                'qr_code_url' => $endpoint->qr_code_url,
+            ]
+        ]);
+    }
+
+    /**
+     * Regenerate QR code
+     */
+    public function regenerateEndpointQR(Request $request, string $franchiseSlug, int $endpointId)
+    {
+        $franchise = $request->get('franchise');
+        $role = $request->get('franchise_role');
+
+        if (!in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin', 'manager', 'branch_manager'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to regenerate QR codes'
+            ], 403);
+        }
+
+        $endpoint = \App\Models\MenuEndpoint::whereHas('template', function ($q) use ($franchise) {
+            $q->whereHas('location', function ($l) use ($franchise) {
+                $l->where('user_id', $franchise->user_id);
+            });
+        })->find($endpointId);
+
+        if (!$endpoint) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Endpoint not found'
+            ], 404);
+        }
+
+        $qrService = app(\App\Services\QRCodeService::class);
+        $url = config('app.url') . '/' . $franchiseSlug . '/menu/' . $endpoint->identifier;
+        $qrCodeUrl = $qrService->generate($url, $endpoint->id . '-' . time());
+        
+        $endpoint->update([
+            'qr_code_url' => $qrCodeUrl,
+            'short_url' => $url,
+            'short_code' => \Str::random(8),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'url' => $endpoint->short_url,
+                'short_url' => $endpoint->short_url,
+                'qr_code_url' => $endpoint->qr_code_url,
+            ],
+            'message' => 'QR code regenerated successfully'
+        ]);
+    }
 }

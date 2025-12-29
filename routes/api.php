@@ -209,6 +209,16 @@ Route::prefix('franchise/{franchiseSlug}')
         Route::get('/menus/{menuId}', [FranchiseContextController::class, 'getMenu']);
         Route::post('/menus/{menuId}/bulk-update', [FranchiseContextController::class, 'bulkUpdateMenuItems']);
         
+        // Menu Endpoints (Tables, QR Codes, etc.)
+        Route::get('/endpoints', [FranchiseContextController::class, 'endpoints']);
+        Route::post('/endpoints', [FranchiseContextController::class, 'createEndpoint']);
+        Route::post('/endpoints/bulk', [FranchiseContextController::class, 'bulkCreateEndpoints']);
+        Route::get('/endpoints/{endpointId}', [FranchiseContextController::class, 'getEndpoint']);
+        Route::put('/endpoints/{endpointId}', [FranchiseContextController::class, 'updateEndpoint']);
+        Route::delete('/endpoints/{endpointId}', [FranchiseContextController::class, 'deleteEndpoint']);
+        Route::get('/endpoints/{endpointId}/qr', [FranchiseContextController::class, 'getEndpointQR']);
+        Route::post('/endpoints/{endpointId}/qr/regenerate', [FranchiseContextController::class, 'regenerateEndpointQR']);
+        
         // Staff/Team
         Route::get('/staff', [FranchiseContextController::class, 'staff']);
         Route::post('/staff', [FranchiseContextController::class, 'inviteStaff']);
