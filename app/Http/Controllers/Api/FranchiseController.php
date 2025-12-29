@@ -630,7 +630,14 @@ class FranchiseController extends Controller
         }
 
         $location = $franchise->locations()
-            ->where('slug', $locationSlug)
+            ->where(function($query) use ($locationSlug) {
+                // Support both ID and slug for location lookup
+                if (is_numeric($locationSlug)) {
+                    $query->where('id', $locationSlug);
+                } else {
+                    $query->where('slug', $locationSlug);
+                }
+            })
             ->where('is_active', true)
             ->first();
 
