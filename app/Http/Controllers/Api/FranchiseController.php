@@ -709,7 +709,9 @@ class FranchiseController extends Controller
      */
     public function getMenuByEndpointCode(Request $request, string $code): JsonResponse
     {
-        $endpoint = \App\Models\MenuEndpoint::where('short_code', $code)->first();
+        $endpoint = \App\Models\MenuEndpoint::with(['location', 'franchise', 'template'])
+            ->where('short_code', $code)
+            ->first();
 
         if (!$endpoint) {
             return response()->json([
@@ -718,15 +720,8 @@ class FranchiseController extends Controller
             ], 404);
         }
 
-        $template = $endpoint->template;
-        if (!$template) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Menu template not found',
-            ], 404);
-        }
-
-        $location = $template->location;
+        // Get location directly from endpoint
+        $location = $endpoint->location;
         if (!$location || !$location->is_active) {
             return response()->json([
                 'success' => false,
@@ -734,7 +729,8 @@ class FranchiseController extends Controller
             ], 404);
         }
 
-        $franchise = $location->franchise;
+        // Get franchise directly from endpoint
+        $franchise = $endpoint->franchise;
         if (!$franchise || $franchise->status !== 'active') {
             return response()->json([
                 'success' => false,
