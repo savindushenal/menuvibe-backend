@@ -731,7 +731,7 @@ class FranchiseController extends Controller
 
         // Get franchise directly from endpoint
         $franchise = $endpoint->franchise;
-        if (!$franchise || $franchise->status !== 'active') {
+        if (!$franchise || !$franchise->is_active) {
             return response()->json([
                 'success' => false,
                 'message' => 'Franchise not found or inactive',

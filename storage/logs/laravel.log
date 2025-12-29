@@ -3506,3 +3506,23 @@ Did you mean one of these?
 #18 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\artisan(35): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
 #19 {main}
 "} 
+[2025-12-29 07:16:54] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'status' in 'SET' (Connection: mysql, SQL: update `franchises` set `status` = active where `slug` = barista) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'status' in 'SET' (Connection: mysql, SQL: update `franchises` set `status` = active where `slug` = barista) at E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:829)
+[stacktrace]
+#0 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('update `franchi...', Array, Object(Closure))
+#1 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(600): Illuminate\\Database\\Connection->run('update `franchi...', Array, Object(Closure))
+#2 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(552): Illuminate\\Database\\Connection->affectingStatement('update `franchi...', Array)
+#3 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Query\\Builder.php(3602): Illuminate\\Database\\Connection->update('update `franchi...', Array)
+#4 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\fix_barista_status.php(15): Illuminate\\Database\\Query\\Builder->update(Array)
+#5 {main}
+
+[previous exception] [object] (PDOException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'status' in 'SET' at E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:608)
+[stacktrace]
+#0 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(608): PDO->prepare('update `franchi...')
+#1 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(816): Illuminate\\Database\\Connection->Illuminate\\Database\\{closure}('update `franchi...', Array)
+#2 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('update `franchi...', Array, Object(Closure))
+#3 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(600): Illuminate\\Database\\Connection->run('update `franchi...', Array, Object(Closure))
+#4 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(552): Illuminate\\Database\\Connection->affectingStatement('update `franchi...', Array)
+#5 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Query\\Builder.php(3602): Illuminate\\Database\\Connection->update('update `franchi...', Array)
+#6 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\fix_barista_status.php(15): Illuminate\\Database\\Query\\Builder->update(Array)
+#7 {main}
+"} 
