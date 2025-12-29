@@ -1093,7 +1093,7 @@ class FranchiseContextController extends Controller
                 $template = \App\Models\MenuTemplate::create([
                     'franchise_id' => $franchise->id,
                     'location_id' => $locationId,
-                    'user_id' => $franchise->user_id,
+                    'user_id' => $request->user()->id,
                     'name' => 'Default Menu',
                     'slug' => 'default-menu-' . \Str::random(8),
                     'is_active' => true,
@@ -1176,7 +1176,7 @@ class FranchiseContextController extends Controller
                 $template = \App\Models\MenuTemplate::create([
                     'franchise_id' => $franchise->id,
                     'location_id' => $locationId,
-                    'user_id' => $franchise->user_id,
+                    'user_id' => $request->user()->id,
                     'name' => 'Default Menu',
                     'slug' => 'default-menu-' . \Str::random(8),
                     'is_active' => true,
