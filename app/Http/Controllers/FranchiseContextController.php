@@ -1349,7 +1349,8 @@ class FranchiseContextController extends Controller
         // Generate QR code if not exists
         if (!$endpoint->qr_code_url) {
             $qrService = app(\App\Services\QRCodeService::class);
-            $url = config('app.url') . '/' . $franchiseSlug . '/menu/' . $endpoint->identifier;
+            // Use location_id for the menu URL to match frontend route
+            $url = config('app.url') . '/' . $franchiseSlug . '/menu/' . $endpoint->location_id;
             $qrCodeUrl = $qrService->generate($url, $endpoint->id);
             
             $endpoint->update([
@@ -1397,7 +1398,8 @@ class FranchiseContextController extends Controller
         }
 
         $qrService = app(\App\Services\QRCodeService::class);
-        $url = config('app.url') . '/' . $franchiseSlug . '/menu/' . $endpoint->identifier;
+        // Use location_id for the menu URL to match frontend route
+        $url = config('app.url') . '/' . $franchiseSlug . '/menu/' . $endpoint->location_id;
         $qrCodeUrl = $qrService->generate($url, $endpoint->id . '-' . time());
         
         $endpoint->update([
