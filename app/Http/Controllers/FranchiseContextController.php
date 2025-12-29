@@ -1348,14 +1348,15 @@ class FranchiseContextController extends Controller
 
         // Generate QR code if not exists
         if (!$endpoint->qr_code_url) {
-            $qrService = app(\App\Services\QRCodeService::class);
             // Use location_id for the menu URL to match frontend route
-            $url = config('app.url') . '/' . $franchiseSlug . '/menu/' . $endpoint->location_id;
-            $qrCodeUrl = $qrService->generate($url, $endpoint->id);
+            $menuUrl = config('app.url') . '/' . $franchiseSlug . '/menu/' . $endpoint->location_id;
+            
+            // Generate QR code using API
+            $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=' . urlencode($menuUrl);
             
             $endpoint->update([
                 'qr_code_url' => $qrCodeUrl,
-                'short_url' => $url,
+                'short_url' => $menuUrl,
             ]);
         }
 
@@ -1397,14 +1398,15 @@ class FranchiseContextController extends Controller
             ], 404);
         }
 
-        $qrService = app(\App\Services\QRCodeService::class);
         // Use location_id for the menu URL to match frontend route
-        $url = config('app.url') . '/' . $franchiseSlug . '/menu/' . $endpoint->location_id;
-        $qrCodeUrl = $qrService->generate($url, $endpoint->id . '-' . time());
+        $menuUrl = config('app.url') . '/' . $franchiseSlug . '/menu/' . $endpoint->location_id;
+        
+        // Generate new QR code using API
+        $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=' . urlencode($menuUrl);
         
         $endpoint->update([
             'qr_code_url' => $qrCodeUrl,
-            'short_url' => $url,
+            'short_url' => $menuUrl,
             'short_code' => \Str::random(8),
         ]);
 
