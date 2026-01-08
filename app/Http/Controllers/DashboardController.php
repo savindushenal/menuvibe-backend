@@ -57,50 +57,50 @@ class DashboardController extends Controller
                 $totalMenus += $menus->count();
                 
                 foreach ($menus as $menu) {
-                    if ($menu->is_active ?? false) {
+                    if ($menu->is_active ?? true) {
                         $activeMenus++;
                     }
                     $totalMenuItems += $menu->menuItems->count();
                 }
             }
 
-            // Get subscription info
-            $subscription = $user->activeSubscription;
-            $plan = $user->getCurrentSubscriptionPlan();
-
-            // Calculate subscription usage percentage
-            $limits = $plan ? $plan->limits : [];
-            $usagePercentage = [];
+            // Get QR code scans count (mock data for now)
+            $qrScansCount = $totalLocations * 150; // Mock: 150 scans per location average
             
-            if (isset($limits['menus_limit']) && $limits['menus_limit'] > 0) {
-                $usagePercentage['menus'] = min(100, ($totalMenus / $limits['menus_limit']) * 100);
-            }
-            
-            if (isset($limits['menu_items_limit']) && $limits['menu_items_limit'] > 0) {
-                $usagePercentage['items'] = min(100, ($totalMenuItems / $limits['menu_items_limit']) * 100);
-            }
-            
-            if (isset($limits['locations_limit']) && $limits['locations_limit'] > 0) {
-                $usagePercentage['locations'] = min(100, ($totalLocations / $limits['locations_limit']) * 100);
-            }
+            // Format stats for frontend
+            $stats = [
+                'totalViews' => [
+                    'value' => $totalMenus * 250, // Mock: 250 views per menu
+                    'change' => 12.5,
+                    'trend' => 'up',
+                    'formatted' => number_format($totalMenus * 250),
+                ],
+                'qrScans' => [
+                    'value' => $qrScansCount,
+                    'change' => 8.2,
+                    'trend' => 'up',
+                    'formatted' => number_format($qrScansCount),
+                ],
+                'menuItems' => [
+                    'value' => $totalMenuItems,
+                    'change' => $totalMenuItems > 0 ? 5 : 0,
+                    'trend' => $totalMenuItems > 0 ? 'up' : 'down',
+                    'formatted' => number_format($totalMenuItems),
+                ],
+                'activeCustomers' => [
+                    'value' => $totalLocations * 45, // Mock: 45 customers per location
+                    'change' => 15.3,
+                    'trend' => 'up',
+                    'formatted' => number_format($totalLocations * 45),
+                ],
+            ];
 
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'overview' => [
-                        'total_locations' => $totalLocations,
-                        'total_menus' => $totalMenus,
-                        'active_menus' => $activeMenus,
-                        'total_menu_items' => $totalMenuItems,
-                    ],
-                    'subscription' => [
-                        'plan_name' => $plan ? $plan->name : 'Free',
-                        'status' => $subscription ? $subscription->status : 'trial',
-                        'expires_at' => $subscription ? $subscription->expires_at : null,
-                    ],
-                    'limits' => $limits,
-                    'usage_percentage' => $usagePercentage,
-                    'recent_activity' => $this->getRecentActivity($user),
+                    'stats' => $stats,
+                    'recentActivity' => $this->getRecentActivity($user),
+                    'popularItems' => $this->getPopularItems($user),
                 ]
             ], Response::HTTP_OK);
         } catch (\Exception $e) {
@@ -114,20 +114,34 @@ class DashboardController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'overview' => [
-                        'total_locations' => 0,
-                        'total_menus' => 0,
-                        'active_menus' => 0,
-                        'total_menu_items' => 0,
+                    'stats' => [
+                        'totalViews' => [
+                            'value' => 0,
+                            'change' => 0,
+                            'trend' => 'down',
+                            'formatted' => '0',
+                        ],
+                        'qrScans' => [
+                            'value' => 0,
+                            'change' => 0,
+                            'trend' => 'down',
+                            'formatted' => '0',
+                        ],
+                        'menuItems' => [
+                            'value' => 0,
+                            'change' => 0,
+                            'trend' => 'down',
+                            'formatted' => '0',
+                        ],
+                        'activeCustomers' => [
+                            'value' => 0,
+                            'change' => 0,
+                            'trend' => 'down',
+                            'formatted' => '0',
+                        ],
                     ],
-                    'subscription' => [
-                        'plan_name' => 'Free',
-                        'status' => 'trial',
-                        'expires_at' => null,
-                    ],
-                    'limits' => [],
-                    'usage_percentage' => [],
-                    'recent_activity' => [],
+                    'recentActivity' => [],
+                    'popularItems' => [],
                 ]
             ], Response::HTTP_OK);
         }
@@ -138,6 +152,8 @@ class DashboardController extends Controller
      */
     private function getRecentActivity($user)
     {
+        $activities = [];
+        
         // Get 5 most recently updated menus
         $recentMenus = $user->locations()
             ->with(['menus' => function($query) {
@@ -147,17 +163,76 @@ class DashboardController extends Controller
             ->pluck('menus')
             ->flatten()
             ->sortByDesc('updated_at')
-            ->take(5)
-            ->values();
+            ->take(5);
 
-        return $recentMenus->map(function($menu) {
-            return [
-                'id' => $menu->id,
-                'name' => $menu->name,
-                'location' => $menu->location->name ?? 'Unknown',
-                'updated_at' => $menu->updated_at,
-                'items_count' => $menu->menuItems()->count(),
+        foreach ($recentMenus as $menu) {
+            $timeAgo = $this->getTimeAgo($menu->updated_at);
+            $activities[] = [
+                'description' => "Updated menu '{$menu->name}'",
+                'timeAgo' => $timeAgo,
+                'type' => 'menu_update',
             ];
-        });
+        }
+        
+        // If no activities, add default
+        if (empty($activities)) {
+            $activities[] = [
+                'description' => 'Welcome to your dashboard!',
+                'timeAgo' => 'Just now',
+                'type' => 'system',
+            ];
+        }
+
+        return array_values($activities);
+    }
+
+    /**
+     * Get popular menu items
+     */
+    private function getPopularItems($user)
+    {
+        $items = [];
+        
+        // Get menu items from user's locations
+        $menuItems = $user->locations()
+            ->with(['menus.menuItems'])
+            ->get()
+            ->pluck('menus')
+            ->flatten()
+            ->pluck('menuItems')
+            ->flatten()
+            ->take(5);
+
+        foreach ($menuItems as $item) {
+            $items[] = [
+                'id' => $item->id,
+                'name' => $item->name,
+                'viewCount' => rand(50, 500), // Mock view count
+            ];
+        }
+
+        return $items;
+    }
+
+    /**
+     * Convert datetime to human-readable "time ago" format
+     */
+    private function getTimeAgo($datetime)
+    {
+        $now = now();
+        $diff = $now->diffInSeconds($datetime);
+
+        if ($diff < 60) {
+            return 'Just now';
+        } elseif ($diff < 3600) {
+            $minutes = floor($diff / 60);
+            return $minutes . ' minute' . ($minutes > 1 ? 's' : '') . ' ago';
+        } elseif ($diff < 86400) {
+            $hours = floor($diff / 3600);
+            return $hours . ' hour' . ($hours > 1 ? 's' : '') . ' ago';
+        } else {
+            $days = floor($diff / 86400);
+            return $days . ' day' . ($days > 1 ? 's' : '') . ' ago';
+        }
     }
 }
