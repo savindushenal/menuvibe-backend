@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Location;
+use App\Services\LocationAccessService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -10,6 +11,13 @@ use Illuminate\Validation\ValidationException;
 
 class LocationController extends Controller
 {
+    protected $locationAccessService;
+
+    public function __construct(LocationAccessService $locationAccessService)
+    {
+        $this->locationAccessService = $locationAccessService;
+    }
+
     /**
      * Display a listing of the user's locations.
      */
@@ -25,22 +33,33 @@ class LocationController extends Controller
             ], 401);
         }
 
-        $locations = $user->activeLocations()->with(['menus' => function($query) {
-            $query->active()->ordered();
-        }])->get();
+        // Get accessible locations based on subscription
+        $accessibleLocations = $this->locationAccessService->getAccessibleLocations($user);
+        $blockedLocations = $this->locationAccessService->getBlockedLocations($user);
+        $limitInfo = $this->locationAccessService->getLocationLimitInfo($user);
 
-        // Get current subscription plan safely
-        $currentPlan = $user->getCurrentSubscriptionPlan();
-        $maxLocations = $currentPlan ? $currentPlan->getLimit('max_locations') : 1;
+        // Load menus for accessible locations
+        $accessibleLocations->load(['menus' => function($query) {
+            $query->active()->ordered();
+        }]);
 
         return response()->json([
             'success' => true,
-            'data' => $locations,
+            'data' => $accessibleLocations->values(),
+            'blocked_locations' => $blockedLocations->map(function($location) {
+                return [
+                    'id' => $location->id,
+                    'name' => $location->name,
+                    'blocked_reason' => 'Upgrade your plan to access this location',
+                ];
+            })->values(),
             'meta' => [
-                'total_locations' => $locations->count(),
-                'max_locations' => $maxLocations,
-                'remaining_quota' => $user->getRemainingLocationQuota(),
-                'can_add_location' => $user->canAddLocation(),
+                'total_locations' => $limitInfo['current_count'],
+                'accessible_count' => $limitInfo['accessible_count'],
+                'blocked_count' => $limitInfo['blocked_count'],
+                'max_allowed' => $limitInfo['max_allowed'],
+                'can_create_more' => $limitInfo['can_create_more'],
+                'is_over_limit' => $limitInfo['is_over_limit'],
             ]
         ]);
     }
@@ -60,12 +79,15 @@ class LocationController extends Controller
             ], 401);
         }
 
-        // Check if user can add more locations
-        if (!$user->canAddLocation()) {
+        // Check if user can add more locations using the service
+        if (!$this->locationAccessService->canCreateLocation($user)) {
+            $limitInfo = $this->locationAccessService->getLocationLimitInfo($user);
+            
             return response()->json([
                 'success' => false,
-                'message' => 'You have reached your location limit. Please upgrade your subscription to add more locations.',
-                'error_code' => 'LOCATION_LIMIT_EXCEEDED'
+                'message' => "You have reached your location limit ({$limitInfo['max_allowed']} locations). Please upgrade your subscription to add more locations.",
+                'error_code' => 'LOCATION_LIMIT_EXCEEDED',
+                'limit_info' => $limitInfo,
             ], 403);
         }
 
@@ -123,11 +145,76 @@ class LocationController extends Controller
     }
 
     /**
+     * Display the specified location.
+     */
+    public function show(Request $request, Location $location): JsonResponse
+    {
+        $user = $this->getUserFromToken($request);
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated',
+            ], 401);
+        }
+
+        // Check if user owns this location
+        if ($location->user_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access to location',
+            ], 403);
+        }
+
+        // Check if user can access this location based on subscription
+        if (!$this->locationAccessService->canAccessLocation($user, $location->id)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This location is blocked due to subscription limits. Please upgrade your plan to access it.',
+                'error_code' => 'LOCATION_BLOCKED',
+            ], 403);
+        }
+
+        $location->load(['menus' => function($query) {
+            $query->active()->ordered();
+        }]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $location
+        ]);
+    }
+
+    /**
      * Update the specified location.
      */
     public function update(Request $request, Location $location): JsonResponse
     {
-        $this->authorize('update', $location);
+        $user = $this->getUserFromToken($request);
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated',
+            ], 401);
+        }
+
+        // Check if user owns this location
+        if ($location->user_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access to location',
+            ], 403);
+        }
+
+        // Check if user can access this location based on subscription
+        if (!$this->locationAccessService->canAccessLocation($user, $location->id)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This location is blocked due to subscription limits. Please upgrade your plan to access it.',
+                'error_code' => 'LOCATION_BLOCKED',
+            ], 403);
+        }
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',

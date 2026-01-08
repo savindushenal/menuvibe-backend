@@ -142,7 +142,7 @@ class DashboardController extends Controller
                     ],
                     'recentActivity' => [],
                     'popularItems' => [],
-                ]
+                ],
             ], Response::HTTP_OK);
         }
     }
