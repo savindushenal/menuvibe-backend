@@ -518,9 +518,6 @@ class BusinessProfileController extends Controller
             ]
         ], Response::HTTP_OK);
     }
-            ]
-        ], Response::HTTP_OK);
-    }
 
     private function storeLogo(UploadedFile $file, int $userId): string
     {
