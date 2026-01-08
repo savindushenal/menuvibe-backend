@@ -4,36 +4,22 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Laravel\Sanctum\PersonalAccessToken;
 
 class DashboardController extends Controller
 {
-    /**
-     * Get user from token manually
-     */
-    private function getUserFromToken(Request $request)
-    {
-        $token = $request->bearerToken();
-        
-        if (!$token) {
-            return null;
-        }
-
-        $personalAccessToken = PersonalAccessToken::findToken($token);
-        
-        if (!$personalAccessToken) {
-            return null;
-        }
-
-        return $personalAccessToken->tokenable;
-    }
-
     /**
      * Get dashboard statistics
      */
     public function stats(Request $request)
     {
         $user = $request->user();
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated'
+            ], Response::HTTP_UNAUTHORIZED);
+        }
 
         try {
             // Get user's locations with menus

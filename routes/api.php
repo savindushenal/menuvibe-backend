@@ -342,10 +342,10 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'admin'])->group(function ()
 
 // Protected routes (with sanctum middleware for cookie-based auth)
 Route::middleware('auth:sanctum')->group(function () {
-    // Route::get('/user', [AuthController::class, 'profile']); // Temporarily disabled due to view config issue
-    
     // Dashboard stats
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+    
+    // Route::get('/user', [AuthController::class, 'profile']); // Temporarily disabled due to view config issue
     
     // Additional protected routes can be added here
     Route::get('/dashboard', function (Request $request) {
