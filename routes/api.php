@@ -763,7 +763,21 @@ Route::prefix('public/franchise')->group(function () {
 });
 
 // Public menu by endpoint code (for QR codes)
-Route::get('/public/menu/endpoint/{code}', [FranchiseController::class, 'getMenuByEndpointCode']);
+// Supports both franchise and regular business menus
+Route::get('/public/menu/endpoint/{code}', function (string $code) {
+    // First try to find a franchise endpoint
+    $franchiseEndpoint = \App\Models\MenuEndpoint::with(['location', 'franchise', 'template'])
+        ->where('short_code', $code)
+        ->whereNotNull('franchise_id')
+        ->first();
+    
+    if ($franchiseEndpoint) {
+        return app(\App\Http\Controllers\Api\FranchiseController::class)->getMenuByEndpointCode(request(), $code);
+    }
+    
+    // Otherwise, use PublicMenuController for regular business menus
+    return app(\App\Http\Controllers\PublicMenuController::class)->getMenu(request(), $code);
+});
 
 // DEMO: Barista Loyalty OTP Authentication (public routes)
 Route::prefix('{franchise}/loyalty')->group(function () {
