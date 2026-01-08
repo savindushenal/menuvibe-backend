@@ -154,24 +154,34 @@ class DashboardController extends Controller
     {
         $activities = [];
         
-        // Get 5 most recently updated menus
-        $recentMenus = $user->locations()
-            ->with(['menus' => function($query) {
-                $query->latest('updated_at')->limit(5);
-            }])
-            ->get()
-            ->pluck('menus')
-            ->flatten()
-            ->sortByDesc('updated_at')
-            ->take(5);
+        try {
+            // Get 5 most recently updated menus
+            $recentMenus = $user->locations()
+                ->with(['menus' => function($query) {
+                    $query->latest('updated_at')->limit(5);
+                }])
+                ->get()
+                ->pluck('menus')
+                ->flatten()
+                ->filter() // Remove null values
+                ->sortByDesc('updated_at')
+                ->take(5);
 
-        foreach ($recentMenus as $menu) {
-            $timeAgo = $this->getTimeAgo($menu->updated_at);
-            $activities[] = [
-                'description' => "Updated menu '{$menu->name}'",
-                'timeAgo' => $timeAgo,
-                'type' => 'menu_update',
-            ];
+            foreach ($recentMenus as $menu) {
+                if ($menu && $menu->updated_at) {
+                    $timeAgo = $this->getTimeAgo($menu->updated_at);
+                    $activities[] = [
+                        'description' => "Updated menu '{$menu->name}'",
+                        'timeAgo' => $timeAgo,
+                        'type' => 'menu_update',
+                    ];
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Error getting recent activity', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage()
+            ]);
         }
         
         // If no activities, add default
@@ -193,22 +203,33 @@ class DashboardController extends Controller
     {
         $items = [];
         
-        // Get menu items from user's locations
-        $menuItems = $user->locations()
-            ->with(['menus.menuItems'])
-            ->get()
-            ->pluck('menus')
-            ->flatten()
-            ->pluck('menuItems')
-            ->flatten()
-            ->take(5);
+        try {
+            // Get menu items from user's locations
+            $menuItems = $user->locations()
+                ->with(['menus.menuItems'])
+                ->get()
+                ->pluck('menus')
+                ->flatten()
+                ->filter() // Remove null values
+                ->pluck('menuItems')
+                ->flatten()
+                ->filter() // Remove null values
+                ->take(5);
 
-        foreach ($menuItems as $item) {
-            $items[] = [
-                'id' => $item->id,
-                'name' => $item->name,
-                'viewCount' => rand(50, 500), // Mock view count
-            ];
+            foreach ($menuItems as $item) {
+                if ($item && $item->id && $item->name) {
+                    $items[] = [
+                        'id' => $item->id,
+                        'name' => $item->name,
+                        'viewCount' => rand(50, 500), // Mock view count
+                    ];
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Error getting popular items', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage()
+            ]);
         }
 
         return $items;
