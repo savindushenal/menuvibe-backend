@@ -486,10 +486,26 @@ class BusinessProfileController extends Controller
             $businessProfile->save();
         }
 
+        // Auto-complete onboarding if all required fields are filled and not yet completed
+        if (!$businessProfile->onboarding_completed) {
+            $requiredFields = ['business_name', 'business_type', 'address_line_1', 'city', 'state', 'postal_code'];
+            $hasAllRequired = collect($requiredFields)->every(function($field) use ($businessProfile) {
+                return !empty($businessProfile->$field);
+            });
+            
+            if ($hasAllRequired) {
+                $businessProfile->update([
+                    'onboarding_completed' => true,
+                    'onboarding_completed_at' => now(),
+                ]);
+            }
+        }
+
         Log::info('Business profile updated', [
             'user_id' => $user->id,
             'changes' => $changes,
             'logo_url' => $businessProfile->logo_url,
+            'onboarding_completed' => $businessProfile->onboarding_completed,
         ]);
 
         return response()->json([
@@ -498,6 +514,10 @@ class BusinessProfileController extends Controller
             'data' => [
                 'business_profile' => $businessProfile->fresh(),
                 'updated_fields' => $changes,
+                'onboarding_completed' => $businessProfile->onboarding_completed,
+            ]
+        ], Response::HTTP_OK);
+    }
             ]
         ], Response::HTTP_OK);
     }
