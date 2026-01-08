@@ -38,10 +38,12 @@ class LocationController extends Controller
         $blockedLocations = $this->locationAccessService->getBlockedLocations($user);
         $limitInfo = $this->locationAccessService->getLocationLimitInfo($user);
 
-        // Load menus for accessible locations
-        $accessibleLocations->load(['menus' => function($query) {
-            $query->active()->ordered();
-        }]);
+        // Load menus for accessible locations (Collections need to load individually)
+        $accessibleLocations->each(function($location) {
+            $location->load(['menus' => function($query) {
+                $query->where('is_active', true)->orderBy('sort_order');
+            }]);
+        });
 
         return response()->json([
             'success' => true,
@@ -161,7 +163,7 @@ class LocationController extends Controller
         }
 
         $location->load(['menus' => function($query) {
-            $query->active()->ordered();
+            $query->where('is_active', true)->orderBy('sort_order');
         }]);
 
         return response()->json([
