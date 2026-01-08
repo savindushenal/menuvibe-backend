@@ -132,21 +132,6 @@ class LocationController extends Controller
     /**
      * Display the specified location.
      */
-    public function show(Location $location): JsonResponse
-    {
-        $this->authorize('view', $location);
-
-        $location->load(['menus.menuItems', 'user']);
-
-        return response()->json([
-            'success' => true,
-            'data' => $location
-        ]);
-    }
-
-    /**
-     * Display the specified location.
-     */
     public function show(Request $request, Location $location): JsonResponse
     {
         $user = $this->getUserFromToken($request);
