@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BusinessProfileController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FranchiseContextController;
 use App\Http\Controllers\HelpTicketController;
 use App\Http\Controllers\LocationController;
@@ -106,9 +107,26 @@ Route::get('/auth/google', [SocialAuthController::class, 'redirectToGoogle']);
 Route::get('/auth/google/callback', [SocialAuthController::class, 'handleGoogleCallback']);
 Route::post('/auth/google', [SocialAuthController::class, 'googleAuth']);
 
+// Public logo serving route
+Route::get('/logos/{filename}', function ($filename) {
+    $path = storage_path('app/public/logos/' . $filename);
+    
+    if (!file_exists($path)) {
+        abort(404, 'Logo not found');
+    }
+    
+    $mimeType = mime_content_type($path);
+    
+    return response()->file($path, [
+        'Content-Type' => $mimeType,
+        'Cache-Control' => 'public, max-age=31536000',
+    ]);
+})->where('filename', '.*');
+
 // Manual auth routes (bypass EnsureFrontendRequestsAreStateful middleware)
 Route::get('/user', [AuthController::class, 'profileManual']);
 Route::get('/auth/contexts', [AuthController::class, 'getContexts']);
+Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
 Route::get('/business-profile', [BusinessProfileController::class, 'indexManual']);
 Route::post('/business-profile', [BusinessProfileController::class, 'storeManual']);
 Route::put('/business-profile', [BusinessProfileController::class, 'updateManual']);
