@@ -219,11 +219,14 @@ class BusinessProfileController extends Controller
         $businessProfile = $user->businessProfile;
 
         if (!$businessProfile) {
+            // Return empty structure instead of 404
             return response()->json([
-                'success' => false,
-                'message' => 'Business profile not found',
-                'needs_onboarding' => true
-            ], Response::HTTP_NOT_FOUND);
+                'success' => true,
+                'data' => [
+                    'business_profile' => null,
+                    'needs_onboarding' => true
+                ]
+            ], Response::HTTP_OK);
         }
 
         return response()->json([

@@ -42,66 +42,95 @@ class DashboardController extends Controller
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Get user's locations with menus
-        $locations = $user->locations()->with(['menus.menuItems'])->get();
-        
-        // Calculate stats
-        $totalLocations = $locations->count();
-        $totalMenus = 0;
-        $totalMenuItems = 0;
-        $activeMenus = 0;
-        
-        foreach ($locations as $location) {
-            $menus = $location->menus;
-            $totalMenus += $menus->count();
+        try {
+            // Get user's locations with menus
+            $locations = $user->locations()->with(['menus.menuItems'])->get();
             
-            foreach ($menus as $menu) {
-                if ($menu->is_active) {
-                    $activeMenus++;
+            // Calculate stats
+            $totalLocations = $locations->count();
+            $totalMenus = 0;
+            $totalMenuItems = 0;
+            $activeMenus = 0;
+            
+            foreach ($locations as $location) {
+                $menus = $location->menus;
+                $totalMenus += $menus->count();
+                
+                foreach ($menus as $menu) {
+                    if ($menu->is_active ?? false) {
+                        $activeMenus++;
+                    }
+                    $totalMenuItems += $menu->menuItems->count();
                 }
-                $totalMenuItems += $menu->menuItems->count();
             }
-        }
 
-        // Get subscription info
-        $subscription = $user->activeSubscription;
-        $plan = $user->getCurrentSubscriptionPlan();
+            // Get subscription info
+            $subscription = $user->activeSubscription;
+            $plan = $user->getCurrentSubscriptionPlan();
 
-        // Calculate subscription usage percentage
-        $limits = $plan ? $plan->limits : [];
-        $usagePercentage = [];
-        
-        if (isset($limits['menus_limit']) && $limits['menus_limit'] > 0) {
-            $usagePercentage['menus'] = min(100, ($totalMenus / $limits['menus_limit']) * 100);
-        }
-        
-        if (isset($limits['menu_items_limit']) && $limits['menu_items_limit'] > 0) {
-            $usagePercentage['items'] = min(100, ($totalMenuItems / $limits['menu_items_limit']) * 100);
-        }
-        
-        if (isset($limits['locations_limit']) && $limits['locations_limit'] > 0) {
-            $usagePercentage['locations'] = min(100, ($totalLocations / $limits['locations_limit']) * 100);
-        }
+            // Calculate subscription usage percentage
+            $limits = $plan ? $plan->limits : [];
+            $usagePercentage = [];
+            
+            if (isset($limits['menus_limit']) && $limits['menus_limit'] > 0) {
+                $usagePercentage['menus'] = min(100, ($totalMenus / $limits['menus_limit']) * 100);
+            }
+            
+            if (isset($limits['menu_items_limit']) && $limits['menu_items_limit'] > 0) {
+                $usagePercentage['items'] = min(100, ($totalMenuItems / $limits['menu_items_limit']) * 100);
+            }
+            
+            if (isset($limits['locations_limit']) && $limits['locations_limit'] > 0) {
+                $usagePercentage['locations'] = min(100, ($totalLocations / $limits['locations_limit']) * 100);
+            }
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'overview' => [
-                    'total_locations' => $totalLocations,
-                    'total_menus' => $totalMenus,
-                    'active_menus' => $activeMenus,
-                    'total_menu_items' => $totalMenuItems,
-                ],
-                'subscription' => [
-                    'plan_name' => $plan ? $plan->name : 'Free',
-                    'status' => $subscription ? $subscription->status : 'trial',
-                    'expires_at' => $subscription ? $subscription->expires_at : null,
-                ],
-                'limits' => $limits,
-                'usage_percentage' => $usagePercentage,
-                'recent_activity' => $this->getRecentActivity($user),
-            ]
-        ], Response::HTTP_OK);
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'overview' => [
+                        'total_locations' => $totalLocations,
+                        'total_menus' => $totalMenus,
+                        'active_menus' => $activeMenus,
+                        'total_menu_items' => $totalMenuItems,
+                    ],
+                    'subscription' => [
+                        'plan_name' => $plan ? $plan->name : 'Free',
+                        'status' => $subscription ? $subscription->status : 'trial',
+                        'expires_at' => $subscription ? $subscription->expires_at : null,
+                    ],
+                    'limits' => $limits,
+                    'usage_percentage' => $usagePercentage,
+                    'recent_activity' => $this->getRecentActivity($user),
+                ]
+            ], Response::HTTP_OK);
+        } catch (\Exception $e) {
+            \Log::error('Dashboard stats error', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            // Return empty stats on error
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'overview' => [
+                        'total_locations' => 0,
+                        'total_menus' => 0,
+                        'active_menus' => 0,
+                        'total_menu_items' => 0,
+                    ],
+                    'subscription' => [
+                        'plan_name' => 'Free',
+                        'status' => 'trial',
+                        'expires_at' => null,
+                    ],
+                    'limits' => [],
+                    'usage_percentage' => [],
+                    'recent_activity' => [],
+                ]
+            ], Response::HTTP_OK);
+        }
     }
 
     /**
