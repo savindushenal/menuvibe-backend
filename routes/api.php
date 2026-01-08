@@ -126,7 +126,6 @@ Route::get('/logos/{filename}', function ($filename) {
 // Manual auth routes (bypass EnsureFrontendRequestsAreStateful middleware)
 Route::get('/user', [AuthController::class, 'profileManual']);
 Route::get('/auth/contexts', [AuthController::class, 'getContexts']);
-Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
 Route::get('/business-profile', [BusinessProfileController::class, 'indexManual']);
 Route::post('/business-profile', [BusinessProfileController::class, 'storeManual']);
 Route::put('/business-profile', [BusinessProfileController::class, 'updateManual']);
@@ -344,6 +343,9 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'admin'])->group(function ()
 // Protected routes (with sanctum middleware for cookie-based auth)
 Route::middleware('auth:sanctum')->group(function () {
     // Route::get('/user', [AuthController::class, 'profile']); // Temporarily disabled due to view config issue
+    
+    // Dashboard stats
+    Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
     
     // Additional protected routes can be added here
     Route::get('/dashboard', function (Request $request) {

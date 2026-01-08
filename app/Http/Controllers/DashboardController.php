@@ -33,14 +33,7 @@ class DashboardController extends Controller
      */
     public function stats(Request $request)
     {
-        $user = $this->getUserFromToken($request);
-        
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthenticated'
-            ], Response::HTTP_UNAUTHORIZED);
-        }
+        $user = $request->user();
 
         try {
             // Get user's locations with menus
