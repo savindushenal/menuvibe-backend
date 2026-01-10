@@ -105,6 +105,7 @@ class PublicMenuController extends Controller
                 'template' => [
                     'id' => $endpoint->template->id,
                     'name' => $endpoint->template->name,
+                    'type' => $endpoint->template->settings['template_type'] ?? 'barista',
                     'currency' => $endpoint->template->currency,
                     'settings' => $endpoint->template->settings,
                     'image_url' => $endpoint->template->image_url,

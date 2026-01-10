@@ -98,6 +98,9 @@ class MenuEndpoint extends Model
     public function generateQrCodeUrl(): void
     {
         $frontendUrl = rtrim(config('app.frontend_url'), '/');
+        
+        // Use /m/ route for BOTH franchise and business endpoints
+        // The backend API route will differentiate them by checking franchise_id
         $menuUrl = $frontendUrl . '/m/' . $this->short_code;
         
         // Use QR Server API for QR generation
