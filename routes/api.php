@@ -78,6 +78,31 @@ Route::get('/health', function () {
     ]);
 });
 
+// Payment Gateway Status Check
+Route::get('/payment-gateway-status', function () {
+    try {
+        $serviceExists = class_exists(\App\Services\AbstercoPaymentService::class);
+        $controllerExists = class_exists(\App\Http\Controllers\SubscriptionPaymentController::class);
+        
+        return response()->json([
+            'status' => 'ok',
+            'service_class_exists' => $serviceExists,
+            'controller_class_exists' => $controllerExists,
+            'configuration' => [
+                'api_key_set' => !empty(config('services.absterco.api_key')),
+                'base_url' => config('services.absterco.base_url'),
+                'organization_id' => config('services.absterco.organization_id'),
+            ],
+            'git_commit' => trim(shell_exec('git rev-parse --short HEAD 2>&1') ?? 'unknown'),
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+        ], 500);
+    }
+});
+
 // Debug mail configuration (TEMPORARY - remove after debugging)
 Route::get('/debug-mail', function () {
     $config = [
