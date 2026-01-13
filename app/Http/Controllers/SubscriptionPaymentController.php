@@ -134,15 +134,20 @@ class SubscriptionPaymentController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Subscription upgrade initiation failed', [
-                'user_id' => $user->id,
-                'plan_id' => $plan->id,
+                'user_id' => $user->id ?? 'unknown',
+                'plan_id' => $plan->id ?? 'unknown',
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to initiate payment. Please try again.',
-                'error' => config('app.debug') ? $e->getMessage() : null,
+                'error' => $e->getMessage(), // Always show error for debugging
+                'debug' => [
+                    'line' => $e->getLine(),
+                    'file' => basename($e->getFile()),
+                ],
             ], 500);
         }
     }
