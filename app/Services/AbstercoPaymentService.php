@@ -77,9 +77,9 @@ class AbstercoPaymentService
 
             return [
                 'success' => true,
-                'link_token' => $data['data']['link_token'],
-                'payment_url' => $data['data']['payment_url'],
-                'expires_at' => $data['data']['expires_at'],
+                'link_token' => $data['data']['link_token'] ?? $data['data']['id'] ?? null,
+                'payment_url' => $data['data']['payment_url'] ?? $data['data']['url'] ?? null,
+                'expires_at' => $data['data']['expires_at'] ?? $data['data']['expiry'] ?? null,
                 'session_id' => $data['data']['session_id'] ?? null,
             ];
 
