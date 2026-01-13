@@ -103,6 +103,52 @@ Route::get('/payment-gateway-status', function () {
     }
 });
 
+// Test payment initiation (for debugging)
+Route::get('/test-payment-init', function () {
+    try {
+        $user = \App\Models\User::first();
+        $plan = \App\Models\SubscriptionPlan::where('price', '>', 0)->first();
+        
+        if (!$user || !$plan) {
+            return response()->json(['error' => 'No user or plan found']);
+        }
+        
+        $service = new \App\Services\AbstercoPaymentService();
+        $amount = $service->calculateSubscriptionAmount($plan, true);
+        $reference = $service->generatePaymentReference($user->id, $plan->id);
+        
+        $paymentData = $service->createSubscriptionPayment([
+            'amount' => $amount,
+            'currency' => 'LKR',
+            'description' => "Test: {$plan->name}",
+            'order_reference' => $reference,
+            'customer_name' => $user->name,
+            'customer_email' => $user->email,
+            'customer_phone' => $user->phone,
+            'external_customer_id' => (string) $user->id,
+            'allow_save_card' => true,
+            'return_url' => config('app.frontend_url') . '/dashboard/subscription/payment-callback',
+            'subscription_plan_id' => $plan->id,
+            'user_id' => $user->id,
+            'payment_type' => 'test',
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'user' => $user->name,
+            'plan' => $plan->name,
+            'amount' => $amount,
+            'payment_url' => $paymentData['payment_url'],
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'line' => $e->getLine(),
+            'file' => basename($e->getFile()),
+        ], 500);
+    }
+});
+
 // Debug mail configuration (TEMPORARY - remove after debugging)
 Route::get('/debug-mail', function () {
     $config = [

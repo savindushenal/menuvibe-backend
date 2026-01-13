@@ -112,14 +112,7 @@ class SubscriptionPaymentController extends Controller
                 ]);
             }
 
-            // Store payment reference in session or cache for verification
-            $request->session()->put('pending_subscription_payment', [
-                'plan_id' => $plan->id,
-                'payment_reference' => $paymentReference,
-                'link_token' => $paymentData['link_token'] ?? null,
-                'amount' => $amount,
-                'created_at' => now(),
-            ]);
+            // Note: We don't need to store in session for API - verification happens via link_token in callback
 
             return response()->json([
                 'success' => true,
