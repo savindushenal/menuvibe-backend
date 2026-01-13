@@ -32,7 +32,7 @@ class SubscriptionPaymentController extends Controller
         $validator = Validator::make($request->all(), [
             'plan_id' => 'required|exists:subscription_plans,id',
             'saved_card_id' => 'nullable|integer',
-            'payment_method' => 'required|in:new_card,saved_card',
+            'payment_method' => 'nullable|in:new_card,saved_card',
         ]);
 
         if ($validator->fails()) {
@@ -41,6 +41,9 @@ class SubscriptionPaymentController extends Controller
                 'errors' => $validator->errors(),
             ], 422);
         }
+
+        // Default to new_card if not specified
+        $paymentMethod = $request->input('payment_method', 'new_card');
 
         $user = Auth::user();
         $plan = SubscriptionPlan::findOrFail($request->plan_id);
@@ -73,7 +76,7 @@ class SubscriptionPaymentController extends Controller
             // Determine return URL
             $returnUrl = config('app.frontend_url') . '/dashboard/subscription/payment-callback';
 
-            if ($request->payment_method === 'saved_card' && $request->saved_card_id) {
+            if ($paymentMethod === 'saved_card' && $request->saved_card_id) {
                 // Pay with saved card
                 $paymentData = $this->paymentService->payWithSavedCard([
                     'saved_card_id' => $request->saved_card_id,
