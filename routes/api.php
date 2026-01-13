@@ -190,6 +190,7 @@ Route::get('/subscription/recommendations', [SubscriptionController::class, 'get
 
 // Subscription Payment routes (auth required)
 Route::post('/subscriptions/upgrade', [SubscriptionPaymentController::class, 'initiateUpgrade']);
+Route::post('/subscriptions/change', [SubscriptionPaymentController::class, 'initiateUpgrade']); // Alias for frontend compatibility
 Route::get('/subscriptions/payment-callback', [SubscriptionPaymentController::class, 'paymentCallback']);
 Route::get('/subscriptions/saved-cards', [SubscriptionPaymentController::class, 'getSavedCards']);
 Route::post('/subscriptions/saved-cards/{cardId}/default', [SubscriptionPaymentController::class, 'setDefaultCard']);
