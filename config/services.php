@@ -16,4 +16,9 @@ return [
         'api_key' => env('EMAIL_API_KEY'),
         'domain' => env('EMAIL_API_DOMAIN', 'menuvire.com'),
     ],
+    'absterco' => [
+        'api_key' => env('ABSTERCO_API_KEY'),
+        'base_url' => env('ABSTERCO_BASE_URL', 'https://api.gateway.absterco.com'),
+        'organization_id' => env('ABSTERCO_ORGANIZATION_ID'),
+    ],
 ];

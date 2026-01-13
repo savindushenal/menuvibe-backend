@@ -12,6 +12,7 @@ use App\Http\Controllers\MenuCategoryController;
 use App\Http\Controllers\QRCodeController;
 use App\Http\Controllers\SocialAuthController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\SubscriptionPaymentController;
 use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminUserController;
@@ -186,6 +187,13 @@ Route::get('/subscription-plans', [SubscriptionController::class, 'getPlans']);
 Route::get('/subscription/current', [SubscriptionController::class, 'getCurrentSubscription']);
 Route::post('/subscription/trial/{planId}', [SubscriptionController::class, 'startTrial']);
 Route::get('/subscription/recommendations', [SubscriptionController::class, 'getUpgradeRecommendations']);
+
+// Subscription Payment routes (auth required)
+Route::post('/subscriptions/upgrade', [SubscriptionPaymentController::class, 'initiateUpgrade']);
+Route::get('/subscriptions/payment-callback', [SubscriptionPaymentController::class, 'paymentCallback']);
+Route::get('/subscriptions/saved-cards', [SubscriptionPaymentController::class, 'getSavedCards']);
+Route::post('/subscriptions/saved-cards/{cardId}/default', [SubscriptionPaymentController::class, 'setDefaultCard']);
+Route::delete('/subscriptions/saved-cards/{cardId}', [SubscriptionPaymentController::class, 'deleteSavedCard']);
 
 // Help Ticket routes (user tickets - manual auth)
 Route::get('/help-tickets/options', [HelpTicketController::class, 'options']);
