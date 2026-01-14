@@ -85,6 +85,9 @@ class SubscriptionPaymentController extends Controller
             $includeSetupFee = !$currentSubscription || $currentSubscription->status !== 'active';
             $amount = $this->paymentService->calculateSubscriptionAmount($plan, $includeSetupFee);
 
+            // Get current business profile ID if exists
+            $businessProfileId = $user->businessProfile?->id;
+
             // Generate payment reference
             $paymentReference = $this->paymentService->generatePaymentReference($user->id, $plan->id);
 
@@ -114,6 +117,7 @@ class SubscriptionPaymentController extends Controller
                     'metadata' => [
                         'subscription_plan_id' => $plan->id,
                         'user_id' => $user->id,
+                        'business_profile_id' => $businessProfileId,
                         'payment_type' => 'subscription_upgrade',
                         'include_setup_fee' => $includeSetupFee,
                     ],
@@ -134,6 +138,7 @@ class SubscriptionPaymentController extends Controller
                     'cancel_url' => $cancelUrl,
                     'subscription_plan_id' => $plan->id,
                     'user_id' => $user->id,
+                    'business_profile_id' => $businessProfileId,
                     'payment_type' => 'subscription_upgrade',
                 ]);
             }
@@ -253,6 +258,7 @@ class SubscriptionPaymentController extends Controller
             $metadata = $verification['metadata'];
             $planId = $metadata['subscription_plan_id'] ?? null;
             $includeSetupFee = $metadata['include_setup_fee'] ?? false;
+            $businessProfileId = $metadata['business_profile_id'] ?? null;
 
             if (!$planId) {
                 throw new \Exception('Subscription plan ID not found in payment metadata');
@@ -273,6 +279,7 @@ class SubscriptionPaymentController extends Controller
                 // Create new subscription
                 $subscription = UserSubscription::create([
                     'user_id' => $user->id,
+                    'business_profile_id' => $businessProfileId,
                     'subscription_plan_id' => $plan->id,
                     'starts_at' => now(),
                     'ends_at' => $this->calculateSubscriptionEndDate($plan),
@@ -301,15 +308,30 @@ class SubscriptionPaymentController extends Controller
                     ]);
                 }
 
-                // Update business profile subscription if user has one
-                $businessProfile = $user->businessProfile;
-                if ($businessProfile) {
-                    $businessProfile->update([
-                        'subscription_plan_id' => $plan->id,
-                    ]);
+                // Update business profile subscription ONLY if business_profile_id was provided
+                // This ensures we update the correct business when user has multiple businesses
+                if ($businessProfileId) {
+                    $businessProfile = \App\Models\BusinessProfile::find($businessProfileId);
                     
-                    Log::info('Business profile subscription updated', [
-                        'business_profile_id' => $businessProfile->id,
+                    if ($businessProfile && $businessProfile->user_id === $user->id) {
+                        $businessProfile->update([
+                            'subscription_plan_id' => $plan->id,
+                        ]);
+                        
+                        Log::info('Business profile subscription updated', [
+                            'business_profile_id' => $businessProfile->id,
+                            'plan_id' => $plan->id,
+                            'user_id' => $user->id,
+                        ]);
+                    } else {
+                        Log::warning('Business profile not found or does not belong to user', [
+                            'business_profile_id' => $businessProfileId,
+                            'user_id' => $user->id,
+                        ]);
+                    }
+                } else {
+                    Log::info('No business profile ID in payment metadata - user subscription only', [
+                        'user_id' => $user->id,
                         'plan_id' => $plan->id,
                     ]);
                 }
