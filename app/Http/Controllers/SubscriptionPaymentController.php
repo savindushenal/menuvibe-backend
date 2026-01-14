@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\SubscriptionPlan;
 use App\Models\UserSubscription;
 use App\Services\AbstercoPaymentService;
+use App\Services\FeatureService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -13,6 +14,12 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 
+/**
+ * Subscription Payment Controller
+ * 
+ * @follows MenuVibe Architecture: Controller Layer
+ * @pattern Feature Flags for toggleable functionality
+ */
 class SubscriptionPaymentController extends Controller
 {
     protected $paymentService;
@@ -29,6 +36,14 @@ class SubscriptionPaymentController extends Controller
      */
     public function initiateUpgrade(Request $request)
     {
+        // Check if subscription payments are enabled
+        if (!$this->isPaymentFeatureEnabled()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Subscription payments are not enabled for your account',
+            ], 403);
+        }
+
         $validator = Validator::make($request->all(), [
             'plan_id' => 'required|exists:subscription_plans,id',
             'saved_card_id' => 'nullable|integer',
@@ -73,10 +88,18 @@ class SubscriptionPaymentController extends Controller
             // Generate payment reference
             $paymentReference = $this->paymentService->generatePaymentReference($user->id, $plan->id);
 
-            // Determine return URL
-            $returnUrl = config('app.frontend_url') . '/dashboard/subscription/payment-callback';
+            // Use return URL from payment config
+            $returnUrl = config('payment.subscription.return_urls.success');
 
             if ($paymentMethod === 'saved_card' && $request->saved_card_id) {
+                // Check if saved cards feature is enabled
+                if (!$this->isSavedCardsEnabled()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Saved cards feature is not available',
+                    ], 403);
+                }
+                
                 // Pay with saved card
                 $paymentData = $this->paymentService->payWithSavedCard([
                     'saved_card_id' => $request->saved_card_id,
@@ -266,6 +289,15 @@ class SubscriptionPaymentController extends Controller
      */
     public function getSavedCards()
     {
+        // Check if saved cards feature is enabled
+        if (!$this->isSavedCardsEnabled()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Saved cards feature is not available',
+                'cards' => [],
+            ], 403);
+        }
+
         $user = Auth::user();
 
         try {
@@ -373,5 +405,54 @@ class SubscriptionPaymentController extends Controller
     private function calculateNextPaymentDate($plan): Carbon
     {
         return $this->calculateSubscriptionEndDate($plan);
+    }
+    
+    /**
+     * Check if payment feature is enabled for the current user
+     * 
+     * @follows MenuVibe Pattern: Feature Flag checking
+     */
+    private function isPaymentFeatureEnabled(): bool
+    {
+        $user = Auth::user();
+        
+        // Check if user has franchise
+        if (!$user || !$user->franchise_id) {
+            // Default franchise settings
+            $config = config('franchise.default.features', []);
+            return $config['subscription_payments'] ?? true;
+        }
+        
+        // Get franchise slug
+        $franchise = $user->franchise;
+        if (!$franchise) {
+            return true; // Allow by default if franchise not found
+        }
+        
+        // Check franchise feature flag
+        $config = config("franchise.{$franchise->slug}.features", []);
+        return $config['subscription_payments'] ?? true;
+    }
+    
+    /**
+     * Check if saved cards feature is enabled
+     * 
+     * @follows MenuVibe Pattern: Feature Flag checking
+     */
+    private function isSavedCardsEnabled(): bool
+    {
+        $user = Auth::user();
+        
+        // Check franchise feature flag
+        if ($user && $user->franchise_id) {
+            $franchise = $user->franchise;
+            if ($franchise) {
+                $config = config("franchise.{$franchise->slug}.features", []);
+                return $config['saved_cards'] ?? true;
+            }
+        }
+        
+        // Check payment gateway feature
+        return $this->paymentService->hasFeature('saved_cards');
     }
 }

@@ -9,22 +9,53 @@ use Exception;
 /**
  * Absterco Payment Gateway Service
  * Handles payment link creation, card saving, and subscription payments
+ * 
+ * @follows MenuVibe Architecture: Service Layer (Shared)
+ * @pattern Configuration Over Code
  */
 class AbstercoPaymentService
 {
     private string $apiKey;
     private string $baseUrl;
     private string $organizationId;
+    private array $config;
 
     public function __construct()
     {
-        $this->apiKey = config('services.absterco.api_key');
-        $this->baseUrl = config('services.absterco.base_url');
-        $this->organizationId = config('services.absterco.organization_id');
+        // Load from centralized payment config
+        $this->config = config('payment.gateways.absterco', []);
+        
+        $this->apiKey = $this->config['api_key'] ?? '';
+        $this->baseUrl = $this->config['base_url'] ?? '';
+        $this->organizationId = $this->config['organization_id'] ?? '';
 
         if (!$this->apiKey || !$this->baseUrl) {
             throw new Exception('Absterco payment gateway credentials not configured');
         }
+    }
+    
+    /**
+     * Check if Absterco gateway is enabled
+     */
+    public function isEnabled(): bool
+    {
+        return $this->config['enabled'] ?? false;
+    }
+    
+    /**
+     * Check if a feature is available
+     */
+    public function hasFeature(string $feature): bool
+    {
+        return $this->config['features'][$feature] ?? false;
+    }
+    
+    /**
+     * Get gateway settings
+     */
+    public function getSetting(string $key, $default = null)
+    {
+        return $this->config['settings'][$key] ?? $default;
     }
 
     /**
@@ -32,9 +63,13 @@ class AbstercoPaymentService
      */
     public function createSubscriptionPayment(array $data): array
     {
+        // Get settings from config
+        $currency = $this->getSetting('currency', 'LKR');
+        $allowSaveCard = $this->getSetting('allow_save_card', true);
+        
         $payload = [
             'amount' => $data['amount'],
-            'currency' => $data['currency'] ?? 'LKR',
+            'currency' => $data['currency'] ?? $currency,
             'description' => $data['description'],
             'order_reference' => $data['order_reference'],
             
@@ -43,12 +78,12 @@ class AbstercoPaymentService
             'customer_email' => $data['customer_email'],
             'customer_phone' => $data['customer_phone'] ?? null,
             
-            // Card saving
+            // Card saving (use config default)
             'external_customer_id' => $data['external_customer_id'], // User ID
-            'allow_save_card' => $data['allow_save_card'] ?? true,
+            'allow_save_card' => $data['allow_save_card'] ?? $allowSaveCard,
             
-            // Callback URL
-            'business_return_url' => $data['return_url'],
+            // Callback URL (from payment config)
+            'business_return_url' => $data['return_url'] ?? config('payment.subscription.return_urls.success'),
             
             // Metadata for tracking
             'metadata' => [
@@ -69,6 +104,7 @@ class AbstercoPaymentService
                 Log::error('Absterco payment link creation failed', [
                     'status' => $response->status(),
                     'body' => $response->body(),
+                    'payload' => $payload,
                 ]);
                 throw new Exception('Failed to create payment link: ' . $response->body());
             }

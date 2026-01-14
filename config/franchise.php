@@ -11,6 +11,8 @@ return [
             'buy_2_get_1' => true,
             'menu_versioning' => true,
             'bulk_sync' => true,
+            'subscription_payments' => true,
+            'saved_cards' => true,
         ],
         'custom_fields' => [
             'crust_type' => ['thin', 'thick', 'stuffed', 'cheese_burst'],
@@ -41,6 +43,8 @@ return [
             'custom_coffee_preferences' => true,
             'menu_versioning' => true,
             'bulk_sync' => true,
+            'subscription_payments' => true,
+            'saved_cards' => true,
         ],
         'custom_fields' => [
             'milk_type' => ['regular', 'soy', 'almond', 'oat'],
@@ -60,14 +64,16 @@ return [
         'max_locations' => 150,
         'support_email' => 'support@barista.lk',
         'database_connection' => 'tenant_barista',
-    ],
-
     'default' => [
         'name' => 'MenuVibe Client',
         'features' => [
             'basic_menu' => true,
             'qr_code' => true,
             'menu_versioning' => false,
+            'bulk_sync' => false,
+            'subscription_payments' => true,
+            'saved_cards' => true,
+        ],  'menu_versioning' => false,
             'bulk_sync' => false,
         ],
         'custom_fields' => [],
