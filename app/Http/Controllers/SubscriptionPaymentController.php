@@ -184,45 +184,54 @@ class SubscriptionPaymentController extends Controller
     {
         $status = $request->query('status');
         $sessionId = $request->query('session_id');
-        $orderId = $request->query('order_id');
+        $orderId = $request->query('order_id'); // This is Absterco's generated ID (e.g., S73_XXX)
         $amount = $request->query('amount');
 
-        if (!$sessionId || !$orderId) {
+        if (!$sessionId) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid payment callback - missing required parameters',
+                'message' => 'Invalid payment callback - missing session_id',
             ], 400);
         }
 
         try {
-            // Extract order reference to get user and plan info
-            // Try multiple formats:
-            // Format 1: USER_{userId}_PLAN_{planId}_{timestamp}
-            // Format 2: SUB-{userId}-{planId}-{timestamp}
-            // Format 3: S{sessionId}_{timestamp} (need to lookup in database)
+            // Step 1: Verify payment with Absterco to get our order_reference
+            $verification = $this->paymentService->verifyPayment($sessionId);
             
+            \Log::info('Payment verification result', [
+                'session_id' => $sessionId,
+                'verification' => $verification,
+            ]);
+            
+            if (!$verification['success'] || $verification['status'] !== 'completed') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Payment not completed',
+                    'status' => $verification['status'] ?? 'unknown',
+                ], 400);
+            }
+            
+            // Step 2: Extract our order_reference from verification response
+            $orderReference = $verification['order_reference'] ?? null;
+            
+            if (!$orderReference) {
+                throw new \Exception('order_reference not found in payment verification response');
+            }
+            
+            // Step 3: Parse our order_reference to get user and plan info
+            // Format: USER_{userId}_PLAN_{planId}_{timestamp}
             $userId = null;
             $planId = null;
             
-            // Try USER_PLAN format
-            if (preg_match('/USER_(\d+)_PLAN_(\d+)_/', $orderId, $matches)) {
+            if (preg_match('/USER_(\d+)_PLAN_(\d+)_/', $orderReference, $matches)) {
                 $userId = $matches[1];
                 $planId = $matches[2];
-            }
-            // Try SUB format
-            elseif (preg_match('/SUB-(\d+)-(\d+)-/', $orderId, $matches)) {
-                $userId = $matches[1];
-                $planId = $matches[2];
-            }
-            // Try S{sessionId} format - lookup from pending payment
-            else {
-                // For now, we'll need to get user and plan from query params or session
-                // This is a fallback - in production you should store pending payments
-                throw new \Exception('Cannot parse order reference: ' . $orderId . '. Expected format: USER_{userId}_PLAN_{planId}_{timestamp}');
+            } else {
+                throw new \Exception('Cannot parse order_reference: ' . $orderReference . '. Expected format: USER_{userId}_PLAN_{planId}_{timestamp}');
             }
             
             if (!$userId || !$planId) {
-                throw new \Exception('Invalid order reference format: ' . $orderId);
+                throw new \Exception('Invalid order_reference format: ' . $orderReference);
             }
             
             // Verify the user
