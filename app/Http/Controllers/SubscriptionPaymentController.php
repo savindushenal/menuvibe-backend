@@ -91,17 +91,9 @@ class SubscriptionPaymentController extends Controller
             // Generate payment reference
             $paymentReference = $this->paymentService->generatePaymentReference($user->id, $plan->id);
 
-            // Create encrypted token with payment data for secure callback
-            $paymentToken = encrypt([
-                'user_id' => $user->id,
-                'plan_id' => $plan->id,
-                'business_profile_id' => $businessProfileId,
-                'expires_at' => now()->addHours(2)->timestamp,
-            ]);
-
-            // Get return URLs from payment config and append encrypted token
-            $returnUrl = config('payment.subscription.return_urls.success') . '?token=' . urlencode($paymentToken);
-            $cancelUrl = config('payment.subscription.return_urls.cancel') . '?token=' . urlencode($paymentToken);
+            // Get return URLs from payment config (no query params - we'll use database lookup)
+            $returnUrl = config('payment.subscription.return_urls.success');
+            $cancelUrl = config('payment.subscription.return_urls.cancel');
 
             if ($paymentMethod === 'saved_card' && $request->saved_card_id) {
                 // Check if saved cards feature is enabled
@@ -151,7 +143,23 @@ class SubscriptionPaymentController extends Controller
                 ]);
             }
 
-            // Note: We don't need to store in session for API - verification happens via link_token in callback
+            // Store pending payment in database for secure callback lookup
+            \App\Models\PendingPayment::create([
+                'user_id' => $user->id,
+                'link_token' => $paymentData['link_token'] ?? null,
+                'session_id' => $paymentData['session_id'] ?? null,
+                'order_reference' => $paymentReference,
+                'subscription_plan_id' => $plan->id,
+                'amount' => $amount,
+                'currency' => 'LKR',
+                'payment_method' => $paymentMethod,
+                'status' => 'pending',
+                'metadata' => json_encode([
+                    'business_profile_id' => $businessProfileId,
+                    'include_setup_fee' => $includeSetupFee,
+                ]),
+                'expires_at' => now()->addHours(2),
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -196,50 +204,6 @@ class SubscriptionPaymentController extends Controller
         $amount = $request->query('amount');
         $currency = $request->query('currency');
         $reference = $request->query('reference'); // Our order_reference
-        $token = $request->query('token'); // Encrypted payment data
-        
-        $userId = null;
-        $planId = null;
-        $businessProfileId = null;
-        
-        // Try to decrypt token first (most secure method)
-        if ($token) {
-            try {
-                $paymentData = decrypt($token);
-                
-                // Check if token has expired (2 hour limit)
-                if (isset($paymentData['expires_at']) && $paymentData['expires_at'] < now()->timestamp) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Payment token has expired',
-                    ], 400);
-                }
-                
-                $userId = $paymentData['user_id'] ?? null;
-                $planId = $paymentData['plan_id'] ?? null;
-                $businessProfileId = $paymentData['business_profile_id'] ?? null;
-                
-            } catch (\Exception $e) {
-                Log::warning('Failed to decrypt payment token', [
-                    'error' => $e->getMessage(),
-                ]);
-            }
-        }
-        
-        // Fallback 1: Try URL parameters (for backward compatibility)
-        if (!$userId || !$planId) {
-            $userId = $request->query('user_id');
-            $planId = $request->query('plan_id');
-            $businessProfileId = $request->query('business_profile_id');
-        }
-        
-        // Fallback 2: Parse from reference parameter
-        if ((!$userId || !$planId) && $reference) {
-            if (preg_match('/USER_(\d+)_PLAN_(\d+)_/', $reference, $matches)) {
-                $userId = $matches[1];
-                $planId = $matches[2];
-            }
-        }
 
         if (!$sessionId) {
             return response()->json([
@@ -247,19 +211,31 @@ class SubscriptionPaymentController extends Controller
                 'message' => 'Invalid payment callback - missing session_id',
             ], 400);
         }
-        
-        if (!$userId || !$planId) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid payment callback - missing user_id or plan_id',
-                'debug' => config('app.debug') ? [
-                    'reference' => $reference,
-                    'has_token' => !empty($token),
-                ] : null,
-            ], 400);
-        }
 
         try {
+            // Lookup pending payment by session_id or order_reference
+            $pendingPayment = \App\Models\PendingPayment::where(function($query) use ($sessionId, $reference) {
+                $query->where('session_id', $sessionId);
+                if ($reference) {
+                    $query->orWhere('order_reference', $reference);
+                }
+            })
+            ->where('status', 'pending')
+            ->where('expires_at', '>', now())
+            ->first();
+
+            if (!$pendingPayment) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Payment session not found or has expired',
+                ], 404);
+            }
+
+            $userId = $pendingPayment->user_id;
+            $planId = $pendingPayment->subscription_plan_id;
+            $businessProfileId = json_decode($pendingPayment->metadata, true)['business_profile_id'] ?? null;
+
+            // Step 1: Verify payment status with Absterco
             // Step 1: Verify payment status with Absterco
             $verification = $this->paymentService->verifyPayment($sessionId);
             
@@ -354,6 +330,12 @@ class SubscriptionPaymentController extends Controller
                         'plan_id' => $plan->id,
                     ]);
                 }
+
+                // Mark pending payment as completed
+                $pendingPayment->update([
+                    'status' => 'completed',
+                    'completed_at' => now(),
+                ]);
 
                 DB::commit();
 
