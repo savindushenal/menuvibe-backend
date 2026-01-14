@@ -202,6 +202,7 @@ class SubscriptionPaymentController extends Controller
             $user = Auth::user();
             $metadata = $verification['metadata'];
             $planId = $metadata['subscription_plan_id'] ?? null;
+            $includeSetupFee = $metadata['include_setup_fee'] ?? false;
 
             if (!$planId) {
                 throw new \Exception('Subscription plan ID not found in payment metadata');
@@ -237,6 +238,8 @@ class SubscriptionPaymentController extends Controller
                         'currency' => $verification['currency'],
                         'card_saved' => $verification['card_saved'],
                         'saved_card_id' => $verification['saved_card_id'],
+                        'setup_fee_paid' => $includeSetupFee,
+                        'payment_type' => $metadata['payment_type'] ?? 'subscription',
                     ]),
                 ]);
 
@@ -253,6 +256,8 @@ class SubscriptionPaymentController extends Controller
                     'user_id' => $user->id,
                     'subscription_id' => $subscription->id,
                     'plan_id' => $plan->id,
+                    'amount_paid' => $verification['amount'],
+                    'setup_fee_included' => $includeSetupFee,
                 ]);
 
                 return response()->json([
@@ -263,6 +268,12 @@ class SubscriptionPaymentController extends Controller
                         'plan' => $plan->name,
                         'status' => $subscription->status,
                         'ends_at' => $subscription->ends_at,
+                    ],
+                    'payment' => [
+                        'amount' => $verification['amount'],
+                        'currency' => $verification['currency'],
+                        'setup_fee_paid' => $includeSetupFee,
+                        'card_saved' => $verification['card_saved'],
                     ],
                 ]);
 
