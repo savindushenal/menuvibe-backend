@@ -91,9 +91,10 @@ class SubscriptionPaymentController extends Controller
             // Generate payment reference
             $paymentReference = $this->paymentService->generatePaymentReference($user->id, $plan->id);
 
-            // Get return URLs from payment config
-            $returnUrl = config('payment.subscription.return_urls.success');
-            $cancelUrl = config('payment.subscription.return_urls.cancel');
+            // Get return URLs from payment config and append user/plan IDs as query params
+            // This way the callback can identify the payment without needing to verify with Absterco
+            $returnUrl = config('payment.subscription.return_urls.success') . '?user_id=' . $user->id . '&plan_id=' . $plan->id . '&business_profile_id=' . $businessProfileId;
+            $cancelUrl = config('payment.subscription.return_urls.cancel') . '?user_id=' . $user->id . '&plan_id=' . $plan->id;
 
             if ($paymentMethod === 'saved_card' && $request->saved_card_id) {
                 // Check if saved cards feature is enabled
@@ -184,8 +185,14 @@ class SubscriptionPaymentController extends Controller
     {
         $status = $request->query('status');
         $sessionId = $request->query('session_id');
-        $orderId = $request->query('order_id'); // This is Absterco's generated ID (e.g., S73_XXX)
+        $orderId = $request->query('order_id'); // Absterco's generated ID
         $amount = $request->query('amount');
+        $currency = $request->query('currency');
+        
+        // Get our user/plan IDs from URL parameters (we added them to return_url)
+        $userId = $request->query('user_id');
+        $planId = $request->query('plan_id');
+        $businessProfileId = $request->query('business_profile_id');
 
         if (!$sessionId) {
             return response()->json([
@@ -193,17 +200,27 @@ class SubscriptionPaymentController extends Controller
                 'message' => 'Invalid payment callback - missing session_id',
             ], 400);
         }
+        
+        if (!$userId || !$planId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid payment callback - missing user_id or plan_id',
+            ], 400);
+        }
 
         try {
-            // Step 1: Verify payment with Absterco to get our order_reference
+            // Step 1: Verify payment status with Absterco
             $verification = $this->paymentService->verifyPayment($sessionId);
             
-            \Log::info('Payment verification result', [
+            \Log::info('Payment callback received', [
                 'session_id' => $sessionId,
-                'verification' => $verification,
+                'user_id' => $userId,
+                'plan_id' => $planId,
+                'verification_status' => $verification['status'],
+                'amount' => $amount,
             ]);
             
-            // Check if payment is completed (status can be 'completed' or 'payment_done')
+            // Check if payment is completed
             $completedStatuses = ['completed', 'payment_done', 'success'];
             if (!$verification['success'] || !in_array($verification['status'], $completedStatuses)) {
                 return response()->json([
@@ -213,79 +230,30 @@ class SubscriptionPaymentController extends Controller
                 ], 400);
             }
             
-            // Step 2: Extract our order_reference from verification response
-            $orderReference = $verification['order_reference'] ?? null;
-            
-            if (!$orderReference) {
-                throw new \Exception('order_reference not found in payment verification response');
-            }
-            
-            // Step 3: Parse our order_reference to get user and plan info
-            // Format: USER_{userId}_PLAN_{planId}_{timestamp}
-            $userId = null;
-            $planId = null;
-            
-            if (preg_match('/USER_(\d+)_PLAN_(\d+)_/', $orderReference, $matches)) {
-                $userId = $matches[1];
-                $planId = $matches[2];
-            } else {
-                throw new \Exception('Cannot parse order_reference: ' . $orderReference . '. Expected format: USER_{userId}_PLAN_{planId}_{timestamp}');
-            }
-            
-            if (!$userId || !$planId) {
-                throw new \Exception('Invalid order_reference format: ' . $orderReference);
-            }
-            
-            // Verify the user
+            // Step 2: Get user and plan
             $user = \App\Models\User::findOrFail($userId);
-            
-            // For now, we'll trust the callback since it came from success_url
-            // In production, you should verify with Absterco API using session_id
-            $verification = [
-                'status' => $status === 'success' ? 'completed' : $status,
-                'amount' => floatval($amount) * 100, // Convert to cents
-                'currency' => $request->query('currency', 'LKR'),
-                'transaction_id' => $sessionId,
-                'order_reference' => $orderId,
-                'card_saved' => false, // Will be updated if Absterco provides this
-                'saved_card_id' => null,
-                'metadata' => [
-                    'subscription_plan_id' => $planId,
-                    'user_id' => $userId,
-                    'payment_type' => 'subscription_upgrade',
-                    'include_setup_fee' => true, // Default assumption
-                ],
-                'paid_at' => now(),
-            ];
-
-            if ($verification['status'] !== 'completed') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Payment was not completed',
-                    'status' => $verification['status'],
-                ], 400);
-            }
-
-            $metadata = $verification['metadata'];
-            $planId = $metadata['subscription_plan_id'] ?? null;
-            $includeSetupFee = $metadata['include_setup_fee'] ?? false;
-            $businessProfileId = $metadata['business_profile_id'] ?? null;
-
-            if (!$planId) {
-                throw new \Exception('Subscription plan ID not found in payment metadata');
-            }
-
-            $plan = SubscriptionPlan::findOrFail($planId);
+            $plan = \App\Models\SubscriptionPlan::findOrFail($planId);
 
             // Create or update subscription
             DB::beginTransaction();
             try {
-                // Cancel existing active subscription
-                $user->subscriptions()->active()->update([
-                    'is_active' => false,
-                    'status' => 'cancelled',
-                    'ends_at' => now(),
-                ]);
+                // Cancel existing active subscription for this business
+                if ($businessProfileId) {
+                    $user->subscriptions()
+                        ->where('business_profile_id', $businessProfileId)
+                        ->active()
+                        ->update([
+                            'is_active' => false,
+                            'status' => 'cancelled',
+                            'ends_at' => now(),
+                        ]);
+                } else {
+                    $user->subscriptions()->active()->update([
+                        'is_active' => false,
+                        'status' => 'cancelled',
+                        'ends_at' => now(),
+                    ]);
+                }
 
                 // Create new subscription
                 $subscription = UserSubscription::create([
@@ -297,27 +265,16 @@ class SubscriptionPaymentController extends Controller
                     'is_active' => true,
                     'status' => 'active',
                     'payment_method' => 'absterco_gateway',
-                    'payment_gateway_transaction_id' => $verification['transaction_id'],
-                    'last_payment_at' => $verification['paid_at'] ?? now(),
+                    'payment_gateway_transaction_id' => $sessionId,
+                    'last_payment_at' => now(),
                     'next_payment_at' => $this->calculateNextPaymentDate($plan),
                     'payment_metadata' => json_encode([
                         'session_id' => $sessionId,
                         'order_id' => $orderId,
-                        'amount' => $verification['amount'],
-                        'currency' => $verification['currency'],
-                        'card_saved' => $verification['card_saved'],
-                        'saved_card_id' => $verification['saved_card_id'],
-                        'setup_fee_paid' => $includeSetupFee,
-                        'payment_type' => $metadata['payment_type'] ?? 'subscription',
+                        'amount' => $amount,
+                        'currency' => $currency,
                     ]),
                 ]);
-
-                // Store saved card reference if card was saved
-                if ($verification['card_saved'] && $verification['saved_card_id']) {
-                    $subscription->update([
-                        'saved_card_id' => $verification['saved_card_id'],
-                    ]);
-                }
 
                 // Update business profile subscription ONLY if business_profile_id was provided
                 // This ensures we update the correct business when user has multiple businesses
@@ -353,8 +310,7 @@ class SubscriptionPaymentController extends Controller
                     'user_id' => $user->id,
                     'subscription_id' => $subscription->id,
                     'plan_id' => $plan->id,
-                    'amount_paid' => $verification['amount'],
-                    'setup_fee_included' => $includeSetupFee,
+                    'amount_paid' => $amount,
                 ]);
 
                 return response()->json([
@@ -367,10 +323,8 @@ class SubscriptionPaymentController extends Controller
                         'ends_at' => $subscription->ends_at,
                     ],
                     'payment' => [
-                        'amount' => $verification['amount'],
-                        'currency' => $verification['currency'],
-                        'setup_fee_paid' => $includeSetupFee,
-                        'card_saved' => $verification['card_saved'],
+                        'amount' => $amount,
+                        'currency' => $currency,
                     ],
                 ]);
 
