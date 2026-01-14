@@ -62,8 +62,8 @@ return [
         'grace_period_days' => 3,
         
         'return_urls' => [
-            'success' => env('APP_FRONTEND_URL') . '/dashboard/subscription/payment-callback',
-            'cancel' => env('APP_FRONTEND_URL') . '/dashboard/subscription?payment=cancelled',
+            'success' => env('FRONTEND_URL', env('APP_FRONTEND_URL')) . '/dashboard/subscription/payment-callback',
+            'cancel' => env('FRONTEND_URL', env('APP_FRONTEND_URL')) . '/dashboard/subscription?payment=cancelled',
             'webhook' => env('APP_URL') . '/api/webhooks/payment',
         ],
     ],
