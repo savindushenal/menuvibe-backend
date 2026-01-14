@@ -23,6 +23,9 @@ class UserSubscription extends Model
         'external_subscription_id',
         'last_payment_at',
         'next_payment_at',
+        'payment_gateway_transaction_id',
+        'saved_card_id',
+        'payment_metadata',
     ];
 
     protected $casts = [

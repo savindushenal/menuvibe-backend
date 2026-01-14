@@ -26,7 +26,7 @@ class SubscriptionPaymentController extends Controller
 
     public function __construct(AbstercoPaymentService $paymentService)
     {
-        $this->middleware('auth:sanctum');
+        $this->middleware('auth:sanctum')->except(['paymentCallback']);
         $this->paymentService = $paymentService;
     }
 
@@ -277,6 +277,19 @@ class SubscriptionPaymentController extends Controller
                 if ($verification['card_saved'] && $verification['saved_card_id']) {
                     $subscription->update([
                         'saved_card_id' => $verification['saved_card_id'],
+                    ]);
+                }
+
+                // Update business profile subscription if user has one
+                $businessProfile = $user->businessProfile;
+                if ($businessProfile) {
+                    $businessProfile->update([
+                        'subscription_plan_id' => $plan->id,
+                    ]);
+                    
+                    Log::info('Business profile subscription updated', [
+                        'business_profile_id' => $businessProfile->id,
+                        'plan_id' => $plan->id,
                     ]);
                 }
 
