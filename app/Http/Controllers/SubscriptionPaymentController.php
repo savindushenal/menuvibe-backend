@@ -191,13 +191,34 @@ class SubscriptionPaymentController extends Controller
 
         try {
             // Extract order reference to get user and plan info
-            // Format: USER_{userId}_PLAN_{planId}_{timestamp}
-            if (!preg_match('/USER_(\d+)_PLAN_(\d+)_/', $orderId, $matches)) {
-                throw new \Exception('Invalid order reference format');
+            // Try multiple formats:
+            // Format 1: USER_{userId}_PLAN_{planId}_{timestamp}
+            // Format 2: SUB-{userId}-{planId}-{timestamp}
+            // Format 3: S{sessionId}_{timestamp} (need to lookup in database)
+            
+            $userId = null;
+            $planId = null;
+            
+            // Try USER_PLAN format
+            if (preg_match('/USER_(\d+)_PLAN_(\d+)_/', $orderId, $matches)) {
+                $userId = $matches[1];
+                $planId = $matches[2];
+            }
+            // Try SUB format
+            elseif (preg_match('/SUB-(\d+)-(\d+)-/', $orderId, $matches)) {
+                $userId = $matches[1];
+                $planId = $matches[2];
+            }
+            // Try S{sessionId} format - lookup from pending payment
+            else {
+                // For now, we'll need to get user and plan from query params or session
+                // This is a fallback - in production you should store pending payments
+                throw new \Exception('Cannot parse order reference: ' . $orderId . '. Expected format: USER_{userId}_PLAN_{planId}_{timestamp}');
             }
             
-            $userId = $matches[1];
-            $planId = $matches[2];
+            if (!$userId || !$planId) {
+                throw new \Exception('Invalid order reference format: ' . $orderId);
+            }
             
             // Verify the user
             $user = \App\Models\User::findOrFail($userId);

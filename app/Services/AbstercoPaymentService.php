@@ -318,7 +318,7 @@ class AbstercoPaymentService
      */
     public function generatePaymentReference(int $userId, int $planId): string
     {
-        return 'SUB-' . $userId . '-' . $planId . '-' . time();
+        return 'USER_' . $userId . '_PLAN_' . $planId . '_' . time();
     }
 
     /**
