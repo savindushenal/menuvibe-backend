@@ -144,10 +144,11 @@ class SubscriptionPaymentController extends Controller
             }
 
             // Store pending payment in database for secure callback lookup
+            // Note: session_id is not available yet - Absterco only sends it in callback
             $pendingPayment = \App\Models\PendingPayment::create([
                 'user_id' => $user->id,
                 'link_token' => $paymentData['link_token'] ?? null,
-                'session_id' => $paymentData['session_id'] ?? null,
+                'session_id' => null, // Will be updated in callback
                 'order_reference' => $paymentReference,
                 'subscription_plan_id' => $plan->id,
                 'amount' => $amount,
@@ -161,9 +162,8 @@ class SubscriptionPaymentController extends Controller
                 'expires_at' => now()->addHours(2),
             ]);
             
-            Log::info('Pending payment created', [
+            Log::info('Pending payment created (session_id will be added in callback)', [
                 'pending_payment_id' => $pendingPayment->id,
-                'session_id' => $paymentData['session_id'] ?? null,
                 'order_reference' => $paymentReference,
                 'user_id' => $user->id,
                 'plan_id' => $plan->id,
@@ -221,16 +221,26 @@ class SubscriptionPaymentController extends Controller
         }
 
         try {
-            // Lookup pending payment by session_id or order_reference
-            $pendingPayment = \App\Models\PendingPayment::where(function($query) use ($sessionId, $reference) {
-                $query->where('session_id', $sessionId);
+            // Lookup pending payment by order_reference (primary) or session_id
+            // Note: session_id is only available in callback, not when creating payment
+            $pendingPayment = \App\Models\PendingPayment::where(function($query) use ($reference, $sessionId) {
                 if ($reference) {
-                    $query->orWhere('order_reference', $reference);
+                    $query->where('order_reference', $reference);
                 }
+                $query->orWhere('session_id', $sessionId);
             })
             ->where('status', 'pending')
             ->where('expires_at', '>', now())
             ->first();
+            
+            // If found, update with session_id from callback
+            if ($pendingPayment && !$pendingPayment->session_id) {
+                $pendingPayment->update(['session_id' => $sessionId]);
+                Log::info('Updated pending payment with session_id from callback', [
+                    'pending_payment_id' => $pendingPayment->id,
+                    'session_id' => $sessionId,
+                ]);
+            }
 
             // Fallback for old payments: parse reference parameter
             if (!$pendingPayment && $reference && preg_match('/USER_(\d+)_PLAN_(\d+)_/', $reference, $matches)) {
