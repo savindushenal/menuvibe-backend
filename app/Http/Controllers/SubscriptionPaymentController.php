@@ -91,10 +91,17 @@ class SubscriptionPaymentController extends Controller
             // Generate payment reference
             $paymentReference = $this->paymentService->generatePaymentReference($user->id, $plan->id);
 
-            // Get return URLs from payment config and append user/plan IDs as query params
-            // This way the callback can identify the payment without needing to verify with Absterco
-            $returnUrl = config('payment.subscription.return_urls.success') . '?user_id=' . $user->id . '&plan_id=' . $plan->id . '&business_profile_id=' . $businessProfileId;
-            $cancelUrl = config('payment.subscription.return_urls.cancel') . '?user_id=' . $user->id . '&plan_id=' . $plan->id;
+            // Create encrypted token with payment data for secure callback
+            $paymentToken = encrypt([
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'business_profile_id' => $businessProfileId,
+                'expires_at' => now()->addHours(2)->timestamp,
+            ]);
+
+            // Get return URLs from payment config and append encrypted token
+            $returnUrl = config('payment.subscription.return_urls.success') . '?token=' . urlencode($paymentToken);
+            $cancelUrl = config('payment.subscription.return_urls.cancel') . '?token=' . urlencode($paymentToken);
 
             if ($paymentMethod === 'saved_card' && $request->saved_card_id) {
                 // Check if saved cards feature is enabled
@@ -185,14 +192,54 @@ class SubscriptionPaymentController extends Controller
     {
         $status = $request->query('status');
         $sessionId = $request->query('session_id');
-        $orderId = $request->query('order_id'); // Absterco's generated ID
+        $orderId = $request->query('order_id');
         $amount = $request->query('amount');
         $currency = $request->query('currency');
+        $reference = $request->query('reference'); // Our order_reference
+        $token = $request->query('token'); // Encrypted payment data
         
-        // Get our user/plan IDs from URL parameters (we added them to return_url)
-        $userId = $request->query('user_id');
-        $planId = $request->query('plan_id');
-        $businessProfileId = $request->query('business_profile_id');
+        $userId = null;
+        $planId = null;
+        $businessProfileId = null;
+        
+        // Try to decrypt token first (most secure method)
+        if ($token) {
+            try {
+                $paymentData = decrypt($token);
+                
+                // Check if token has expired (2 hour limit)
+                if (isset($paymentData['expires_at']) && $paymentData['expires_at'] < now()->timestamp) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Payment token has expired',
+                    ], 400);
+                }
+                
+                $userId = $paymentData['user_id'] ?? null;
+                $planId = $paymentData['plan_id'] ?? null;
+                $businessProfileId = $paymentData['business_profile_id'] ?? null;
+                
+            } catch (\Exception $e) {
+                Log::warning('Failed to decrypt payment token', [
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+        
+        // Fallback 1: Try URL parameters (for backward compatibility)
+        if (!$userId || !$planId) {
+            $userId = $request->query('user_id');
+            $planId = $request->query('plan_id');
+            $businessProfileId = $request->query('business_profile_id');
+        }
+        
+        // Fallback 2: Parse from reference parameter
+        if ((!$userId || !$planId) && $reference) {
+            if (preg_match('/USER_(\d+)_PLAN_(\d+)_/', $reference, $matches)) {
+                $userId = $matches[1];
+                $planId = $matches[2];
+            }
+        }
 
         if (!$sessionId) {
             return response()->json([
@@ -205,6 +252,10 @@ class SubscriptionPaymentController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid payment callback - missing user_id or plan_id',
+                'debug' => config('app.debug') ? [
+                    'reference' => $reference,
+                    'has_token' => !empty($token),
+                ] : null,
             ], 400);
         }
 
