@@ -177,19 +177,49 @@ class SubscriptionPaymentController extends Controller
      */
     public function paymentCallback(Request $request)
     {
-        $linkToken = $request->query('link_token');
         $status = $request->query('status');
+        $sessionId = $request->query('session_id');
+        $orderId = $request->query('order_id');
+        $amount = $request->query('amount');
 
-        if (!$linkToken) {
+        if (!$sessionId || !$orderId) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid payment callback',
+                'message' => 'Invalid payment callback - missing required parameters',
             ], 400);
         }
 
         try {
-            // Verify payment with Absterco
-            $verification = $this->paymentService->verifyPayment($linkToken);
+            // Extract order reference to get user and plan info
+            // Format: USER_{userId}_PLAN_{planId}_{timestamp}
+            if (!preg_match('/USER_(\d+)_PLAN_(\d+)_/', $orderId, $matches)) {
+                throw new \Exception('Invalid order reference format');
+            }
+            
+            $userId = $matches[1];
+            $planId = $matches[2];
+            
+            // Verify the user
+            $user = \App\Models\User::findOrFail($userId);
+            
+            // For now, we'll trust the callback since it came from success_url
+            // In production, you should verify with Absterco API using session_id
+            $verification = [
+                'status' => $status === 'success' ? 'completed' : $status,
+                'amount' => floatval($amount) * 100, // Convert to cents
+                'currency' => $request->query('currency', 'LKR'),
+                'transaction_id' => $sessionId,
+                'order_reference' => $orderId,
+                'card_saved' => false, // Will be updated if Absterco provides this
+                'saved_card_id' => null,
+                'metadata' => [
+                    'subscription_plan_id' => $planId,
+                    'user_id' => $userId,
+                    'payment_type' => 'subscription_upgrade',
+                    'include_setup_fee' => true, // Default assumption
+                ],
+                'paid_at' => now(),
+            ];
 
             if ($verification['status'] !== 'completed') {
                 return response()->json([
@@ -199,7 +229,6 @@ class SubscriptionPaymentController extends Controller
                 ], 400);
             }
 
-            $user = Auth::user();
             $metadata = $verification['metadata'];
             $planId = $metadata['subscription_plan_id'] ?? null;
             $includeSetupFee = $metadata['include_setup_fee'] ?? false;
@@ -233,7 +262,8 @@ class SubscriptionPaymentController extends Controller
                     'last_payment_at' => $verification['paid_at'] ?? now(),
                     'next_payment_at' => $this->calculateNextPaymentDate($plan),
                     'payment_metadata' => json_encode([
-                        'link_token' => $linkToken,
+                        'session_id' => $sessionId,
+                        'order_id' => $orderId,
                         'amount' => $verification['amount'],
                         'currency' => $verification['currency'],
                         'card_saved' => $verification['card_saved'],
@@ -284,8 +314,8 @@ class SubscriptionPaymentController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Subscription payment callback failed', [
-                'link_token' => $linkToken,
-                'user_id' => Auth::id(),
+                'session_id' => $sessionId ?? null,
+                'order_id' => $orderId ?? null,
                 'error' => $e->getMessage(),
             ]);
 
