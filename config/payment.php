@@ -63,7 +63,7 @@ return [
         
         'return_urls' => [
             'success' => env('APP_FRONTEND_URL') . '/dashboard/subscription/payment-callback',
-            'cancel' => env('APP_FRONTEND_URL') . '/dashboard/subscription',
+            'cancel' => env('APP_FRONTEND_URL') . '/dashboard/subscription?payment=cancelled',
             'webhook' => env('APP_URL') . '/api/webhooks/payment',
         ],
     ],

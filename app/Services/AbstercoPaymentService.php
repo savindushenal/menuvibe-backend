@@ -82,8 +82,9 @@ class AbstercoPaymentService
             'external_customer_id' => $data['external_customer_id'], // User ID
             'allow_save_card' => $data['allow_save_card'] ?? $allowSaveCard,
             
-            // Callback URL (from payment config)
+            // Callback URLs (from payment config)
             'business_return_url' => $data['return_url'] ?? config('payment.subscription.return_urls.success'),
+            'business_cancel_url' => $data['cancel_url'] ?? config('payment.subscription.return_urls.cancel'),
             
             // Metadata for tracking
             'metadata' => [
@@ -228,7 +229,8 @@ class AbstercoPaymentService
             'currency' => $data['currency'] ?? 'LKR',
             'description' => $data['description'],
             'order_reference' => $data['order_reference'],
-            'business_return_url' => $data['return_url'],
+            'business_return_url' => $data['return_url'] ?? config('payment.subscription.return_urls.success'),
+            'business_cancel_url' => $data['cancel_url'] ?? config('payment.subscription.return_urls.cancel'),
             'metadata' => $data['metadata'] ?? [],
         ];
 

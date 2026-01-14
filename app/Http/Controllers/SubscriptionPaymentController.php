@@ -88,8 +88,9 @@ class SubscriptionPaymentController extends Controller
             // Generate payment reference
             $paymentReference = $this->paymentService->generatePaymentReference($user->id, $plan->id);
 
-            // Use return URL from payment config
+            // Get return URLs from payment config
             $returnUrl = config('payment.subscription.return_urls.success');
+            $cancelUrl = config('payment.subscription.return_urls.cancel');
 
             if ($paymentMethod === 'saved_card' && $request->saved_card_id) {
                 // Check if saved cards feature is enabled
@@ -109,6 +110,7 @@ class SubscriptionPaymentController extends Controller
                     'description' => "Subscription: {$plan->name}",
                     'order_reference' => $paymentReference,
                     'return_url' => $returnUrl,
+                    'cancel_url' => $cancelUrl,
                     'metadata' => [
                         'subscription_plan_id' => $plan->id,
                         'user_id' => $user->id,
@@ -129,6 +131,7 @@ class SubscriptionPaymentController extends Controller
                     'external_customer_id' => (string) $user->id,
                     'allow_save_card' => true,
                     'return_url' => $returnUrl,
+                    'cancel_url' => $cancelUrl,
                     'subscription_plan_id' => $plan->id,
                     'user_id' => $user->id,
                     'payment_type' => 'subscription_upgrade',
