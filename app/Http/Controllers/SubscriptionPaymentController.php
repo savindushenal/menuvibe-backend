@@ -144,7 +144,7 @@ class SubscriptionPaymentController extends Controller
             }
 
             // Store pending payment in database for secure callback lookup
-            \App\Models\PendingPayment::create([
+            $pendingPayment = \App\Models\PendingPayment::create([
                 'user_id' => $user->id,
                 'link_token' => $paymentData['link_token'] ?? null,
                 'session_id' => $paymentData['session_id'] ?? null,
@@ -159,6 +159,14 @@ class SubscriptionPaymentController extends Controller
                     'include_setup_fee' => $includeSetupFee,
                 ]),
                 'expires_at' => now()->addHours(2),
+            ]);
+            
+            Log::info('Pending payment created', [
+                'pending_payment_id' => $pendingPayment->id,
+                'session_id' => $paymentData['session_id'] ?? null,
+                'order_reference' => $paymentReference,
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
             ]);
 
             return response()->json([
@@ -224,16 +232,40 @@ class SubscriptionPaymentController extends Controller
             ->where('expires_at', '>', now())
             ->first();
 
-            if (!$pendingPayment) {
+            // Fallback for old payments: parse reference parameter
+            if (!$pendingPayment && $reference && preg_match('/USER_(\d+)_PLAN_(\d+)_/', $reference, $matches)) {
+                $userId = $matches[1];
+                $planId = $matches[2];
+                $businessProfileId = null;
+                
+                Log::info('Using fallback reference parsing for old payment', [
+                    'session_id' => $sessionId,
+                    'reference' => $reference,
+                    'parsed_user_id' => $userId,
+                    'parsed_plan_id' => $planId,
+                ]);
+            } elseif (!$pendingPayment) {
+                Log::error('Payment session not found in database', [
+                    'session_id' => $sessionId,
+                    'reference' => $reference,
+                    'pending_payments_count' => \App\Models\PendingPayment::count(),
+                    'recent_payments' => \App\Models\PendingPayment::latest()->take(5)->pluck('session_id', 'id'),
+                ]);
+                
                 return response()->json([
                     'success' => false,
                     'message' => 'Payment session not found or has expired',
+                    'debug' => config('app.debug') ? [
+                        'session_id' => $sessionId,
+                        'reference' => $reference,
+                        'total_pending' => \App\Models\PendingPayment::count(),
+                    ] : null,
                 ], 404);
+            } else {
+                $userId = $pendingPayment->user_id;
+                $planId = $pendingPayment->subscription_plan_id;
+                $businessProfileId = json_decode($pendingPayment->metadata, true)['business_profile_id'] ?? null;
             }
-
-            $userId = $pendingPayment->user_id;
-            $planId = $pendingPayment->subscription_plan_id;
-            $businessProfileId = json_decode($pendingPayment->metadata, true)['business_profile_id'] ?? null;
 
             // Step 1: Verify payment status with Absterco
             // Step 1: Verify payment status with Absterco
@@ -331,11 +363,13 @@ class SubscriptionPaymentController extends Controller
                     ]);
                 }
 
-                // Mark pending payment as completed
-                $pendingPayment->update([
-                    'status' => 'completed',
-                    'completed_at' => now(),
-                ]);
+                // Mark pending payment as completed (if it exists)
+                if ($pendingPayment) {
+                    $pendingPayment->update([
+                        'status' => 'completed',
+                        'completed_at' => now(),
+                    ]);
+                }
 
                 DB::commit();
 
