@@ -93,6 +93,13 @@ class AbstercoPaymentService
                 'payment_type' => $data['payment_type'] ?? 'subscription',
             ],
         ];
+        
+        // Debug logging
+        \Log::info('Absterco Payment Request', [
+            'order_reference' => $payload['order_reference'],
+            'amount' => $payload['amount'],
+            'success_url' => $payload['success_url'],
+        ]);
 
         try {
             $response = Http::withHeaders([
@@ -111,6 +118,13 @@ class AbstercoPaymentService
             }
 
             $data = $response->json();
+            
+            // Debug logging of response
+            \Log::info('Absterco Payment Response', [
+                'session_id' => $data['data']['session_id'] ?? null,
+                'order_id' => $data['data']['order_id'] ?? null,
+                'payment_url' => $data['data']['payment_url'] ?? null,
+            ]);
 
             return [
                 'success' => true,

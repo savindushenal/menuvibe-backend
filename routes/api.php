@@ -195,6 +195,18 @@ Route::get('/logos/{filename}', function ($filename) {
     ]);
 })->where('filename', '.*');
 
+// Deployment status check (no auth required)
+Route::get('/deployment-status', function () {
+    return response()->json([
+        'status' => 'ok',
+        'git_commit' => exec('git rev-parse --short HEAD 2>&1'),
+        'timestamp' => now()->toISOString(),
+        'service_exists' => class_exists('App\\Services\\AbstercoPaymentService'),
+        'controller_exists' => class_exists('App\\Http\\Controllers\\SubscriptionPaymentController'),
+        'order_ref_method' => method_exists('App\\Services\\AbstercoPaymentService', 'generatePaymentReference'),
+    ]);
+});
+
 // Manual auth routes (bypass EnsureFrontendRequestsAreStateful middleware)
 Route::get('/user', [AuthController::class, 'profileManual']);
 Route::get('/auth/contexts', [AuthController::class, 'getContexts']);
