@@ -3577,3 +3577,848 @@ Did you mean one of these?
 #1 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\app\\Services\\AbstercoPaymentService.php(82): Illuminate\\Foundation\\Bootstrap\\HandleExceptions->Illuminate\\Foundation\\Bootstrap\\{closure}(2, 'Undefined array...', 'E:\\\\githubNew\\\\me...', 82)
 #2 E:\\githubNew\\menuvibe-full\\menuvibe-backend\\test_payment_gateway.php(58): App\\Services\\AbstercoPaymentService->createSubscriptionPayment(Array)
 #3 {main}"} 
+[2026-01-14 09:50:10] local.ERROR: Absterco payment verification error {"link_token":"74","message":"Failed to verify payment"} 
+[2026-01-14 09:50:44] local.ERROR: Payment verification failed {"link_token":"74","status":404,"body":"{
+    \"message\": \"The route api/v1/payment-links/74/verify could not be found.\",
+    \"exception\": \"Symfony\\\\Component\\\\HttpKernel\\\\Exception\\\\NotFoundHttpException\",
+    \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Routing/AbstractRouteCollection.php\",
+    \"line\": 45,
+    \"trace\": [
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Routing/CompiledRouteCollection.php\",
+            \"line\": 143,
+            \"function\": \"handleMatchedRoute\",
+            \"class\": \"Illuminate\\\\Routing\\\\AbstractRouteCollection\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Routing/Router.php\",
+            \"line\": 763,
+            \"function\": \"match\",
+            \"class\": \"Illuminate\\\\Routing\\\\CompiledRouteCollection\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Routing/Router.php\",
+            \"line\": 750,
+            \"function\": \"findRoute\",
+            \"class\": \"Illuminate\\\\Routing\\\\Router\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Routing/Router.php\",
+            \"line\": 739,
+            \"function\": \"dispatchToRoute\",
+            \"class\": \"Illuminate\\\\Routing\\\\Router\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php\",
+            \"line\": 200,
+            \"function\": \"dispatch\",
+            \"class\": \"Illuminate\\\\Routing\\\\Router\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 169,
+            \"function\": \"Illuminate\\\\Foundation\\\\Http\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Kernel\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php\",
+            \"line\": 21,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php\",
+            \"line\": 31,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\TransformsRequest\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\ConvertEmptyStringsToNull\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php\",
+            \"line\": 21,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php\",
+            \"line\": 51,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\TransformsRequest\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\TrimStrings\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php\",
+            \"line\": 27,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Http\\\\Middleware\\\\ValidatePostSize\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php\",
+            \"line\": 109,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\PreventRequestsDuringMaintenance\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php\",
+            \"line\": 61,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Http\\\\Middleware\\\\HandleCors\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php\",
+            \"line\": 58,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Http\\\\Middleware\\\\TrustProxies\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/InvokeDeferredCallbacks.php\",
+            \"line\": 22,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\InvokeDeferredCallbacks\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePathEncoding.php\",
+            \"line\": 26,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Http\\\\Middleware\\\\ValidatePathEncoding\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 126,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php\",
+            \"line\": 175,
+            \"function\": \"then\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php\",
+            \"line\": 144,
+            \"function\": \"sendRequestThroughRouter\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Kernel\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Application.php\",
+            \"line\": 1219,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Kernel\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/public/index.php\",
+            \"line\": 20,
+            \"function\": \"handleRequest\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Application\",
+            \"type\": \"->\"
+        }
+    ]
+}"} 
+[2026-01-14 09:50:45] local.ERROR: Absterco payment verification error {"link_token":"74","message":"Failed to verify payment: {
+    \"message\": \"The route api/v1/payment-links/74/verify could not be found.\",
+    \"exception\": \"Symfony\\\\Component\\\\HttpKernel\\\\Exception\\\\NotFoundHttpException\",
+    \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Routing/AbstractRouteCollection.php\",
+    \"line\": 45,
+    \"trace\": [
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Routing/CompiledRouteCollection.php\",
+            \"line\": 143,
+            \"function\": \"handleMatchedRoute\",
+            \"class\": \"Illuminate\\\\Routing\\\\AbstractRouteCollection\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Routing/Router.php\",
+            \"line\": 763,
+            \"function\": \"match\",
+            \"class\": \"Illuminate\\\\Routing\\\\CompiledRouteCollection\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Routing/Router.php\",
+            \"line\": 750,
+            \"function\": \"findRoute\",
+            \"class\": \"Illuminate\\\\Routing\\\\Router\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Routing/Router.php\",
+            \"line\": 739,
+            \"function\": \"dispatchToRoute\",
+            \"class\": \"Illuminate\\\\Routing\\\\Router\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php\",
+            \"line\": 200,
+            \"function\": \"dispatch\",
+            \"class\": \"Illuminate\\\\Routing\\\\Router\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 169,
+            \"function\": \"Illuminate\\\\Foundation\\\\Http\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Kernel\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php\",
+            \"line\": 21,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php\",
+            \"line\": 31,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\TransformsRequest\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\ConvertEmptyStringsToNull\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php\",
+            \"line\": 21,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php\",
+            \"line\": 51,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\TransformsRequest\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\TrimStrings\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php\",
+            \"line\": 27,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Http\\\\Middleware\\\\ValidatePostSize\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php\",
+            \"line\": 109,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\PreventRequestsDuringMaintenance\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php\",
+            \"line\": 61,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Http\\\\Middleware\\\\HandleCors\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php\",
+            \"line\": 58,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Http\\\\Middleware\\\\TrustProxies\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/InvokeDeferredCallbacks.php\",
+            \"line\": 22,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\InvokeDeferredCallbacks\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePathEncoding.php\",
+            \"line\": 26,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Http\\\\Middleware\\\\ValidatePathEncoding\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 126,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php\",
+            \"line\": 175,
+            \"function\": \"then\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php\",
+            \"line\": 144,
+            \"function\": \"sendRequestThroughRouter\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Kernel\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Application.php\",
+            \"line\": 1219,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Kernel\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/public/index.php\",
+            \"line\": 20,
+            \"function\": \"handleRequest\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Application\",
+            \"type\": \"->\"
+        }
+    ]
+}"} 
+[2026-01-14 09:51:33] local.ERROR: Payment verification failed {"link_token":"74","status":404,"body":"{
+    \"message\": \"The route api/v1/payment-links/74/verify could not be found.\",
+    \"exception\": \"Symfony\\\\Component\\\\HttpKernel\\\\Exception\\\\NotFoundHttpException\",
+    \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Routing/AbstractRouteCollection.php\",
+    \"line\": 45,
+    \"trace\": [
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Routing/CompiledRouteCollection.php\",
+            \"line\": 143,
+            \"function\": \"handleMatchedRoute\",
+            \"class\": \"Illuminate\\\\Routing\\\\AbstractRouteCollection\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Routing/Router.php\",
+            \"line\": 763,
+            \"function\": \"match\",
+            \"class\": \"Illuminate\\\\Routing\\\\CompiledRouteCollection\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Routing/Router.php\",
+            \"line\": 750,
+            \"function\": \"findRoute\",
+            \"class\": \"Illuminate\\\\Routing\\\\Router\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Routing/Router.php\",
+            \"line\": 739,
+            \"function\": \"dispatchToRoute\",
+            \"class\": \"Illuminate\\\\Routing\\\\Router\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php\",
+            \"line\": 200,
+            \"function\": \"dispatch\",
+            \"class\": \"Illuminate\\\\Routing\\\\Router\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 169,
+            \"function\": \"Illuminate\\\\Foundation\\\\Http\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Kernel\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php\",
+            \"line\": 21,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php\",
+            \"line\": 31,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\TransformsRequest\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\ConvertEmptyStringsToNull\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php\",
+            \"line\": 21,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php\",
+            \"line\": 51,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\TransformsRequest\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\TrimStrings\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php\",
+            \"line\": 27,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Http\\\\Middleware\\\\ValidatePostSize\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php\",
+            \"line\": 109,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\PreventRequestsDuringMaintenance\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php\",
+            \"line\": 61,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Http\\\\Middleware\\\\HandleCors\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php\",
+            \"line\": 58,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Http\\\\Middleware\\\\TrustProxies\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/InvokeDeferredCallbacks.php\",
+            \"line\": 22,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\InvokeDeferredCallbacks\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePathEncoding.php\",
+            \"line\": 26,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Http\\\\Middleware\\\\ValidatePathEncoding\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 126,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php\",
+            \"line\": 175,
+            \"function\": \"then\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php\",
+            \"line\": 144,
+            \"function\": \"sendRequestThroughRouter\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Kernel\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Application.php\",
+            \"line\": 1219,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Kernel\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/public/index.php\",
+            \"line\": 20,
+            \"function\": \"handleRequest\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Application\",
+            \"type\": \"->\"
+        }
+    ]
+}"} 
+[2026-01-14 09:51:33] local.ERROR: Absterco payment verification error {"link_token":"74","message":"Failed to verify payment: {
+    \"message\": \"The route api/v1/payment-links/74/verify could not be found.\",
+    \"exception\": \"Symfony\\\\Component\\\\HttpKernel\\\\Exception\\\\NotFoundHttpException\",
+    \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Routing/AbstractRouteCollection.php\",
+    \"line\": 45,
+    \"trace\": [
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Routing/CompiledRouteCollection.php\",
+            \"line\": 143,
+            \"function\": \"handleMatchedRoute\",
+            \"class\": \"Illuminate\\\\Routing\\\\AbstractRouteCollection\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Routing/Router.php\",
+            \"line\": 763,
+            \"function\": \"match\",
+            \"class\": \"Illuminate\\\\Routing\\\\CompiledRouteCollection\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Routing/Router.php\",
+            \"line\": 750,
+            \"function\": \"findRoute\",
+            \"class\": \"Illuminate\\\\Routing\\\\Router\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Routing/Router.php\",
+            \"line\": 739,
+            \"function\": \"dispatchToRoute\",
+            \"class\": \"Illuminate\\\\Routing\\\\Router\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php\",
+            \"line\": 200,
+            \"function\": \"dispatch\",
+            \"class\": \"Illuminate\\\\Routing\\\\Router\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 169,
+            \"function\": \"Illuminate\\\\Foundation\\\\Http\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Kernel\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php\",
+            \"line\": 21,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php\",
+            \"line\": 31,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\TransformsRequest\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\ConvertEmptyStringsToNull\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php\",
+            \"line\": 21,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php\",
+            \"line\": 51,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\TransformsRequest\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\TrimStrings\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php\",
+            \"line\": 27,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Http\\\\Middleware\\\\ValidatePostSize\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php\",
+            \"line\": 109,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\PreventRequestsDuringMaintenance\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php\",
+            \"line\": 61,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Http\\\\Middleware\\\\HandleCors\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php\",
+            \"line\": 58,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Http\\\\Middleware\\\\TrustProxies\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/InvokeDeferredCallbacks.php\",
+            \"line\": 22,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\InvokeDeferredCallbacks\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePathEncoding.php\",
+            \"line\": 26,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 208,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Http\\\\Middleware\\\\ValidatePathEncoding\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php\",
+            \"line\": 126,
+            \"function\": \"Illuminate\\\\Pipeline\\\\{closure}\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php\",
+            \"line\": 175,
+            \"function\": \"then\",
+            \"class\": \"Illuminate\\\\Pipeline\\\\Pipeline\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php\",
+            \"line\": 144,
+            \"function\": \"sendRequestThroughRouter\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Kernel\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/vendor/laravel/framework/src/Illuminate/Foundation/Application.php\",
+            \"line\": 1219,
+            \"function\": \"handle\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Http\\\\Kernel\",
+            \"type\": \"->\"
+        },
+        {
+            \"file\": \"/home/sigmdevc/api.dev-gateway.absterco.com/public/index.php\",
+            \"line\": 20,
+            \"function\": \"handleRequest\",
+            \"class\": \"Illuminate\\\\Foundation\\\\Application\",
+            \"type\": \"->\"
+        }
+    ]
+}"} 

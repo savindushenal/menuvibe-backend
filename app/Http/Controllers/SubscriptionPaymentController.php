@@ -203,7 +203,7 @@ class SubscriptionPaymentController extends Controller
                 'verification' => $verification,
             ]);
             
-            if (!$verification['success'] || $verification['status'] !== 'completed') {
+            if (!$verification['success'] || $verification['status'] !== 'payment_done') {
                 return response()->json([
                     'success' => false,
                     'message' => 'Payment not completed',

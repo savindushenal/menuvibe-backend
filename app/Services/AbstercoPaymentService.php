@@ -144,29 +144,41 @@ class AbstercoPaymentService
     }
 
     /**
-     * Verify payment status
+     * Verify payment status by session ID
      */
-    public function verifyPayment(string $linkToken): array
+    public function verifyPayment(string $sessionId): array
     {
         try {
             $response = Http::withHeaders([
                 'X-API-Key' => $this->apiKey,
                 'Accept' => 'application/json',
-            ])->get("{$this->baseUrl}/api/v1/payment-links/{$linkToken}/verify");
+            ])->get("{$this->baseUrl}/api/client/payment/sessions/{$sessionId}/verify");
 
             if ($response->failed()) {
-                throw new Exception('Failed to verify payment');
+                Log::error('Payment verification failed', [
+                    'session_id' => $sessionId,
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                throw new Exception('Failed to verify payment: ' . $response->body());
             }
 
             $data = $response->json();
+            
+            if (!$data['success']) {
+                throw new Exception('Payment verification returned success=false');
+            }
+            
             $paymentData = $data['data'];
 
             return [
                 'success' => true,
-                'status' => $paymentData['status'],
-                'amount' => $paymentData['amount'],
-                'currency' => $paymentData['currency'],
-                'order_reference' => $paymentData['order_reference'],
+                'status' => $paymentData['status'], // 'payment_done', 'failed', 'pending'
+                'db_status' => $paymentData['db_status'] ?? null,
+                'synced' => $paymentData['synced'] ?? false,
+                'amount' => $paymentData['amount'] ?? null,
+                'currency' => $paymentData['currency'] ?? null,
+                'order_reference' => $paymentData['order_reference'] ?? null,
                 'card_saved' => $paymentData['card_saved'] ?? false,
                 'saved_card_id' => $paymentData['saved_card_id'] ?? null,
                 'transaction_id' => $paymentData['transaction_id'] ?? null,
@@ -176,7 +188,7 @@ class AbstercoPaymentService
 
         } catch (Exception $e) {
             Log::error('Absterco payment verification error', [
-                'link_token' => $linkToken,
+                'session_id' => $sessionId,
                 'message' => $e->getMessage(),
             ]);
             throw $e;
