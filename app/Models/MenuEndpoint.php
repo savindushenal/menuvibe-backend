@@ -72,11 +72,6 @@ class MenuEndpoint extends Model
             // Generate short_url using config (reads from FRONTEND_URL env)
             $frontendUrl = rtrim(config('app.frontend_url'), '/');
             $endpoint->short_url = $frontendUrl . '/m/' . $endpoint->short_code;
-            
-            // Add identifier as query parameter if available
-            if (!empty($endpoint->identifier)) {
-                $endpoint->short_url .= '?table=' . urlencode($endpoint->identifier);
-            }
         });
 
         static::created(function ($endpoint) {
@@ -107,11 +102,6 @@ class MenuEndpoint extends Model
         // Use /m/ route for BOTH franchise and business endpoints
         // The backend API route will differentiate them by checking franchise_id
         $menuUrl = $frontendUrl . '/m/' . $this->short_code;
-        
-        // Add identifier as query parameter (e.g., ?table=T1) for easy identification
-        if (!empty($this->identifier)) {
-            $menuUrl .= '?table=' . urlencode($this->identifier);
-        }
         
         // Use QR Server API for QR generation
         $qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/';

@@ -1348,11 +1348,8 @@ class FranchiseContextController extends Controller
                 $endpoint->save();
             }
             
-            // Use /m/{code}?table={identifier} format
+            // Use /m/{code} format - short_code uniquely identifies the endpoint
             $menuUrl = config('app.frontend_url') . '/m/' . $endpoint->short_code;
-            if ($endpoint->identifier) {
-                $menuUrl .= '?table=' . urlencode($endpoint->identifier);
-            }
             
             // Generate QR code using API
             $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=' . urlencode($menuUrl);
@@ -1404,11 +1401,8 @@ class FranchiseContextController extends Controller
         // Generate new short code
         $newShortCode = \Str::random(8);
         
-        // Use /m/{code}?table={identifier} format
+        // Use /m/{code} format - short_code uniquely identifies the endpoint
         $menuUrl = config('app.frontend_url') . '/m/' . $newShortCode;
-        if ($endpoint->identifier) {
-            $menuUrl .= '?table=' . urlencode($endpoint->identifier);
-        }
         
         // Generate new QR code using API
         $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=' . urlencode($menuUrl);
