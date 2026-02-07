@@ -30,9 +30,12 @@ class MenuEndpointController extends Controller
         $query = MenuEndpoint::where('user_id', $user->id)
             ->with(['template:id,name,currency']);
 
-        // CONTEXT-BASED FILTERING: Prevent cross-context data leakage
+        // CONTEXT-BASED FILTERING: Only apply when location_id is specified
         if ($locationId) {
-            // Get the location to determine its franchise context
+            // Filter by specific location
+            $query->where('location_id', $locationId);
+            
+            // Get the location to determine its franchise context for additional filtering
             $location = \App\Models\Location::find($locationId);
             
             if ($location) {
@@ -43,14 +46,9 @@ class MenuEndpointController extends Controller
                     // Business context: only show endpoints with NO franchise (standalone business)
                     $query->whereNull('franchise_id');
                 }
-                
-                // Also filter by specific location
-                $query->where('location_id', $locationId);
             }
-        } else {
-            // No location specified: default to business context (non-franchise)
-            $query->whereNull('franchise_id');
         }
+        // If no location_id: show ALL user's endpoints (both business and franchise)
 
         if ($type) {
             $query->where('type', $type);
