@@ -18,6 +18,7 @@ class MenuEndpointController extends Controller
 
     /**
      * Get all endpoints for the authenticated user
+     * IMPORTANT: Filters by context (business vs franchise) to prevent data leakage
      */
     public function index(Request $request)
     {
@@ -29,9 +30,40 @@ class MenuEndpointController extends Controller
         $query = MenuEndpoint::where('user_id', $user->id)
             ->with(['template:id,name,currency']);
 
+        // CONTEXT-BASED FILTERING: Prevent cross-context data leakage
         if ($locationId) {
-            $query->where('location_id', $locationId);
+            // Get the location to determine its franchise context
+            $location = \App\Models\Location::find($locationId);
+            
+            if ($location) {
+                if ($location->franchise_id) {
+                    // Franchise context: only show endpoints for THIS franchise
+                    $query->whereHas('template', function ($q) use ($location) {
+                        $q->whereHas('location', function ($l) use ($location) {
+                            $l->where('franchise_id', $location->franchise_id);
+                        });
+                    });
+                } else {
+                    // Business context: only show endpoints with NO franchise (standalone business)
+                    $query->whereHas('template', function ($q) {
+                        $q->whereHas('location', function ($l) {
+                            $l->whereNull('franchise_id');
+                        });
+                    });
+                }
+                
+                // Also filter by specific location
+                $query->where('location_id', $locationId);
+            }
+        } else {
+            // No location specified: default to business context (non-franchise)
+            $query->whereHas('template', function ($q) {
+                $q->whereHas('location', function ($l) {
+                    $l->whereNull('franchise_id');
+                });
+            });
         }
+
         if ($type) {
             $query->where('type', $type);
         }
