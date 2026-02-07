@@ -36,12 +36,12 @@ class MenuEndpointController extends Controller
             
             if ($location) {
                 if ($location->franchise_id) {
-                    // Franchise context: only show endpoints for THIS specific franchise location
-                    $query->where('franchise_id', $location->franchise_id)
-                          ->where('location_id', $locationId);
+                    // Franchise context: only show endpoints for THIS specific franchise and location
+                    $query->where('location_id', $locationId);
+                    $query->where('franchise_id', $location->franchise_id);
                 } else {
-                    // Business context: show ALL business endpoints (from all business locations)
-                    // Don't filter by location_id - show all business endpoints for this user
+                    // Business context: show ALL business endpoints across ALL business locations
+                    // Don't filter by location_id - show all non-franchise endpoints
                     $query->whereNull('franchise_id');
                 }
             }
