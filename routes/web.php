@@ -11,6 +11,37 @@ Route::get('/', function () {
     ]);
 });
 
+// Debug route to check endpoint data
+Route::get('/debug-endpoints', function () {
+    $output = [];
+    $output[] = "<h2>Endpoint Debug Information</h2>\n";
+    
+    $endpoints = MenuEndpoint::with(['location', 'template'])->get();
+    
+    foreach ($endpoints as $endpoint) {
+        $output[] = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━";
+        $output[] = "<strong>Endpoint #{$endpoint->id}: {$endpoint->name}</strong>";
+        $output[] = "  Type: {$endpoint->type}";
+        $output[] = "  Identifier: {$endpoint->identifier}";
+        $output[] = "  Location ID: " . ($endpoint->location_id ?? 'NULL');
+        $output[] = "  <strong>Franchise ID: " . ($endpoint->franchise_id ?? 'NULL') . "</strong>";
+        
+        if ($endpoint->location) {
+            $output[] = "  Location: {$endpoint->location->name} (ID: {$endpoint->location->id})";
+            $output[] = "  Location Franchise ID: " . ($endpoint->location->franchise_id ?? 'NULL');
+        } else {
+            $output[] = "  Location: <span style='color:red'>NOT FOUND</span>";
+        }
+        
+        if ($endpoint->template) {
+            $output[] = "  Template: {$endpoint->template->name} (ID: {$endpoint->template->id})";
+        }
+        $output[] = "";
+    }
+    
+    return response('<pre style="font-family: monospace; line-height: 1.6;">' . implode("\n", $output) . '</pre>');
+});
+
 // Maintenance route to fix endpoint franchise IDs
 Route::get('/fix-endpoint-franchise-ids', function () {
     $output = [];
