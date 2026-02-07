@@ -38,18 +38,10 @@ class MenuEndpointController extends Controller
             if ($location) {
                 if ($location->franchise_id) {
                     // Franchise context: only show endpoints for THIS franchise
-                    $query->whereHas('template', function ($q) use ($location) {
-                        $q->whereHas('location', function ($l) use ($location) {
-                            $l->where('franchise_id', $location->franchise_id);
-                        });
-                    });
+                    $query->where('franchise_id', $location->franchise_id);
                 } else {
                     // Business context: only show endpoints with NO franchise (standalone business)
-                    $query->whereHas('template', function ($q) {
-                        $q->whereHas('location', function ($l) {
-                            $l->whereNull('franchise_id');
-                        });
-                    });
+                    $query->whereNull('franchise_id');
                 }
                 
                 // Also filter by specific location
@@ -57,11 +49,7 @@ class MenuEndpointController extends Controller
             }
         } else {
             // No location specified: default to business context (non-franchise)
-            $query->whereHas('template', function ($q) {
-                $q->whereHas('location', function ($l) {
-                    $l->whereNull('franchise_id');
-                });
-            });
+            $query->whereNull('franchise_id');
         }
 
         if ($type) {
