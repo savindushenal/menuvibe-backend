@@ -114,6 +114,12 @@ class MenuEndpointController extends Controller
         $data = $validator->validated();
         $data['user_id'] = $user->id;
         $data['location_id'] = $data['location_id'] ?? $template->location_id;
+        
+        // Set franchise_id from location
+        if ($data['location_id']) {
+            $location = \App\Models\Location::find($data['location_id']);
+            $data['franchise_id'] = $location ? $location->franchise_id : null;
+        }
 
         $endpoint = MenuEndpoint::create($data);
 
@@ -165,7 +171,15 @@ class MenuEndpointController extends Controller
         $endpoints = [];
         $typeName = MenuEndpoint::TYPES[$request->type] ?? ucfirst($request->type);
 
-        DB::transaction(function () use ($request, $user, $template, $typeName, &$endpoints) {
+        // Get franchise_id from location
+        $locationId = $request->location_id ?? $template->location_id;
+        $franchiseId = null;
+        if ($locationId) {
+            $location = \App\Models\Location::find($locationId);
+            $franchiseId = $location ? $location->franchise_id : null;
+        }
+        
+        DB::transaction(function () use ($request, $user, $template, $typeName, $locationId, $franchiseId, &$endpoints) {
             for ($i = 0; $i < $request->count; $i++) {
                 $number = $request->start_number + $i;
                 $identifier = $request->prefix . $number;
@@ -173,7 +187,8 @@ class MenuEndpointController extends Controller
                 $endpoint = MenuEndpoint::create([
                     'user_id' => $user->id,
                     'template_id' => $request->template_id,
-                    'location_id' => $request->location_id ?? $template->location_id,
+                    'location_id' => $locationId,
+                    'franchise_id' => $franchiseId,
                     'type' => $request->type,
                     'name' => $typeName . ' ' . $number,
                     'identifier' => $identifier,
