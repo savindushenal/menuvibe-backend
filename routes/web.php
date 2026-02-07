@@ -14,7 +14,19 @@ Route::get('/', function () {
 // Debug route to check endpoint data
 Route::get('/debug-endpoints', function () {
     $output = [];
-    $output[] = "<h2>Endpoint Debug Information</h2>\n";
+    $output[] = "<h2>Location Debug Information</h2>\n";
+    
+    $locations = \App\Models\Location::all();
+    foreach ($locations as $location) {
+        $output[] = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━";
+        $output[] = "<strong>Location #{$location->id}: {$location->name}</strong>";
+        $output[] = "  User ID: {$location->user_id}";
+        $output[] = "  <strong>Franchise ID: " . ($location->franchise_id ?? 'NULL (BUSINESS)') . "</strong>";
+        $output[] = "  Is Default: " . ($location->is_default ? 'Yes' : 'No');
+        $output[] = "";
+    }
+    
+    $output[] = "\n<h2>Endpoint Debug Information</h2>\n";
     
     $endpoints = MenuEndpoint::with(['location', 'template'])->get();
     
@@ -24,11 +36,11 @@ Route::get('/debug-endpoints', function () {
         $output[] = "  Type: {$endpoint->type}";
         $output[] = "  Identifier: {$endpoint->identifier}";
         $output[] = "  Location ID: " . ($endpoint->location_id ?? 'NULL');
-        $output[] = "  <strong>Franchise ID: " . ($endpoint->franchise_id ?? 'NULL') . "</strong>";
+        $output[] = "  <strong>Endpoint Franchise ID: " . ($endpoint->franchise_id ?? 'NULL (BUSINESS)') . "</strong>";
         
         if ($endpoint->location) {
             $output[] = "  Location: {$endpoint->location->name} (ID: {$endpoint->location->id})";
-            $output[] = "  Location Franchise ID: " . ($endpoint->location->franchise_id ?? 'NULL');
+            $output[] = "  Location Franchise ID: " . ($endpoint->location->franchise_id ?? 'NULL (BUSINESS)');
         } else {
             $output[] = "  Location: <span style='color:red'>NOT FOUND</span>";
         }
@@ -78,6 +90,42 @@ Route::get('/fix-endpoint-franchise-ids', function () {
     $output[] = "- Total endpoints: " . count($endpoints);
     $output[] = "- Updated: {$updated}";
     $output[] = "- Unchanged: {$unchanged}";
+    $output[] = "=====================================";
+    
+    return response('<pre>' . implode("\n", $output) . '</pre>');
+});
+
+// Manual fix: Set specific endpoints as business (non-franchise)
+Route::get('/fix-business-endpoints', function () {
+    $output = [];
+    $output[] = "Setting Table-1 and Table-2 as business endpoints...\n";
+    
+    // Find endpoints by identifier
+    $endpoint3 = MenuEndpoint::find(3); // Table 1 (table-1)
+    $endpoint4 = MenuEndpoint::find(4); // Table-2 (table-2)
+    
+    $updated = 0;
+    
+    if ($endpoint3) {
+        $endpoint3->franchise_id = null;
+        $endpoint3->save();
+        $output[] = "✓ Updated Endpoint #3 ({$endpoint3->name}) - Set to BUSINESS (franchise_id = NULL)";
+        $updated++;
+    } else {
+        $output[] = "✗ Endpoint #3 not found";
+    }
+    
+    if ($endpoint4) {
+        $endpoint4->franchise_id = null;
+        $endpoint4->save();
+        $output[] = "✓ Updated Endpoint #4 ({$endpoint4->name}) - Set to BUSINESS (franchise_id = NULL)";
+        $updated++;
+    } else {
+        $output[] = "✗ Endpoint #4 not found";
+    }
+    
+    $output[] = "\n=====================================";
+    $output[] = "Summary: {$updated} endpoints updated to business context";
     $output[] = "=====================================";
     
     return response('<pre>' . implode("\n", $output) . '</pre>');
