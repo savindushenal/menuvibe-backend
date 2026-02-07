@@ -19,7 +19,7 @@ return new class extends Migration
             
             // Basic franchise info
             $table->string('name');
-            $table->string('slug')->unique(); // Used for subdomain routing (e.g., subway.menuvibe.com)
+            $table->string('slug')->unique(); // Used for subdomain routing (e.g., subway.MenuVire.com)
             $table->string('custom_domain')->nullable()->unique(); // Custom domain (e.g., menu.subway.com)
             $table->text('description')->nullable();
             

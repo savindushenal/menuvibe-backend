@@ -5,7 +5,7 @@ use App\Models\Location;
 
 Route::get('/', function () {
     return response()->json([
-        'message' => 'MenuVibe API',
+        'message' => 'MenuVire API',
         'version' => '1.0.0'
     ]);
 });

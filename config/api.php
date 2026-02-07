@@ -3,7 +3,7 @@
 /**
  * API Configuration
  * 
- * Enterprise API settings for MenuVibe
+ * Enterprise API settings for MenuVire
  */
 
 return [
@@ -84,13 +84,13 @@ return [
     |
     */
     'documentation' => [
-        'title' => 'MenuVibe API',
+        'title' => 'MenuVire API',
         'description' => 'Enterprise API for digital menu management',
         'version' => '1.0.0',
         'contact' => [
-            'name' => 'MenuVibe API Support',
-            'email' => 'api-support@menuvibe.com',
-            'url' => 'https://docs.menuvibe.com',
+            'name' => 'MenuVire API Support',
+            'email' => 'api-support@MenuVire.com',
+            'url' => 'https://docs.MenuVire.com',
         ],
     ],
 

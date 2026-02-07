@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
     {
         // Create Super Admin user
         User::updateOrCreate(
-            ['email' => 'admin@menuvibe.com'],
+            ['email' => 'admin@MenuVire.com'],
             [
                 'name' => 'Super Admin',
                 'password' => Hash::make('Admin@123'),
@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $this->command->info('Super Admin created: admin@menuvibe.com');
+        $this->command->info('Super Admin created: admin@MenuVire.com');
 
         // Run other seeders
         $this->call([

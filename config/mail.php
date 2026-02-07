@@ -108,8 +108,8 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@menuvibe.com'),
-        'name' => env('MAIL_FROM_NAME', 'MenuVibe'),
+        'address' => env('MAIL_FROM_ADDRESS', 'hello@MenuVire.com'),
+        'name' => env('MAIL_FROM_NAME', 'MenuVire'),
     ],
 
     /*

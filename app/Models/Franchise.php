@@ -80,7 +80,7 @@ class Franchise extends Model
             
             // Generate domain verification token
             if (empty($franchise->domain_verification_token)) {
-                $franchise->domain_verification_token = 'menuvibe-verify-' . Str::random(32);
+                $franchise->domain_verification_token = 'MenuVire-verify-' . Str::random(32);
             }
         });
     }
@@ -247,12 +247,12 @@ class Franchise extends Model
             [
                 'type' => 'CNAME',
                 'name' => 'menu', // For menu.yourdomain.com
-                'value' => 'cname.menuvibe.com',
-                'description' => 'Points your subdomain to MenuVibe',
+                'value' => 'cname.MenuVire.com',
+                'description' => 'Points your subdomain to MenuVire',
             ],
             [
                 'type' => 'TXT',
-                'name' => '_menuvibe-verify',
+                'name' => '_MenuVire-verify',
                 'value' => $this->domain_verification_token,
                 'description' => 'Verifies domain ownership',
             ],

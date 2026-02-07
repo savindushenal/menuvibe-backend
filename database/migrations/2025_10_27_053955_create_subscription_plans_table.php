@@ -30,7 +30,7 @@ return new class extends Migration
             [
                 'name' => 'Free',
                 'slug' => 'free',
-                'description' => 'Perfect for trying out MenuVibe',
+                'description' => 'Perfect for trying out MenuVire',
                 'price' => 0.00,
                 'features' => json_encode([
                     'Up to 30 menu items',

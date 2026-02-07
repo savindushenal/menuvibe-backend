@@ -48,7 +48,7 @@ class WebhookService
 
         // Add standard headers
         $headers['Content-Type'] = 'application/json';
-        $headers['User-Agent'] = 'MenuVibe-Webhooks/1.0';
+        $headers['User-Agent'] = 'MenuVire-Webhooks/1.0';
         $headers['X-Webhook-Event'] = $event;
         $headers['X-Webhook-Delivery-ID'] = uniqid('whd_');
 

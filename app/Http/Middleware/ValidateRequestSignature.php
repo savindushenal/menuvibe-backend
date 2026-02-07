@@ -63,7 +63,7 @@ class ValidateRequestSignature
             'error' => [
                 'code' => 'INVALID_SIGNATURE',
                 'type' => 'security_error',
-                'documentation' => 'https://docs.menuvibe.com/api/authentication#request-signing'
+                'documentation' => 'https://docs.MenuVire.com/api/authentication#request-signing'
             ]
         ], 401);
     }

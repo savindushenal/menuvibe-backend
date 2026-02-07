@@ -6,8 +6,8 @@ return [
     | Payment Gateway Configuration
     |--------------------------------------------------------------------------
     |
-    | This file contains all payment gateway configurations for MenuVibe.
-    | Follows MenuVibe architectural pattern: Configuration Over Code
+    | This file contains all payment gateway configurations for MenuVire.
+    | Follows MenuVire architectural pattern: Configuration Over Code
     |
     */
 

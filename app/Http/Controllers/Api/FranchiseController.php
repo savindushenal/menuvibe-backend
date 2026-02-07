@@ -231,7 +231,7 @@ class FranchiseController extends Controller
             $request->merge([
                 'domain_verified' => false,
                 'domain_verified_at' => null,
-                'domain_verification_token' => 'menuvibe-verify-' . Str::random(32),
+                'domain_verification_token' => 'MenuVire-verify-' . Str::random(32),
             ]);
         }
 
@@ -404,7 +404,7 @@ class FranchiseController extends Controller
         // For now, we'll simulate verification
         try {
             // Check if TXT record exists with verification token
-            // dns_get_record("_menuvibe-verify.{$franchise->custom_domain}", DNS_TXT);
+            // dns_get_record("_MenuVire-verify.{$franchise->custom_domain}", DNS_TXT);
             
             // For development, auto-verify
             $franchise->markDomainVerified();

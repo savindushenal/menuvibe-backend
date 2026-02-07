@@ -125,7 +125,7 @@ class ApiKeyController extends Controller
             ],
             'meta' => [
                 'warning' => 'Store this API key securely. You will not be able to see it again!',
-                'documentation' => 'https://docs.menuvibe.com/api/authentication',
+                'documentation' => 'https://docs.MenuVire.com/api/authentication',
             ]
         ], Response::HTTP_CREATED);
     }

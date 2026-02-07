@@ -28,7 +28,7 @@ return [
 
     'allowed_origins_patterns' => [
         '#^https://.*\.menuvire\.com$#',
-        '#^https://.*\.menuvibe\.com$#',
+        '#^https://.*\.MenuVire\.com$#',
         '#^https://.*\.vercel\.app$#',
     ],
 

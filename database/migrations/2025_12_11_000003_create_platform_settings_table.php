@@ -27,8 +27,8 @@ return new class extends Migration
         
         // Insert default settings
         $settings = [
-            ['key' => 'platform_name', 'value' => 'MenuVibe', 'type' => 'string', 'group' => 'general', 'description' => 'Platform display name', 'is_public' => true],
-            ['key' => 'platform_email', 'value' => 'support@menuvibe.com', 'type' => 'string', 'group' => 'general', 'description' => 'Platform support email', 'is_public' => true],
+            ['key' => 'platform_name', 'value' => 'MenuVire', 'type' => 'string', 'group' => 'general', 'description' => 'Platform display name', 'is_public' => true],
+            ['key' => 'platform_email', 'value' => 'support@MenuVire.com', 'type' => 'string', 'group' => 'general', 'description' => 'Platform support email', 'is_public' => true],
             ['key' => 'allow_registrations', 'value' => 'true', 'type' => 'boolean', 'group' => 'security', 'description' => 'Allow new user registrations', 'is_public' => false],
             ['key' => 'require_email_verification', 'value' => 'false', 'type' => 'boolean', 'group' => 'security', 'description' => 'Require email verification for new users', 'is_public' => false],
             ['key' => 'max_free_menus', 'value' => '1', 'type' => 'integer', 'group' => 'billing', 'description' => 'Maximum menus for free plan', 'is_public' => false],

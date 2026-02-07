@@ -47,9 +47,9 @@ class FranchiseBrandingMiddleware
         
         // Skip detection for main domain
         $mainDomains = [
-            'menuvibe.com',
-            'www.menuvibe.com',
-            'api.menuvibe.com',
+            'MenuVire.com',
+            'www.MenuVire.com',
+            'api.MenuVire.com',
             'localhost',
             '127.0.0.1',
         ];
@@ -68,7 +68,7 @@ class FranchiseBrandingMiddleware
             return $franchise;
         }
 
-        // Check for subdomain (e.g., subway.menuvibe.com)
+        // Check for subdomain (e.g., subway.MenuVire.com)
         $subdomain = $this->extractSubdomain($host);
         
         if ($subdomain) {
@@ -90,9 +90,9 @@ class FranchiseBrandingMiddleware
         
         // Define base domains
         $baseDomains = [
-            'menuvibe.com',
-            'menuvibe.local',
-            'menuvibe.test',
+            'MenuVire.com',
+            'MenuVire.local',
+            'MenuVire.test',
         ];
 
         foreach ($baseDomains as $baseDomain) {

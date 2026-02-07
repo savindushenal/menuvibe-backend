@@ -10,7 +10,7 @@ use Exception;
  * Absterco Payment Gateway Service
  * Handles payment link creation, card saving, and subscription payments
  * 
- * @follows MenuVibe Architecture: Service Layer (Shared)
+ * @follows MenuVire Architecture: Service Layer (Shared)
  * @pattern Configuration Over Code
  */
 class AbstercoPaymentService

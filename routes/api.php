@@ -501,7 +501,7 @@ Route::get('/health', function () {
     return response()->json([
         'status' => 'ok',
         'timestamp' => now(),
-        'service' => 'MenuVibe API'
+        'service' => 'MenuVire API'
     ]);
 });
 

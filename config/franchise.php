@@ -65,7 +65,7 @@ return [
         'support_email' => 'support@barista.lk',
         'database_connection' => 'tenant_barista',
     'default' => [
-        'name' => 'MenuVibe Client',
+        'name' => 'MenuVire Client',
         'features' => [
             'basic_menu' => true,
             'qr_code' => true,
@@ -82,7 +82,7 @@ return [
         'currency' => 'LKR',
         'discount_rules' => [],
         'max_locations' => 20,
-        'support_email' => 'support@menuvibe.com',
+        'support_email' => 'support@MenuVire.com',
         'database_connection' => 'mysql',
     ],
 ];

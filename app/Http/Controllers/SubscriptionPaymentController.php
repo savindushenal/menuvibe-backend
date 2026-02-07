@@ -17,7 +17,7 @@ use Carbon\Carbon;
 /**
  * Subscription Payment Controller
  * 
- * @follows MenuVibe Architecture: Controller Layer
+ * @follows MenuVire Architecture: Controller Layer
  * @pattern Feature Flags for toggleable functionality
  */
 class SubscriptionPaymentController extends Controller
@@ -552,7 +552,7 @@ class SubscriptionPaymentController extends Controller
     /**
      * Check if payment feature is enabled for the current user
      * 
-     * @follows MenuVibe Pattern: Feature Flag checking
+     * @follows MenuVire Pattern: Feature Flag checking
      */
     private function isPaymentFeatureEnabled(): bool
     {
@@ -579,7 +579,7 @@ class SubscriptionPaymentController extends Controller
     /**
      * Check if saved cards feature is enabled
      * 
-     * @follows MenuVibe Pattern: Feature Flag checking
+     * @follows MenuVire Pattern: Feature Flag checking
      */
     private function isSavedCardsEnabled(): bool
     {
