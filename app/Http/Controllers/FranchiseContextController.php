@@ -1011,17 +1011,15 @@ class FranchiseContextController extends Controller
             $locationId = $userAccount->location_id;
         }
 
-        // Get endpoints for franchise locations
+        // Get endpoints for THIS franchise only (filter by franchise_id directly)
         $query = \App\Models\MenuEndpoint::query()
-            ->whereHas('template', function ($q) use ($franchise, $locationId) {
-                $q->whereHas('location', function ($l) use ($franchise, $locationId) {
-                    $l->where('franchise_id', $franchise->id);
-                    if ($locationId) {
-                        $l->where('id', $locationId);
-                    }
-                });
-            })
+            ->where('franchise_id', $franchise->id)
             ->with('template');
+
+        // Filter by location if user is branch-restricted
+        if ($locationId) {
+            $query->where('location_id', $locationId);
+        }
 
         $type = $request->query('type');
         if ($type) {
@@ -1225,11 +1223,7 @@ class FranchiseContextController extends Controller
         $franchise = $request->get('franchise');
         
         $endpoint = \App\Models\MenuEndpoint::with('template')
-            ->whereHas('template', function ($q) use ($franchise) {
-                $q->whereHas('location', function ($l) use ($franchise) {
-                    $l->where('franchise_id', $franchise->id);
-                });
-            })
+            ->where('franchise_id', $franchise->id)
             ->find($endpointId);
 
         if (!$endpoint) {
