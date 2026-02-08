@@ -81,7 +81,9 @@ class AdminFranchiseMenuController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'type' => 'nullable|in:standard,premium',
+            'currency' => 'nullable|string|max:10',
+            'settings' => 'nullable|array',
+            'settings.template_type' => 'nullable|in:barista,isso,pizzahut,custom',
             'is_active' => 'boolean',
         ]);
 
@@ -95,9 +97,11 @@ class AdminFranchiseMenuController extends Controller
 
         $template = MenuTemplate::create([
             'franchise_id' => $franchiseId,
+            'user_id' => $request->user()->id,
             'name' => $request->name,
             'description' => $request->description,
-            'type' => $request->type ?? 'standard',
+            'currency' => $request->currency ?? 'USD',
+            'settings' => $request->settings ?? [],
             'is_active' => $request->is_active ?? true,
         ]);
 
@@ -120,7 +124,8 @@ class AdminFranchiseMenuController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
-            'type' => 'sometimes|in:standard,premium',
+            'currency' => 'sometimes|string|max:10',
+            'settings' => 'nullable|array',
             'is_active' => 'boolean',
         ]);
 
@@ -135,7 +140,8 @@ class AdminFranchiseMenuController extends Controller
         $template->update($request->only([
             'name',
             'description',
-            'type',
+            'currency',
+            'settings',
             'is_active',
         ]));
 
@@ -182,7 +188,7 @@ class AdminFranchiseMenuController extends Controller
             ->findOrFail($templateId);
 
         $categories = MenuTemplateCategory::withoutGlobalScope(FranchiseScope::class)
-            ->where('menu_template_id', $templateId)
+            ->where('template_id', $templateId)
             ->withCount('items')
             ->orderBy('sort_order')
             ->get();
@@ -223,7 +229,7 @@ class AdminFranchiseMenuController extends Controller
         }
 
         $category = MenuTemplateCategory::create([
-            'menu_template_id' => $templateId,
+            'template_id' => $templateId,
             'franchise_id' => $franchiseId,
             'name' => $request->name,
             'slug' => Str::slug($request->name),
@@ -294,7 +300,7 @@ class AdminFranchiseMenuController extends Controller
     {
         $category = MenuTemplateCategory::withoutGlobalScope(FranchiseScope::class)
             ->where('franchise_id', $franchiseId)
-            ->where('menu_template_id', $templateId)
+            ->where('template_id', $templateId)
             ->findOrFail($categoryId);
 
         // Check if category has items
@@ -324,7 +330,7 @@ class AdminFranchiseMenuController extends Controller
             ->findOrFail($templateId);
 
         $query = MenuTemplateItem::withoutGlobalScope(FranchiseScope::class)
-            ->where('menu_template_id', $templateId)
+            ->where('template_id', $templateId)
             ->with('category:id,name');
 
         // Filter by category
@@ -390,11 +396,11 @@ class AdminFranchiseMenuController extends Controller
         // Verify category belongs to this template
         $category = MenuTemplateCategory::withoutGlobalScope(FranchiseScope::class)
             ->where('id', $request->category_id)
-            ->where('menu_template_id', $templateId)
+            ->where('template_id', $templateId)
             ->firstOrFail();
 
         $item = MenuTemplateItem::create([
-            'menu_template_id' => $templateId,
+            'template_id' => $templateId,
             'category_id' => $request->category_id,
             'franchise_id' => $franchiseId,
             'name' => $request->name,
@@ -423,7 +429,7 @@ class AdminFranchiseMenuController extends Controller
     {
         $item = MenuTemplateItem::withoutGlobalScope(FranchiseScope::class)
             ->where('franchise_id', $franchiseId)
-            ->where('menu_template_id', $templateId)
+            ->where('template_id', $templateId)
             ->findOrFail($itemId);
 
         $validator = Validator::make($request->all(), [
@@ -480,7 +486,7 @@ class AdminFranchiseMenuController extends Controller
     {
         $item = MenuTemplateItem::withoutGlobalScope(FranchiseScope::class)
             ->where('franchise_id', $franchiseId)
-            ->where('menu_template_id', $templateId)
+            ->where('template_id', $templateId)
             ->findOrFail($itemId);
 
         $item->delete();
@@ -512,7 +518,7 @@ class AdminFranchiseMenuController extends Controller
 
         $updated = MenuTemplateItem::withoutGlobalScope(FranchiseScope::class)
             ->where('franchise_id', $franchiseId)
-            ->where('menu_template_id', $templateId)
+            ->where('template_id', $templateId)
             ->whereIn('id', $request->item_ids)
             ->update(['is_available' => $request->is_available]);
 
