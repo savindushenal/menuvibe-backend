@@ -383,6 +383,13 @@ class AdminFranchiseMenuController extends Controller
             'is_available' => 'boolean',
             'is_featured' => 'boolean',
             'sort_order' => 'nullable|integer',
+            'variations' => 'nullable|array',
+            'variations.*.name' => 'required|string|max:100',
+            'variations.*.options' => 'required|array',
+            'variations.*.options.*.label' => 'required|string|max:100',
+            'variations.*.options.*.price_modifier' => 'sometimes|numeric',
+            'variations.*.required' => 'sometimes|boolean',
+            'variations.*.allow_multiple' => 'sometimes|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -413,6 +420,7 @@ class AdminFranchiseMenuController extends Controller
             'is_available' => $request->is_available ?? true,
             'is_featured' => $request->is_featured ?? false,
             'sort_order' => $request->sort_order ?? 999,
+            'variations' => $request->variations,
         ]);
 
         return response()->json([
@@ -443,6 +451,13 @@ class AdminFranchiseMenuController extends Controller
             'is_available' => 'boolean',
             'is_featured' => 'boolean',
             'sort_order' => 'nullable|integer',
+            'variations' => 'nullable|array',
+            'variations.*.name' => 'required|string|max:100',
+            'variations.*.options' => 'required|array',
+            'variations.*.options.*.label' => 'required|string|max:100',
+            'variations.*.options.*.price_modifier' => 'sometimes|numeric',
+            'variations.*.required' => 'sometimes|boolean',
+            'variations.*.allow_multiple' => 'sometimes|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -464,6 +479,7 @@ class AdminFranchiseMenuController extends Controller
             'is_available',
             'is_featured',
             'sort_order',
+            'variations',
         ]);
 
         if (isset($updateData['name'])) {

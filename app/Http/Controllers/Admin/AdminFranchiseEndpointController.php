@@ -115,7 +115,17 @@ class AdminFranchiseEndpointController extends Controller
         // Generate unique short code
         $shortCode = $this->generateUniqueShortCode();
 
+        // Get franchise owner's user_id
+        $owner = $franchise->owner;
+        if (!$owner) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Franchise must have an owner to create endpoints',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
         $endpoint = MenuEndpoint::create([
+            'user_id' => $owner->id,
             'franchise_id' => $franchiseId,
             'location_id' => $request->location_id,
             'menu_template_id' => $request->menu_template_id,
@@ -221,12 +231,22 @@ class AdminFranchiseEndpointController extends Controller
             ->where('franchise_id', $franchiseId)
             ->firstOrFail();
 
+        // Get franchise owner's user_id
+        $owner = $franchise->owner;
+        if (!$owner) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Franchise must have an owner to create endpoints',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
         $endpoints = [];
         for ($i = $request->table_start; $i <= $request->table_end; $i++) {
             $tableNumber = $request->table_prefix . $i;
             $shortCode = $this->generateUniqueShortCode();
 
             $endpoint = MenuEndpoint::create([
+                'user_id' => $owner->id,
                 'franchise_id' => $franchiseId,
                 'location_id' => $request->location_id,
                 'menu_template_id' => $request->menu_template_id,
