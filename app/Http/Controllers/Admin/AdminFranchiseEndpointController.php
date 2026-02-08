@@ -24,7 +24,7 @@ class AdminFranchiseEndpointController extends Controller
 
         $query = MenuEndpoint::withoutGlobalScope(FranchiseScope::class)
             ->where('franchise_id', $franchiseId)
-            ->with(['location:id,name', 'menuTemplate:id,name']);
+            ->with(['location:id,name', 'template:id,name']);
 
         // Filter by location
         if ($request->has('location_id')) {
@@ -73,7 +73,7 @@ class AdminFranchiseEndpointController extends Controller
     {
         $endpoint = MenuEndpoint::withoutGlobalScope(FranchiseScope::class)
             ->where('franchise_id', $franchiseId)
-            ->with(['location', 'menuTemplate', 'franchise'])
+            ->with(['location', 'template', 'franchise'])
             ->findOrFail($endpointId);
 
         return response()->json([
@@ -91,7 +91,7 @@ class AdminFranchiseEndpointController extends Controller
 
         $validator = Validator::make($request->all(), [
             'location_id' => 'required|exists:locations,id',
-            'menu_template_id' => 'nullable|exists:menu_templates,id',
+            'menu_template_id' => 'required|exists:menu_templates,id',
             'name' => 'required|string|max:255',
             'table_number' => 'nullable|string|max:50',
             'template_key' => 'nullable|string|max:100',
@@ -128,7 +128,9 @@ class AdminFranchiseEndpointController extends Controller
             'user_id' => $owner->id,
             'franchise_id' => $franchiseId,
             'location_id' => $request->location_id,
-            'menu_template_id' => $request->menu_template_id,
+            'template_id' => $request->menu_template_id,
+            'type' => 'table',
+            'identifier' => $request->table_number ?? $shortCode,
             'name' => $request->name,
             'short_code' => $shortCode,
             'table_number' => $request->table_number,
@@ -139,7 +141,7 @@ class AdminFranchiseEndpointController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Endpoint created successfully',
-            'data' => $endpoint->load(['location', 'menuTemplate']),
+            'data' => $endpoint->load(['location', 'template']),
             'qr_url' => env('FRONTEND_URL', 'http://localhost:3000') . '/menu/' . $shortCode,
         ], Response::HTTP_CREATED);
     }
@@ -158,7 +160,7 @@ class AdminFranchiseEndpointController extends Controller
             'table_number' => 'nullable|string|max:50',
             'template_key' => 'nullable|string|max:100',
             'is_active' => 'boolean',
-            'menu_template_id' => 'nullable|exists:menu_templates,id',
+            'menu_template_id' => 'sometimes|exists:menu_templates,id',
         ]);
 
         if ($validator->fails()) {
@@ -249,7 +251,9 @@ class AdminFranchiseEndpointController extends Controller
                 'user_id' => $owner->id,
                 'franchise_id' => $franchiseId,
                 'location_id' => $request->location_id,
-                'menu_template_id' => $request->menu_template_id,
+                'template_id' => $request->menu_template_id,
+                'type' => 'table',
+                'identifier' => $tableNumber,
                 'name' => "Table {$tableNumber}",
                 'short_code' => $shortCode,
                 'table_number' => $tableNumber,
