@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\FranchiseScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -56,6 +57,14 @@ class MenuEndpoint extends Model
         'patio' => 'Patio',
         'private' => 'Private Dining',
     ];
+
+    /**
+     * Boot the model and apply global scopes
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new FranchiseScope);
+    }
 
     // ===========================================
     // BOOT

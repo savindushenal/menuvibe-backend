@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\FranchiseScope;
 use App\Traits\TenantAware;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -46,15 +47,28 @@ class Location extends Model
         'activated_at',
         'deactivated_at',
         'added_by',
+        // Loyalty and integration configuration
+        'loyalty_provider',
+        'loyalty_enabled',
+        'loyalty_config',
+        'auth_mode',
+        'external_auth_config',
+        'order_sync_enabled',
+        'order_sync_config',
     ];
 
     protected $casts = [
         'operating_hours' => 'array',
         'services' => 'array',
         'social_media' => 'array',
+        'loyalty_config' => 'array',
+        'external_auth_config' => 'array',
+        'order_sync_config' => 'array',
         'is_active' => 'boolean',
         'is_default' => 'boolean',
         'is_paid' => 'boolean',
+        'loyalty_enabled' => 'boolean',
+        'order_sync_enabled' => 'boolean',
         'sort_order' => 'integer',
         'seating_capacity' => 'integer',
         'latitude' => 'decimal:8',
@@ -62,6 +76,14 @@ class Location extends Model
         'activated_at' => 'date',
         'deactivated_at' => 'date',
     ];
+
+    /**
+     * Boot the model and apply global scopes
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new FranchiseScope);
+    }
 
     /**
      * Get the user that owns the location

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\FranchiseScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -36,6 +37,14 @@ class MenuTemplate extends Model
         'settings' => 'array',
         'last_synced_at' => 'datetime',
     ];
+
+    /**
+     * Boot the model and apply global scopes
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new FranchiseScope);
+    }
 
     // ===========================================
     // RELATIONSHIPS

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\FranchiseScope;
 use App\Traits\HasMenuSync;
 use App\Traits\HasQRCode;
 use App\Traits\HasVersioning;
@@ -41,6 +42,14 @@ class Menu extends Model
         'settings' => 'array',
         'sort_order' => 'integer',
     ];
+
+    /**
+     * Boot the model and apply global scopes
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new FranchiseScope);
+    }
 
     /**
      * Get the location that owns the menu

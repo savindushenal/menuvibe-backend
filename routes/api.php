@@ -871,6 +871,15 @@ Route::get('/public/menu/endpoint/{code}', function (string $code) {
     return app(\App\Http\Controllers\PublicMenuController::class)->getMenu(request(), $code);
 });
 
+// QR Scan Session Routes (public - no auth required)
+Route::prefix('public/sessions')->group(function () {
+    Route::post('/{shortCode}', [App\Http\Controllers\QrSessionController::class, 'createOrUpdate']);
+    Route::post('/link-loyalty', [App\Http\Controllers\QrSessionController::class, 'linkLoyalty']);
+    Route::get('/{sessionToken}', [App\Http\Controllers\QrSessionController::class, 'show']);
+    Route::get('/{sessionToken}/orders', [App\Http\Controllers\QrSessionController::class, 'getOrders']);
+    Route::get('/{sessionToken}/history', [App\Http\Controllers\QrSessionController::class, 'getHistory']);
+});
+
 // DEMO: Barista Loyalty OTP Authentication (public routes)
 Route::prefix('{franchise}/loyalty')->group(function () {
     Route::post('send-otp', [App\Http\Controllers\LoyaltyOtpController::class, 'sendOtp']);
