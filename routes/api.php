@@ -22,6 +22,8 @@ use App\Http\Controllers\Admin\AdminSubscriptionController;
 use App\Http\Controllers\Admin\AdminActivityController;
 use App\Http\Controllers\Admin\AdminFranchiseController;
 use App\Http\Controllers\Admin\AdminFranchiseOnboardingController;
+use App\Http\Controllers\Admin\AdminFranchiseEndpointController;
+use App\Http\Controllers\Admin\AdminFranchiseMenuController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\MasterMenuController;
 use App\Http\Controllers\MasterMenuOfferController;
@@ -430,6 +432,36 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'admin'])->group(function ()
     Route::delete('/franchises/{franchiseId}/branches/{branchId}', [AdminFranchiseOnboardingController::class, 'deleteBranch']);
     Route::post('/franchises/{franchiseId}/invitations/{invitationId}/resend', [AdminFranchiseOnboardingController::class, 'resendInvitation']);
     Route::delete('/franchises/{franchiseId}/invitations/{invitationId}', [AdminFranchiseOnboardingController::class, 'cancelInvitation']);
+    
+    // Franchise QR Code/Endpoint Management
+    Route::get('/franchises/{franchiseId}/endpoints', [AdminFranchiseEndpointController::class, 'index']);
+    Route::get('/franchises/{franchiseId}/endpoints/statistics', [AdminFranchiseEndpointController::class, 'statistics']);
+    Route::get('/franchises/{franchiseId}/endpoints/{endpointId}', [AdminFranchiseEndpointController::class, 'show']);
+    Route::post('/franchises/{franchiseId}/endpoints', [AdminFranchiseEndpointController::class, 'store']);
+    Route::post('/franchises/{franchiseId}/endpoints/bulk', [AdminFranchiseEndpointController::class, 'bulkCreate']);
+    Route::put('/franchises/{franchiseId}/endpoints/{endpointId}', [AdminFranchiseEndpointController::class, 'update']);
+    Route::delete('/franchises/{franchiseId}/endpoints/{endpointId}', [AdminFranchiseEndpointController::class, 'destroy']);
+    
+    // Franchise Menu Template Management
+    Route::get('/franchises/{franchiseId}/menus', [AdminFranchiseMenuController::class, 'indexTemplates']);
+    Route::get('/franchises/{franchiseId}/menus/statistics', [AdminFranchiseMenuController::class, 'statistics']);
+    Route::get('/franchises/{franchiseId}/menus/{templateId}', [AdminFranchiseMenuController::class, 'showTemplate']);
+    Route::post('/franchises/{franchiseId}/menus', [AdminFranchiseMenuController::class, 'storeTemplate']);
+    Route::put('/franchises/{franchiseId}/menus/{templateId}', [AdminFranchiseMenuController::class, 'updateTemplate']);
+    Route::delete('/franchises/{franchiseId}/menus/{templateId}', [AdminFranchiseMenuController::class, 'destroyTemplate']);
+    
+    // Franchise Menu Categories
+    Route::get('/franchises/{franchiseId}/menus/{templateId}/categories', [AdminFranchiseMenuController::class, 'indexCategories']);
+    Route::post('/franchises/{franchiseId}/menus/{templateId}/categories', [AdminFranchiseMenuController::class, 'storeCategory']);
+    Route::put('/franchises/{franchiseId}/menus/{templateId}/categories/{categoryId}', [AdminFranchiseMenuController::class, 'updateCategory']);
+    Route::delete('/franchises/{franchiseId}/menus/{templateId}/categories/{categoryId}', [AdminFranchiseMenuController::class, 'destroyCategory']);
+    
+    // Franchise Menu Items
+    Route::get('/franchises/{franchiseId}/menus/{templateId}/items', [AdminFranchiseMenuController::class, 'indexItems']);
+    Route::post('/franchises/{franchiseId}/menus/{templateId}/items', [AdminFranchiseMenuController::class, 'storeItem']);
+    Route::put('/franchises/{franchiseId}/menus/{templateId}/items/{itemId}', [AdminFranchiseMenuController::class, 'updateItem']);
+    Route::delete('/franchises/{franchiseId}/menus/{templateId}/items/{itemId}', [AdminFranchiseMenuController::class, 'destroyItem']);
+    Route::post('/franchises/{franchiseId}/menus/{templateId}/items/bulk-availability', [AdminFranchiseMenuController::class, 'bulkUpdateAvailability']);
 });
 
 // Protected routes (with sanctum middleware for cookie-based auth)
