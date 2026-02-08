@@ -2164,3 +2164,5 @@ Route::post('/menu-sync/bulk/{masterMenuId}', function (Request $request, int $m
     $request->setUserResolver(fn() => $pat->tokenable);
     return app(MenuSyncController::class)->bulkSyncAllBranches($request, $masterMenuId);
 });
+
+}); // End of Route::middleware('auth:sanctum')->group
