@@ -494,6 +494,12 @@ Route::middleware('auth:sanctum')->group(function () {
             ]
         ]);
     });
+    
+    // Customer-specific routes (authenticated customers)
+    Route::prefix('customer')->group(function () {
+        Route::get('/profile', [App\Http\Controllers\CustomerAuthController::class, 'profile']);
+        Route::post('/logout', [App\Http\Controllers\CustomerAuthController::class, 'logout']);
+    });
 });
 
 // Health check
@@ -878,6 +884,13 @@ Route::prefix('public/sessions')->group(function () {
     Route::get('/{sessionToken}', [App\Http\Controllers\QrSessionController::class, 'show']);
     Route::get('/{sessionToken}/orders', [App\Http\Controllers\QrSessionController::class, 'getOrders']);
     Route::get('/{sessionToken}/history', [App\Http\Controllers\QrSessionController::class, 'getHistory']);
+});
+
+// Customer Authentication Routes (public - no auth required)
+Route::prefix('public/auth')->group(function () {
+    Route::post('/send-otp', [App\Http\Controllers\CustomerAuthController::class, 'sendOtp']);
+    Route::post('/verify-otp', [App\Http\Controllers\CustomerAuthController::class, 'verifyOtp']);
+    Route::post('/register', [App\Http\Controllers\CustomerAuthController::class, 'register']);
 });
 
 // DEMO: Barista Loyalty OTP Authentication (public routes)
