@@ -620,69 +620,6 @@ Route::get('/user', function (Request $request) {
     }
 });
 
-// Temporary business profile endpoints with manual auth
-Route::get('/business-profile', function (Request $request) {
-    $token = $request->bearerToken();
-    if (!$token) {
-        return response()->json(['error' => 'No token provided'], 401);
-    }
-    
-    try {
-        $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
-        if (!$personalAccessToken) {
-            return response()->json(['error' => 'Invalid token'], 401);
-        }
-        
-        $user = $personalAccessToken->tokenable;
-        $businessProfile = $user->businessProfile;
-
-        if (!$businessProfile) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Business profile not found',
-                'needs_onboarding' => true
-            ], 404);
-        }
-
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'business_profile' => $businessProfile,
-                'needs_onboarding' => !$businessProfile->isOnboardingCompleted()
-            ]
-        ]);
-    } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage()], 500);
-    }
-});
-
-Route::post('/business-profile', function (Request $request) {
-    $token = $request->bearerToken();
-    if (!$token) {
-        return response()->json(['error' => 'No token provided'], 401);
-    }
-    
-    try {
-        $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
-        if (!$personalAccessToken) {
-            return response()->json(['error' => 'Invalid token'], 401);
-        }
-        
-        $user = $personalAccessToken->tokenable;
-        
-        // Use the controller logic
-        $request->setUserResolver(function () use ($user) {
-            return $user;
-        });
-        
-        $controller = new \App\Http\Controllers\BusinessProfileController();
-        return $controller->store($request);
-        
-    } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage()], 500);
-    }
-});
-
 // Settings routes (manual auth)
 Route::get('/settings', function (Request $request) {
     try {
