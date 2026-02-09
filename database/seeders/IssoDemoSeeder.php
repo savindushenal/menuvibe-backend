@@ -21,13 +21,13 @@ class IssoDemoSeeder extends Seeder
             $isso = Franchise::create([
                 'name' => 'Isso',
                 'slug' => 'isso',
-                'template_type' => 'premium',
+                'template_type' => 'isso',
                 'is_active' => true,
             ]);
         } else {
             echo "Updating Isso franchise...\n";
             $isso->update([
-                'template_type' => 'premium',
+                'template_type' => 'isso',
             ]);
         }
 
