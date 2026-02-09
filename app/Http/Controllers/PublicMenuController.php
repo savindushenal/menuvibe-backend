@@ -17,13 +17,21 @@ class PublicMenuController extends Controller
             ->where('is_active', true)
             ->with(['template' => function ($q) {
                 $q->where('is_active', true);
-            }, 'location'])
+            }, 'location', 'franchise'])
             ->first();
 
-        if (!$endpoint || !$endpoint->template) {
+        if (!$endpoint) {
             return response()->json([
                 'success' => false,
                 'message' => 'Menu not found or inactive'
+            ], 404);
+        }
+        
+        // For franchise menus, template might be null (uses franchise settings)
+        if (!$endpoint->franchise && !$endpoint->template) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Menu configuration not found'
             ], 404);
         }
 
@@ -90,29 +98,48 @@ class PublicMenuController extends Controller
         // Build template configuration for API-driven rendering
         $templateConfig = $this->buildTemplateConfiguration($endpoint, $businessProfile, $location);
 
+        // Build response data
+        $data = [
+            'menu' => $menu,
+            'offers' => $offers,
+            'business' => $business,
+            'endpoint' => [
+                'id' => $endpoint->id,
+                'type' => $endpoint->type,
+                'name' => $endpoint->display_name,
+                'identifier' => $endpoint->identifier,
+            ],
+        ];
+
+        // Add franchise data if this is a franchise endpoint
+        if ($endpoint->franchise) {
+            $data['franchise'] = [
+                'id' => $endpoint->franchise->id,
+                'name' => $endpoint->franchise->name,
+                'slug' => $endpoint->franchise->slug,
+                'logo_url' => $endpoint->franchise->logo_url,
+                'design_tokens' => $endpoint->franchise->design_tokens,
+                'template_type' => $endpoint->franchise->template_type ?? 'premium',
+            ];
+        }
+
+        // Add template data if exists (business menus always have template)
+        if ($endpoint->template) {
+            $data['template'] = [
+                'id' => $endpoint->template->id,
+                'name' => $endpoint->template->name,
+                'type' => $endpoint->template->settings['template_type'] ?? 'premium',
+                'currency' => $endpoint->template->currency,
+                'settings' => $endpoint->template->settings,
+                'image_url' => $endpoint->template->image_url,
+                // New: API-driven configuration
+                'config' => $templateConfig,
+            ];
+        }
+
         return response()->json([
             'success' => true,
-            'data' => [
-                'menu' => $menu,
-                'offers' => $offers,
-                'business' => $business,
-                'endpoint' => [
-                    'id' => $endpoint->id,
-                    'type' => $endpoint->type,
-                    'name' => $endpoint->display_name,
-                    'identifier' => $endpoint->identifier,
-                ],
-                'template' => [
-                    'id' => $endpoint->template->id,
-                    'name' => $endpoint->template->name,
-                    'type' => $endpoint->template->settings['template_type'] ?? 'barista',
-                    'currency' => $endpoint->template->currency,
-                    'settings' => $endpoint->template->settings,
-                    'image_url' => $endpoint->template->image_url,
-                    // New: API-driven configuration
-                    'config' => $templateConfig,
-                ],
-            ]
+            'data' => $data
         ]);
     }
 
