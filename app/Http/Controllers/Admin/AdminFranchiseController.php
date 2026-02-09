@@ -17,7 +17,9 @@ class AdminFranchiseController extends Controller
     public function index(Request $request)
     {
         $query = Franchise::with(['owners:id,name,email', 'locations'])
-            ->withCount(['locations', 'users']);
+            ->withCount(['locations as branches_count' => function ($query) {
+                $query->select(DB::raw('COUNT(DISTINCT locations.id)'));
+            }, 'users']);
 
         // Search filter
         if ($request->has('search') && $request->search) {

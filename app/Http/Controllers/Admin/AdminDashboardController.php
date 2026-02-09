@@ -247,6 +247,59 @@ class AdminDashboardController extends Controller
     /**
      * Helper to get authenticated user with manual token check
      */
+    /**
+     * Get all businesses for admin access control
+     */
+    public function getBusinesses(Request $request): JsonResponse
+    {
+        $user = $this->getAuthenticatedUser($request);
+        
+        if (!$user || !in_array($user->role, ['admin', 'super_admin'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        $query = BusinessProfile::with('user:id,name,email')
+            ->select('id', 'business_name', 'user_id', 'subscription_tier');
+
+        // Search filter
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('business_name', 'like', "%{$search}%")
+                  ->orWhereHas('user', function ($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $businesses = $query->orderBy('created_at', 'desc')->get();
+
+        $businessData = $businesses->map(function ($business) {
+            $locationsCount = Location::where('user_id', $business->user_id)
+                ->whereNull('franchise_id')
+                ->count();
+
+            return [
+                'id' => $business->id,
+                'business_name' => $business->business_name,
+                'user_id' => $business->user_id,
+                'owner_name' => $business->user?->name,
+                'owner_email' => $business->user?->email,
+                'locations_count' => $locationsCount,
+                'subscription_tier' => $business->subscription_tier ?? 'free',
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $businessData,
+        ]);
+    }
+
     private function getAuthenticatedUser(Request $request): ?User
     {
         $token = $request->bearerToken();

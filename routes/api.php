@@ -352,6 +352,7 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'admin'])->group(function ()
     // Dashboard
     Route::get('/dashboard', [AdminDashboardController::class, 'index']);
     Route::get('/analytics', [AdminDashboardController::class, 'analytics']);
+    Route::get('/businesses', [AdminDashboardController::class, 'getBusinesses']);
     
     // User Management
     Route::get('/users', [AdminUserController::class, 'index']);
