@@ -81,7 +81,7 @@ class IssoDemoSeeder extends Seeder
                 'currency' => 'LKR',
                 'slug' => 'isso-main-menu',
                 'settings' => [
-                    'template_type' => 'isso', // This tells frontend to use isso template
+                    'template_type' => 'premium', // Use premium template with isso design tokens (colors, branding)
                     'show_prices' => true,
                     'show_images' => true,
                     'currency_symbol' => 'LKR',
