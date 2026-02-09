@@ -22,6 +22,8 @@ return [
     'allowed_origins' => array_filter([
         env('FRONTEND_URL'),
         env('APP_URL'),
+        'https://app.menuvire.com',
+        'https://staging.app.menuvire.com',
         'http://localhost:3000',
         'http://localhost:8000',
     ]),
