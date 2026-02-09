@@ -142,7 +142,7 @@ class AdminFranchiseEndpointController extends Controller
             'success' => true,
             'message' => 'Endpoint created successfully',
             'data' => $endpoint->load(['location', 'template']),
-            'qr_url' => env('FRONTEND_URL', 'http://localhost:3000') . '/menu/' . $shortCode,
+            'qr_url' => env('FRONTEND_URL', 'http://localhost:3000') . '/m/' . $shortCode,
         ], Response::HTTP_CREATED);
     }
 
