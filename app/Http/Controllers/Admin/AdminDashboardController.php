@@ -261,8 +261,8 @@ class AdminDashboardController extends Controller
             ], 403);
         }
 
-        $query = BusinessProfile::with('user:id,name,email')
-            ->select('id', 'business_name', 'user_id', 'subscription_tier');
+        $query = BusinessProfile::with(['user:id,name,email', 'user.subscription:id,user_id,plan_id'])
+            ->select('id', 'business_name', 'user_id');
 
         // Search filter
         if ($request->has('search') && $request->search) {
@@ -283,6 +283,12 @@ class AdminDashboardController extends Controller
                 ->whereNull('franchise_id')
                 ->count();
 
+            // Get subscription plan name if exists
+            $subscriptionTier = 'free';
+            if ($business->user && $business->user->subscription) {
+                $subscriptionTier = $business->user->subscription->plan->name ?? 'free';
+            }
+
             return [
                 'id' => $business->id,
                 'business_name' => $business->business_name,
@@ -290,7 +296,7 @@ class AdminDashboardController extends Controller
                 'owner_name' => $business->user?->name,
                 'owner_email' => $business->user?->email,
                 'locations_count' => $locationsCount,
-                'subscription_tier' => $business->subscription_tier ?? 'free',
+                'subscription_tier' => $subscriptionTier,
             ];
         });
 
