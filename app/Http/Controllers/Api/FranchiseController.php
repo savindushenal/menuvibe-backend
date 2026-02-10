@@ -794,6 +794,46 @@ class FranchiseController extends Controller
                     'identifier' => $endpoint->identifier,
                     'table_number' => $endpoint->identifier, // Alias for compatibility
                 ],
+                'template' => [
+                    'id' => $menu ? $menu->id : null,
+                    'name' => $menu ? $menu->name : 'Menu',
+                    'style' => $menu ? $menu->style : 'modern',
+                    'currency' => $menu ? $menu->currency : 'LKR',
+                    'settings' => $menu ? $menu->settings : [
+                        'show_prices' => true,
+                        'show_images' => true,
+                        'show_descriptions' => true,
+                        'show_categories' => true,
+                        'allow_search' => true,
+                        'theme' => 'premium'
+                    ],
+                ],
+                'menu' => $menu ? [
+                    'id' => $menu->id,
+                    'name' => $menu->name,
+                    'categories' => $menu->categories->map(function ($category) {
+                        return [
+                            'id' => $category->id,
+                            'name' => $category->name,
+                            'description' => $category->description,
+                            'sort_order' => $category->sort_order,
+                            'items' => $category->items->map(function ($item) {
+                                return [
+                                    'id' => $item->id,
+                                    'name' => $item->name,
+                                    'description' => $item->description,
+                                    'price' => $item->price,
+                                    'image_url' => $item->image_url,
+                                    'is_available' => $item->is_available,
+                                    'is_featured' => $item->is_featured,
+                                    'customizations' => $item->customizations ?? [],
+                                ];
+                            }),
+                        ];
+                    }),
+                ] : null,
+                'offers' => [],
+                'overrides' => [],
                 'menu_items' => $menuItems,
             ],
         ]);
