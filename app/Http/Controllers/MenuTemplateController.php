@@ -24,7 +24,7 @@ class MenuTemplateController extends Controller
         $locationId = $request->query('location_id');
 
         $query = MenuTemplate::where('user_id', $user->id)
-            ->with(['categories'])
+            ->with(['categories.items'])
             ->withCount(['categories', 'items', 'endpoints']);
 
         if ($locationId) {
