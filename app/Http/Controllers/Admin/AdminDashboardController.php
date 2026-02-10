@@ -261,7 +261,7 @@ class AdminDashboardController extends Controller
             ], 403);
         }
 
-        $query = BusinessProfile::with(['user:id,name,email', 'user.subscription:id,user_id,plan_id'])
+        $query = BusinessProfile::with(['user:id,name,email', 'user.activeSubscription.subscriptionPlan:id,name,slug'])
             ->select('id', 'business_name', 'user_id');
 
         // Search filter
@@ -285,8 +285,8 @@ class AdminDashboardController extends Controller
 
             // Get subscription plan name if exists
             $subscriptionTier = 'free';
-            if ($business->user && $business->user->subscription) {
-                $subscriptionTier = $business->user->subscription->plan->name ?? 'free';
+            if ($business->user && $business->user->activeSubscription && $business->user->activeSubscription->subscriptionPlan) {
+                $subscriptionTier = $business->user->activeSubscription->subscriptionPlan->name ?? 'free';
             }
 
             return [
