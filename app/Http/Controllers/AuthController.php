@@ -138,6 +138,64 @@ class AuthController extends Controller
     {
         $contexts = [];
 
+        // Super Admin gets owner access to EVERYTHING
+        if ($user->role === 'super_admin') {
+            // Add admin dashboard first
+            $contexts[] = [
+                'type' => 'personal',
+                'id' => null,
+                'slug' => null,
+                'name' => 'Admin Dashboard',
+                'role' => 'super_admin',
+                'locations_count' => 0,
+                'redirect' => '/admin',
+            ];
+
+            // Add all franchises with owner access
+            $allFranchises = \App\Models\Franchise::where('is_active', true)
+                ->select('id', 'name', 'slug', 'logo_url')
+                ->get();
+
+            foreach ($allFranchises as $franchise) {
+                $contexts[] = [
+                    'type' => 'franchise',
+                    'id' => $franchise->id,
+                    'slug' => $franchise->slug,
+                    'name' => $franchise->name . ' (Super Admin)',
+                    'logo_url' => $franchise->logo_url,
+                    'role' => 'owner',
+                    'branch' => null,
+                    'redirect' => '/' . $franchise->slug . '/dashboard',
+                ];
+            }
+
+            // Add all businesses with owner access
+            $allBusinesses = \App\Models\BusinessProfile::with('user:id,name,email')
+                ->select('id', 'business_name', 'user_id')
+                ->get();
+
+            foreach ($allBusinesses as $business) {
+                $locationsCount = Location::where('user_id', $business->user_id)
+                    ->whereNull('franchise_id')
+                    ->count();
+
+                if ($locationsCount > 0) {
+                    $contexts[] = [
+                        'type' => 'personal',
+                        'id' => $business->id,
+                        'slug' => null,
+                        'name' => $business->business_name . ' (Super Admin)',
+                        'role' => 'owner',
+                        'user_id' => $business->user_id,
+                        'locations_count' => $locationsCount,
+                        'redirect' => '/dashboard?business_id=' . $business->user_id,
+                    ];
+                }
+            }
+
+            return $contexts;
+        }
+
         // Check for personal business (locations owned directly)
         $personalLocations = Location::where('user_id', $user->id)
             ->whereNull('franchise_id')
@@ -198,8 +256,8 @@ class AuthController extends Controller
             }
         }
 
-        // Admin/Super Admin always has personal context
-        if (in_array($user->role, ['admin', 'super_admin']) && empty($contexts)) {
+        // Regular Admin always has admin dashboard context
+        if ($user->role === 'admin' && empty($contexts)) {
             $contexts[] = [
                 'type' => 'personal',
                 'id' => null,
