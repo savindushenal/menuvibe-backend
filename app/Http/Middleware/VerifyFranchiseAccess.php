@@ -40,12 +40,12 @@ class VerifyFranchiseAccess
 
         $user = $request->user();
 
-        // Super admins and admins have access to all franchises
+        // Super admins and admins have access to all franchises with owner role
         if (in_array($user->role, ['super_admin', 'admin'])) {
             $request->merge([
                 'franchise' => $franchise,
                 'franchise_account' => null,
-                'franchise_role' => $user->role,
+                'franchise_role' => 'owner', // Grant owner permissions
             ]);
             return $next($request);
         }
