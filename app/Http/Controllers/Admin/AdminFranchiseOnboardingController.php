@@ -280,12 +280,14 @@ class AdminFranchiseOnboardingController extends Controller
         // Get owner from pivot table (franchise_users)
         $ownerId = $franchise->owner?->id ?? $request->user()->id;
         
+        $branchCode = Location::generateBranchCode($franchiseId);
+        
         $branch = Location::create([
             'user_id' => $ownerId,
             'franchise_id' => $franchiseId,
             'name' => $request->branch_name,
             'branch_name' => $request->branch_name,
-            'branch_code' => Location::generateBranchCode($franchiseId),
+            'branch_code' => $branchCode,
             'address_line_1' => $request->address ?? 'To be updated',
             'city' => $request->city ?? 'To be updated',
             'state' => 'To be updated',
@@ -295,6 +297,21 @@ class AdminFranchiseOnboardingController extends Controller
             'is_active' => true,
             'is_paid' => false,
             'is_default' => false,
+            'activated_at' => now(),
+            'added_by' => $request->user()->id,
+        ]);
+
+        // Create corresponding FranchiseBranch record
+        FranchiseBranch::create([
+            'franchise_id' => $franchiseId,
+            'location_id' => $branch->id,
+            'branch_name' => $request->branch_name,
+            'branch_code' => $branchCode,
+            'address' => $request->address,
+            'city' => $request->city,
+            'phone' => $request->phone,
+            'is_active' => true,
+            'is_paid' => false,
             'activated_at' => now(),
             'added_by' => $request->user()->id,
         ]);
@@ -388,6 +405,33 @@ class AdminFranchiseOnboardingController extends Controller
 
         $branch->update($updateData);
 
+        // Also update corresponding FranchiseBranch record
+        $franchiseBranch = FranchiseBranch::where('location_id', $branch->id)->first();
+        if ($franchiseBranch) {
+            $franchiseBranchData = [];
+            if ($request->has('branch_name')) {
+                $franchiseBranchData['branch_name'] = $request->branch_name;
+            }
+            if ($request->has('address')) {
+                $franchiseBranchData['address'] = $request->address;
+            }
+            if ($request->has('city')) {
+                $franchiseBranchData['city'] = $request->city;
+            }
+            if ($request->has('phone')) {
+                $franchiseBranchData['phone'] = $request->phone;
+            }
+            if ($request->has('is_active')) {
+                $franchiseBranchData['is_active'] = $request->is_active;
+            }
+            if ($request->has('is_paid')) {
+                $franchiseBranchData['is_paid'] = $request->is_paid;
+            }
+            if (!empty($franchiseBranchData)) {
+                $franchiseBranch->update($franchiseBranchData);
+            }
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Branch updated successfully',
@@ -404,6 +448,10 @@ class AdminFranchiseOnboardingController extends Controller
             ->whereNotNull('branch_code')
             ->findOrFail($branchId);
 
+        // Delete corresponding FranchiseBranch record first
+        FranchiseBranch::where('location_id', $branch->id)->delete();
+        
+        // Then delete the Location
         $branch->delete();
 
         return response()->json([
