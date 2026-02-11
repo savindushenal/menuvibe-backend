@@ -412,23 +412,28 @@ class FranchiseContextController extends Controller
         $canViewFullSettings = in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin']) || 
                                in_array($user->role, ['admin', 'super_admin']);
 
+        // Get design_tokens for fallback values
+        $designTokens = $franchise->design_tokens ?? [];
+        
+        // Use design_tokens as fallback for branding data
         $settings = [
             'id' => $franchise->id,
             'name' => $franchise->name,
             'slug' => $franchise->slug,
-            'description' => $franchise->description,
-            'logo_url' => $franchise->logo_url,
-            'primary_color' => $franchise->primary_color ?? '#10b981',
-            'secondary_color' => $franchise->secondary_color ?? '#059669',
+            'description' => $franchise->description ?? $designTokens['brand']['tagline'] ?? null,
+            'logo_url' => $franchise->logo_url ?? $designTokens['brand']['logo'] ?? null,
+            'primary_color' => $franchise->primary_color ?? $designTokens['colors']['primary'] ?? '#10b981',
+            'secondary_color' => $franchise->secondary_color ?? $designTokens['colors']['secondary'] ?? '#059669',
+            'template_type' => $franchise->template_type ?? 'premium',
         ];
 
         if ($canViewFullSettings) {
-            $settings['email'] = $franchise->support_email;
-            $settings['phone'] = $franchise->support_phone;
-            $settings['website'] = $franchise->website_url;
+            $settings['email'] = $franchise->support_email ?? $designTokens['contact']['email'] ?? null;
+            $settings['phone'] = $franchise->support_phone ?? $designTokens['contact']['phone'] ?? null;
+            $settings['website'] = $franchise->website_url ?? $designTokens['contact']['website'] ?? null;
             $settings['timezone'] = $franchise->settings['timezone'] ?? 'UTC';
             $settings['currency'] = $franchise->settings['currency'] ?? 'USD';
-            $settings['address'] = $franchise->settings['address'] ?? '';
+            $settings['address'] = $franchise->settings['address'] ?? $designTokens['contact']['address'] ?? '';
             $settings['city'] = $franchise->settings['city'] ?? '';
             $settings['state'] = $franchise->settings['state'] ?? '';
             $settings['country'] = $franchise->settings['country'] ?? '';
@@ -463,6 +468,7 @@ class FranchiseContextController extends Controller
         $request->validate([
             'name' => 'sometimes|string|max:255',
             'description' => 'nullable|string|max:1000',
+            'logo_url' => 'nullable|url|max:500',
             'website' => 'nullable|url|max:255',
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:50',
@@ -475,7 +481,7 @@ class FranchiseContextController extends Controller
             'currency' => 'nullable|string|max:10',
             'primary_color' => 'nullable|string|max:20',
             'secondary_color' => 'nullable|string|max:20',
-            'template_type' => 'nullable|string|in:premium,classic,minimal,barista,custom',
+            'template_type' => 'nullable|string|in:premium,classic,minimal,barista,custom,isso',
             'design_tokens' => 'nullable|array',
             'settings' => 'nullable|array',
         ]);
@@ -487,6 +493,9 @@ class FranchiseContextController extends Controller
         }
         if ($request->has('description')) {
             $updateData['description'] = $request->description;
+        }
+        if ($request->has('logo_url')) {
+            $updateData['logo_url'] = $request->logo_url;
         }
         if ($request->has('website')) {
             $updateData['website_url'] = $request->website;
@@ -504,18 +513,56 @@ class FranchiseContextController extends Controller
             $updateData['secondary_color'] = $request->secondary_color;
         }
         
-        // Sync primary_color and secondary_color to design_tokens.colors
-        if ($request->has('primary_color') || $request->has('secondary_color')) {
+        // Sync settings to design_tokens for custom templates
+        $needsDesignTokensSync = $request->has('primary_color') || 
+                                  $request->has('secondary_color') ||
+                                  $request->has('description') ||
+                                  $request->has('logo_url') ||
+                                  $request->has('email') ||
+                                  $request->has('phone') ||
+                                  $request->has('website') ||
+                                  $request->has('address');
+        
+        if ($needsDesignTokensSync) {
             $designTokens = $franchise->design_tokens ?? [];
+            
+            // Sync colors
             if (!isset($designTokens['colors'])) {
                 $designTokens['colors'] = [];
             }
-            
             if ($request->has('primary_color')) {
                 $designTokens['colors']['primary'] = $request->primary_color;
             }
             if ($request->has('secondary_color')) {
                 $designTokens['colors']['secondary'] = $request->secondary_color;
+            }
+            
+            // Sync brand info
+            if (!isset($designTokens['brand'])) {
+                $designTokens['brand'] = [];
+            }
+            if ($request->has('description')) {
+                $designTokens['brand']['tagline'] = $request->description;
+            }
+            if ($request->has('logo_url')) {
+                $designTokens['brand']['logo'] = $request->logo_url;
+            }
+            
+            // Sync contact info
+            if (!isset($designTokens['contact'])) {
+                $designTokens['contact'] = [];
+            }
+            if ($request->has('email')) {
+                $designTokens['contact']['email'] = $request->email;
+            }
+            if ($request->has('phone')) {
+                $designTokens['contact']['phone'] = $request->phone;
+            }
+            if ($request->has('website')) {
+                $designTokens['contact']['website'] = $request->website;
+            }
+            if ($request->has('address')) {
+                $designTokens['contact']['address'] = $request->address;
             }
             
             $updateData['design_tokens'] = $designTokens;
@@ -525,7 +572,8 @@ class FranchiseContextController extends Controller
             $updateData['template_type'] = $request->template_type;
         }
         if ($request->has('design_tokens')) {
-            $updateData['design_tokens'] = $request->design_tokens;
+            // If design_tokens explicitly provided, merge with synced values
+            $updateData['design_tokens'] = array_merge($updateData['design_tokens'] ?? [], $request->design_tokens);
         }
         
         // Store address and other location info in settings JSON
