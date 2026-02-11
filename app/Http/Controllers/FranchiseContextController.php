@@ -503,6 +503,24 @@ class FranchiseContextController extends Controller
         if ($request->has('secondary_color')) {
             $updateData['secondary_color'] = $request->secondary_color;
         }
+        
+        // Sync primary_color and secondary_color to design_tokens.colors
+        if ($request->has('primary_color') || $request->has('secondary_color')) {
+            $designTokens = $franchise->design_tokens ?? [];
+            if (!isset($designTokens['colors'])) {
+                $designTokens['colors'] = [];
+            }
+            
+            if ($request->has('primary_color')) {
+                $designTokens['colors']['primary'] = $request->primary_color;
+            }
+            if ($request->has('secondary_color')) {
+                $designTokens['colors']['secondary'] = $request->secondary_color;
+            }
+            
+            $updateData['design_tokens'] = $designTokens;
+        }
+        
         if ($request->has('template_type')) {
             $updateData['template_type'] = $request->template_type;
         }
