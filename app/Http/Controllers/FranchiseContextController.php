@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Middleware\VerifyFranchiseAccess;
 use App\Models\Franchise;
-use App\Models\FranchiseBranch;
 use App\Models\Location;
 use App\Models\Menu;
 use App\Models\FranchiseAccount;
@@ -48,7 +47,9 @@ class FranchiseContextController extends Controller
         } else {
             // Owners/admins see all stats
             $stats = [
-                'branches' => FranchiseBranch::where('franchise_id', $franchise->id)->count(),
+                'branches' => Location::where('franchise_id', $franchise->id)
+                    ->whereNotNull('branch_code')
+                    ->count(),
                 'locations' => Location::where('franchise_id', $franchise->id)->count(),
                 'menus' => Menu::whereHas('location', function ($q) use ($franchise) {
                     $q->where('franchise_id', $franchise->id);

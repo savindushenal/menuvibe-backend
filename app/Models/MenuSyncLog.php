@@ -42,11 +42,11 @@ class MenuSyncLog extends Model
     }
 
     /**
-     * Get the branch (if specific sync)
+     * Get the branch (now points to Location)
      */
     public function branch(): BelongsTo
     {
-        return $this->belongsTo(FranchiseBranch::class, 'branch_id');
+        return $this->belongsTo(Location::class, 'location_id');
     }
 
     /**

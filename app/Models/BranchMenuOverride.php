@@ -11,7 +11,6 @@ class BranchMenuOverride extends Model
     use HasFactory;
 
     protected $fillable = [
-        'branch_id',
         'location_id',
         'master_item_id',
         'price_override',
@@ -29,15 +28,7 @@ class BranchMenuOverride extends Model
     ];
 
     /**
-     * Get the branch that owns the override
-     */
-    public function branch(): BelongsTo
-    {
-        return $this->belongsTo(FranchiseBranch::class, 'branch_id');
-    }
-
-    /**
-     * Get the location (unified with branch)
+     * Get the location (branch)
      */
     public function location(): BelongsTo
     {

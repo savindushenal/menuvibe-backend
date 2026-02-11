@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Franchise;
-use App\Models\FranchiseBranch;
 use App\Models\MasterMenu;
 use App\Models\MasterMenuCategory;
 use App\Models\MasterMenuItem;

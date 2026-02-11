@@ -8,7 +8,6 @@ $kernel->bootstrap();
 
 use Illuminate\Support\Facades\DB;
 use App\Models\Franchise;
-use App\Models\FranchiseBranch;
 use App\Models\Location;
 use App\Models\Menu;
 
@@ -25,9 +24,11 @@ if (!$franchise) {
 echo "Franchise: {$franchise->name}\n";
 echo "Franchise ID: {$franchise->id}\n\n";
 
-// Check franchise branches
+// Check franchise branches (locations with branch_code)
 echo "=== FRANCHISE BRANCHES ===\n";
-$branches = FranchiseBranch::where('franchise_id', $franchise->id)->get();
+$branches = Location::where('franchise_id', $franchise->id)
+    ->whereNotNull('branch_code')
+    ->get();
 echo "Total branches: " . $branches->count() . "\n";
 if ($branches->count() > 0) {
     foreach ($branches as $branch) {
@@ -71,7 +72,9 @@ if ($locations->count() > 0) {
 // Check what stats would be returned by API
 echo "\n=== DASHBOARD STATS (API Returns) ===\n";
 $stats = [
-    'branches' => FranchiseBranch::where('franchise_id', $franchise->id)->count(),
+    'branches' => Location::where('franchise_id', $franchise->id)
+        ->whereNotNull('branch_code')
+        ->count(),
     'locations' => Location::where('franchise_id', $franchise->id)->count(),
     'menus' => Menu::whereHas('location', function($query) use ($franchise) {
         $query->where('franchise_id', $franchise->id);

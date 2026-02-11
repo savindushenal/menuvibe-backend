@@ -49,7 +49,7 @@ class FranchiseAccount extends Model
 
     public function branch(): BelongsTo
     {
-        return $this->belongsTo(FranchiseBranch::class, 'branch_id');
+        return $this->belongsTo(Location::class, 'location_id');
     }
 
     /**

@@ -23,11 +23,11 @@ class BranchOfferOverride extends Model
     ];
 
     /**
-     * Get the branch that owns the override
+     * Get the branch that owns the override (now Location)
      */
     public function branch(): BelongsTo
     {
-        return $this->belongsTo(FranchiseBranch::class, 'branch_id');
+        return $this->belongsTo(Location::class, 'location_id');
     }
 
     /**
