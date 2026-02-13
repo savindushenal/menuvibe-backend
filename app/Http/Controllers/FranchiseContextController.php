@@ -274,6 +274,37 @@ class FranchiseContextController extends Controller
     }
 
     /**
+     * Get menu templates for franchise
+     * Used for endpoint assignment and menu template selection
+     */
+    public function templates(Request $request, string $franchiseSlug)
+    {
+        $franchise = $request->get('franchise');
+        $role = $request->get('franchise_role');
+
+        $query = \App\Models\MenuTemplate::where('franchise_id', $franchise->id)
+            ->with(['location:id,name,branch_name,branch_code'])
+            ->orderBy('is_default', 'desc')
+            ->orderBy('name');
+
+        // For branch managers and staff, filter by their location
+        if (in_array($role, ['branch_manager', 'manager', 'staff'])) {
+            $account = $request->get('franchise_account');
+            
+            if ($account && $account->location_id) {
+                $query->where('location_id', $account->location_id);
+            }
+        }
+
+        $templates = $query->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $templates
+        ]);
+    }
+
+    /**
      * Bulk update menu items (availability and prices) for branch locations
      */
     public function bulkUpdateMenuItems(Request $request, string $franchiseSlug, int $menuId)
@@ -426,17 +457,20 @@ class FranchiseContextController extends Controller
         ];
 
         if ($canViewFullSettings) {
-            $settings['email'] = $franchise->support_email;
-            $settings['phone'] = $franchise->support_phone;
-            $settings['website'] = $franchise->website_url;
-            $settings['timezone'] = $franchise->settings['timezone'] ?? 'UTC';
-            $settings['currency'] = $franchise->settings['currency'] ?? 'USD';
-            $settings['address'] = $franchise->settings['address'] ?? '';
-            $settings['city'] = $franchise->settings['city'] ?? '';
-            $settings['state'] = $franchise->settings['state'] ?? '';
-            $settings['country'] = $franchise->settings['country'] ?? '';
-            $settings['postal_code'] = $franchise->settings['postal_code'] ?? '';
-            $settings['settings'] = $franchise->settings;
+            // Safely access settings JSON field
+            $franchiseSettings = $franchise->settings ?? [];
+            
+            $settings['email'] = $franchise->support_email ?? $franchise->email ?? '';
+            $settings['phone'] = $franchise->support_phone ?? $franchise->phone ?? '';
+            $settings['website'] = $franchise->website_url ?? $franchise->website ?? '';
+            $settings['timezone'] = $franchiseSettings['timezone'] ?? 'UTC';
+            $settings['currency'] = $franchiseSettings['currency'] ?? 'USD';
+            $settings['address'] = $franchiseSettings['address'] ?? '';
+            $settings['city'] = $franchiseSettings['city'] ?? '';
+            $settings['state'] = $franchiseSettings['state'] ?? '';
+            $settings['country'] = $franchiseSettings['country'] ?? '';
+            $settings['postal_code'] = $franchiseSettings['postal_code'] ?? '';
+            $settings['settings'] = $franchiseSettings;
         }
 
         return response()->json([
@@ -1078,10 +1112,12 @@ class FranchiseContextController extends Controller
             'identifier' => 'required|string|max:255',
             'description' => 'nullable|string',
             'template_id' => 'nullable|integer|exists:menu_templates,id',
+            'location_id' => 'nullable|integer|exists:locations,id',
         ]);
 
-        // Get default location or user's location
-        $locationId = $userAccount?->location_id;
+        // Get location: from request, user's location, or franchise default
+        $locationId = $validated['location_id'] ?? $userAccount?->location_id;
+        
         if (!$locationId) {
             $location = Location::where('franchise_id', $franchise->id)->first();
             if (!$location) {
@@ -1091,6 +1127,18 @@ class FranchiseContextController extends Controller
                 ], 404);
             }
             $locationId = $location->id;
+        }
+        
+        // Verify location belongs to this franchise
+        $location = Location::where('id', $locationId)
+            ->where('franchise_id', $franchise->id)
+            ->first();
+            
+        if (!$location) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid location for this franchise'
+            ], 400);
         }
 
         // Get or create default template for franchise location
@@ -1166,9 +1214,12 @@ class FranchiseContextController extends Controller
             'start' => 'required|integer|min:1',
             'count' => 'required|integer|min:1|max:100',
             'template_id' => 'nullable|integer|exists:menu_templates,id',
+            'location_id' => 'nullable|integer|exists:locations,id',
         ]);
 
-        $locationId = $userAccount?->location_id;
+        // Get location: from request, user's location, or franchise default
+        $locationId = $validated['location_id'] ?? $userAccount?->location_id;
+        
         if (!$locationId) {
             $location = Location::where('franchise_id', $franchise->id)->first();
             if (!$location) {
@@ -1294,7 +1345,23 @@ class FranchiseContextController extends Controller
             'identifier' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
             'is_active' => 'sometimes|boolean',
+            'template_id' => 'sometimes|integer|exists:menu_templates,id',
+            'location_id' => 'sometimes|integer|exists:locations,id',
         ]);
+        
+        // If location_id is being updated, verify it belongs to this franchise
+        if (isset($validated['location_id'])) {
+            $location = Location::where('id', $validated['location_id'])
+                ->where('franchise_id', $franchise->id)
+                ->first();
+                
+            if (!$location) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid location for this franchise'
+                ], 400);
+            }
+        }
 
         $endpoint->update($validated);
 

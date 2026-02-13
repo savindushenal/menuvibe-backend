@@ -320,6 +320,9 @@ Route::prefix('franchise/{franchiseSlug}')
         Route::get('/menus/{menuId}', [FranchiseContextController::class, 'getMenu']);
         Route::post('/menus/{menuId}/bulk-update', [FranchiseContextController::class, 'bulkUpdateMenuItems']);
         
+        // Menu Templates
+        Route::get('/templates', [FranchiseContextController::class, 'templates']);
+        
         // Menu Endpoints (Tables, QR Codes, etc.)
         Route::get('/endpoints', [FranchiseContextController::class, 'endpoints']);
         Route::post('/endpoints', [FranchiseContextController::class, 'createEndpoint']);
