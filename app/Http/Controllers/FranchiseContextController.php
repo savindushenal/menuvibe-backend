@@ -440,9 +440,9 @@ class FranchiseContextController extends Controller
         $user = $request->user();
         $role = $request->get('franchise_role');
 
-        // Only owners and admins can see full settings
+        // Only owners, admins, and support team can see full settings
         $canViewFullSettings = in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin']) || 
-                               in_array($user->role, ['admin', 'super_admin']);
+                               in_array($user->role, ['admin', 'super_admin', 'support_team']);
 
         $settings = [
             'id' => $franchise->id,
@@ -488,9 +488,9 @@ class FranchiseContextController extends Controller
         $user = $request->user();
         $role = $request->get('franchise_role');
 
-        // Only owners and admins can update settings
+        // Only owners, admins, and support team can update settings
         if (!in_array($role, ['owner', 'franchise_owner', 'franchise_admin', 'admin']) && 
-            !in_array($user->role, ['admin', 'super_admin'])) {
+            !in_array($user->role, ['admin', 'super_admin', 'support_team'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'You do not have permission to update settings'
