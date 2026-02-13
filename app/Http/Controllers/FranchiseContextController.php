@@ -497,6 +497,11 @@ class FranchiseContextController extends Controller
             ], 403);
         }
 
+        // When using FormData, settings comes as JSON string, so decode it
+        if ($request->has('settings') && is_string($request->settings)) {
+            $request->merge(['settings' => json_decode($request->settings, true)]);
+        }
+
         $request->validate([
             'name' => 'sometimes|string|max:255',
             'description' => 'nullable|string|max:1000',
@@ -512,7 +517,7 @@ class FranchiseContextController extends Controller
             'currency' => 'nullable|string|max:10',
             'primary_color' => 'nullable|string|max:20',
             'secondary_color' => 'nullable|string|max:20',
-            'template_type' => 'nullable|string|in:premium,classic,minimal,barista,custom',
+            'template_type' => 'nullable|string|in:premium,classic,minimal,barista,custom,isso',
             'design_tokens' => 'nullable|array',
             'settings' => 'nullable|array',
             'logo' => 'nullable|image|mimes:jpeg,jpg,png,svg,webp|max:2048',
