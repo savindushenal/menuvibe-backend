@@ -515,9 +515,18 @@ class FranchiseContextController extends Controller
             'template_type' => 'nullable|string|in:premium,classic,minimal,barista,custom',
             'design_tokens' => 'nullable|array',
             'settings' => 'nullable|array',
+            'logo' => 'nullable|image|mimes:jpeg,jpg,png,svg,webp|max:2048',
         ]);
 
         $updateData = [];
+        
+        // Handle logo upload
+        if ($request->hasFile('logo')) {
+            $logo = $request->file('logo');
+            $filename = 'franchise_' . $franchise->id . '_' . time() . '.' . $logo->getClientOriginalExtension();
+            $path = $logo->storeAs('logos', $filename, 'public');
+            $updateData['logo_url'] = '/storage/' . $path;
+        }
         
         if ($request->has('name')) {
             $updateData['name'] = $request->name;
