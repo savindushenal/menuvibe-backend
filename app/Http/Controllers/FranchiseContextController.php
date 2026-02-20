@@ -525,6 +525,16 @@ class FranchiseContextController extends Controller
             $request->merge(['settings' => json_decode($request->settings, true)]);
         }
 
+        // Debug: log request payload to help diagnose silent failures
+        if (config('app.debug')) {
+            \Log::info('Franchise updateSettings payload', [
+                'franchise_id' => $franchise->id,
+                'user_id' => $user?->id,
+                'role' => $role,
+                'input' => $request->all(),
+            ]);
+        }
+
         $request->validate([
             'name' => 'sometimes|string|max:255',
             'description' => 'nullable|string|max:1000',
@@ -632,6 +642,14 @@ class FranchiseContextController extends Controller
         }
         
         $updateData['settings'] = $newSettings;
+
+        // Debug: log computed update data before applying
+        if (config('app.debug')) {
+            \Log::info('Franchise updateSettings computed updateData', [
+                'franchise_id' => $franchise->id,
+                'updateData' => $updateData,
+            ]);
+        }
 
         $franchise->update($updateData);
 
