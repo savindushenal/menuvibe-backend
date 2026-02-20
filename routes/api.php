@@ -342,7 +342,12 @@ Route::prefix('franchise/{franchiseSlug}')
         // Settings
         Route::get('/settings', [FranchiseContextController::class, 'settings']);
         Route::put('/settings', [FranchiseContextController::class, 'updateSettings']);
+        Route::post('/settings', [FranchiseContextController::class, 'updateSettings']); // For file uploads with _method: PUT
     });
+
+    // Backwards-compatible POST route for franchise settings (accept plain POST)
+    Route::post('/franchise/{franchiseSlug}/settings', [FranchiseContextController::class, 'updateSettings'])
+        ->middleware(['auth:sanctum', 'franchise']);
 
 /*
 |--------------------------------------------------------------------------
