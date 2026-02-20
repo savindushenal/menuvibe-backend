@@ -456,21 +456,44 @@ class FranchiseContextController extends Controller
             'design_tokens' => $franchise->design_tokens ?? null,
         ];
 
+        // Safely access settings JSON field
+        $franchiseSettings = $franchise->settings ?? [];
+
+        // Default fields — set empty defaults so frontend doesn't break when keys are absent
+        $settings['email'] = '';
+        $settings['phone'] = '';
+        $settings['website'] = '';
+        $settings['timezone'] = $franchiseSettings['timezone'] ?? 'UTC';
+        $settings['currency'] = $franchiseSettings['currency'] ?? 'USD';
+        $settings['address'] = '';
+        $settings['city'] = '';
+        $settings['state'] = '';
+        $settings['country'] = '';
+        $settings['postal_code'] = '';
+        $settings['settings'] = $franchiseSettings;
+
         if ($canViewFullSettings) {
-            // Safely access settings JSON field
-            $franchiseSettings = $franchise->settings ?? [];
-            
-            $settings['email'] = $franchise->support_email ?? $franchise->email ?? '';
-            $settings['phone'] = $franchise->support_phone ?? $franchise->phone ?? '';
-            $settings['website'] = $franchise->website_url ?? $franchise->website ?? '';
-            $settings['timezone'] = $franchiseSettings['timezone'] ?? 'UTC';
-            $settings['currency'] = $franchiseSettings['currency'] ?? 'USD';
-            $settings['address'] = $franchiseSettings['address'] ?? '';
-            $settings['city'] = $franchiseSettings['city'] ?? '';
-            $settings['state'] = $franchiseSettings['state'] ?? '';
-            $settings['country'] = $franchiseSettings['country'] ?? '';
-            $settings['postal_code'] = $franchiseSettings['postal_code'] ?? '';
+            // Populate with actual values for authorized users
+            $settings['email'] = $franchise->support_email ?? $franchise->email ?? $settings['email'];
+            $settings['phone'] = $franchise->support_phone ?? $franchise->phone ?? $settings['phone'];
+            $settings['website'] = $franchise->website_url ?? $franchise->website ?? $settings['website'];
+            $settings['timezone'] = $franchiseSettings['timezone'] ?? $settings['timezone'];
+            $settings['currency'] = $franchiseSettings['currency'] ?? $settings['currency'];
+            $settings['address'] = $franchiseSettings['address'] ?? $settings['address'];
+            $settings['city'] = $franchiseSettings['city'] ?? $settings['city'];
+            $settings['state'] = $franchiseSettings['state'] ?? $settings['state'];
+            $settings['country'] = $franchiseSettings['country'] ?? $settings['country'];
+            $settings['postal_code'] = $franchiseSettings['postal_code'] ?? $settings['postal_code'];
             $settings['settings'] = $franchiseSettings;
+        }
+
+        // Attach lightweight debug info when app debug is enabled to help diagnose missing fields
+        if (config('app.debug')) {
+            $settings['_debug'] = [
+                'canViewFullSettings' => $canViewFullSettings,
+                'user_role' => $user?->role ?? null,
+                'franchise_role' => $role ?? null,
+            ];
         }
 
         return response()->json([
