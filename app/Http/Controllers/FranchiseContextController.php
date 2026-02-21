@@ -564,10 +564,40 @@ class FranchiseContextController extends Controller
         
         // Handle logo upload
         if ($request->hasFile('logo')) {
-            $logo = $request->file('logo');
-            $filename = 'franchise_' . $franchise->id . '_' . time() . '.' . $logo->getClientOriginalExtension();
-            $path = $logo->storeAs('logos', $filename, 'public');
-            $updateData['logo_url'] = '/storage/' . $path;
+            try {
+                $logo = $request->file('logo');
+                $filename = 'franchise_' . $franchise->id . '_' . time() . '.' . $logo->getClientOriginalExtension();
+                
+                // Store the file to public disk
+                $path = $logo->storeAs('logos', $filename, 'public');
+                
+                if ($path) {
+                    $logoUrl = '/storage/' . $path;
+                    $updateData['logo_url'] = $logoUrl;
+                    
+                    if (config('app.debug')) {
+                        \Log::info('Logo uploaded successfully', [
+                            'franchise_id' => $franchise->id,
+                            'filename' => $filename,
+                            'path' => $path,
+                            'url' => $logoUrl,
+                            'disk' => 'public',
+                            'full_path' => storage_path('app/public/' . $path),
+                        ]);
+                    }
+                } else {
+                    \Log::error('Logo upload failed - storeAs returned false', [
+                        'franchise_id' => $franchise->id,
+                        'filename' => $filename,
+                    ]);
+                }
+            } catch (\Exception $e) {
+                \Log::error('Logo upload exception', [
+                    'franchise_id' => $franchise->id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+            }
         }
         
         if ($request->has('name')) {
@@ -676,11 +706,22 @@ class FranchiseContextController extends Controller
             // Refresh and return updated franchise
             $franchise = $franchise->fresh();
             
-            return response()->json([
+            $response = [
                 'success' => true,
                 'message' => 'Settings updated successfully',
                 'data' => $franchise
-            ]);
+            ];
+            
+            // Add debug info if available
+            if (config('app.debug')) {
+                $response['_debug'] = [
+                    'updated_fields' => array_keys($updateData),
+                    'logo_url' => $franchise->logo_url,
+                    'storage_path' => $franchise->logo_url ? storage_path('app/public' . str_replace('/storage', '', $franchise->logo_url)) : null,
+                ];
+            }
+            
+            return response()->json($response);
         } catch (\Exception $e) {
             \Log::error('Franchise updateSettings error', [
                 'franchise_id' => $franchise->id,
