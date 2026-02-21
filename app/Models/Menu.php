@@ -108,6 +108,22 @@ class Menu extends Model
     }
 
     /**
+     * Get the schedules for this menu (time-based availability)
+     */
+    public function schedules(): HasMany
+    {
+        return $this->hasMany(MenuSchedule::class);
+    }
+
+    /**
+     * Get active schedules for this menu
+     */
+    public function activeSchedules(): HasMany
+    {
+        return $this->hasMany(MenuSchedule::class)->where('is_active', true);
+    }
+
+    /**
      * Scope for active menus
      */
     public function scopeActive($query)

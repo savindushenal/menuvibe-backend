@@ -9,6 +9,7 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\MenuItemController;
 use App\Http\Controllers\MenuCategoryController;
+use App\Http\Controllers\MenuScheduleController;
 use App\Http\Controllers\QRCodeController;
 use App\Http\Controllers\SocialAuthController;
 use App\Http\Controllers\SubscriptionController;
@@ -360,6 +361,17 @@ Route::prefix('franchise/{franchiseSlug}')
         Route::get('/menus', [FranchiseContextController::class, 'menus']);
         Route::get('/menus/{menuId}', [FranchiseContextController::class, 'getMenu']);
         Route::post('/menus/{menuId}/bulk-update', [FranchiseContextController::class, 'bulkUpdateMenuItems']);
+        
+        // Menu Schedules (time-based menu availability)
+        Route::get('/menus/{menuId}/schedules', [MenuScheduleController::class, 'getForMenu']);
+        Route::post('/menus/{menuId}/schedules', [MenuScheduleController::class, 'store']);
+        Route::get('/menus/{menuId}/schedules/{scheduleId}', [MenuScheduleController::class, 'show']);
+        Route::put('/menus/{menuId}/schedules/{scheduleId}', [MenuScheduleController::class, 'update']);
+        Route::delete('/menus/{menuId}/schedules/{scheduleId}', [MenuScheduleController::class, 'destroy']);
+        
+        // Location menu schedule management (view schedules for a branch)
+        Route::get('/location/{locationId}/menus-schedules', [MenuScheduleController::class, 'index']);
+        Route::get('/location/{locationId}/resolve-menus', [MenuScheduleController::class, 'resolve']);
         
         // Menu Templates
         Route::get('/templates', [FranchiseContextController::class, 'templates']);
