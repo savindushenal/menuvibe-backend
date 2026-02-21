@@ -586,7 +586,8 @@ class FranchiseContextController extends Controller
                     $path = $logo->storeAs('logos', $filename, 'public');
                     
                     if ($path) {
-                        $logoUrl = '/storage/' . $path;
+                        // Use full backend URL so frontend can fetch from correct domain
+                        $logoUrl = config('app.url') . '/storage/' . $path;
                         $updateData['logo_url'] = $logoUrl;
                         
                         if (config('app.debug')) {
