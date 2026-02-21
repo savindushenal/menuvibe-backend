@@ -622,17 +622,16 @@ class FranchiseContextController extends Controller
                     throw new \Exception("File exists check failed: $fullPath");
                 }
                 
-                // Use full backend URL so frontend can fetch from correct domain
-                $logoUrl = config('app.url') . '/storage/' . $path;
+                // Use API endpoint to serve logo so it works even without symlink
+                $logoUrl = config('app.url') . '/api/logos/' . $filename;
                 $updateData['logo_url'] = $logoUrl;
                 
                 \Log::info('Logo uploaded successfully', [
                     'franchise_id' => $franchise->id,
                     'filename' => $filename,
                     'path' => $path,
-                    'url' => $logoUrl,
-                    'disk' => 'public',
-                    'full_path' => $fullPath,
+                    'api_url' => $logoUrl,
+                    'storage_path' => $fullPath,
                     'file_exists' => file_exists($fullPath),
                     'file_size' => filesize($fullPath),
                 ]);
@@ -767,20 +766,10 @@ class FranchiseContextController extends Controller
             
             // Add debug info if available
             if (config('app.debug')) {
-                $logoPath = null;
-                $logoExists = false;
-                if ($franchise->logo_url) {
-                    $logoPath = storage_path('app/public' . str_replace('/storage', '', $franchise->logo_url));
-                    $logoExists = file_exists($logoPath);
-                }
-                
                 $response['_debug'] = [
                     'updated_fields' => array_keys($updateData),
                     'logo_url' => $franchise->logo_url,
-                    'logo_disk_path' => $logoPath,
-                    'logo_file_exists' => $logoExists,
                     'app_url' => config('app.url'),
-                    'storage_disk_url' => config('filesystems.disks.public.url'),
                 ];
             }
             

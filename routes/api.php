@@ -181,12 +181,28 @@ Route::get('/auth/google', [SocialAuthController::class, 'redirectToGoogle']);
 Route::get('/auth/google/callback', [SocialAuthController::class, 'handleGoogleCallback']);
 Route::post('/auth/google', [SocialAuthController::class, 'googleAuth']);
 
-// Public logo serving route
+// Public logo serving route (via API endpoint, not symlink)
 Route::get('/logos/{filename}', function ($filename) {
     $path = storage_path('app/public/logos/' . $filename);
     
+    // Validate filename to prevent directory traversal
+    if (strpos($filename, '..') !== false || strpos($filename, '/') !== false) {
+        \Log::warning('Logo request with invalid path', ['filename' => $filename]);
+        abort(400, 'Invalid filename');
+    }
+    
     if (!file_exists($path)) {
+        \Log::warning('Logo not found', [
+            'filename' => $filename,
+            'path' => $path,
+            'logos_dir' => storage_path('app/public/logos'),
+            'logos_dir_exists' => is_dir(storage_path('app/public/logos')),
+        ]);
         abort(404, 'Logo not found');
+    }
+    
+    if (!is_file($path)) {
+        abort(404, 'Logo is not a file');
     }
     
     $mimeType = mime_content_type($path);
@@ -195,7 +211,7 @@ Route::get('/logos/{filename}', function ($filename) {
         'Content-Type' => $mimeType,
         'Cache-Control' => 'public, max-age=31536000',
     ]);
-})->where('filename', '.*');
+})->where('filename', '.*')->name('logo.serve');
 
 // Deployment status check (no auth required)
 Route::get('/deployment-status', function () {
