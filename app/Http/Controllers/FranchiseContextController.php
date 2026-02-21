@@ -566,35 +566,55 @@ class FranchiseContextController extends Controller
         if ($request->hasFile('logo')) {
             try {
                 $logo = $request->file('logo');
-                $filename = 'franchise_' . $franchise->id . '_' . time() . '.' . $logo->getClientOriginalExtension();
                 
-                // Store the file to public disk
-                $path = $logo->storeAs('logos', $filename, 'public');
-                
-                if ($path) {
-                    $logoUrl = '/storage/' . $path;
-                    $updateData['logo_url'] = $logoUrl;
+                // Validate the file
+                if (!$logo->isValid()) {
+                    \Log::error('Logo file validation failed', [
+                        'franchise_id' => $franchise->id,
+                        'error' => $logo->getErrorMessage(),
+                    ]);
+                } else {
+                    $filename = 'franchise_' . $franchise->id . '_' . time() . '.' . $logo->getClientOriginalExtension();
                     
-                    if (config('app.debug')) {
-                        \Log::info('Logo uploaded successfully', [
+                    // Ensure logos directory exists
+                    $logosDir = storage_path('app/public/logos');
+                    if (!is_dir($logosDir)) {
+                        mkdir($logosDir, 0755, true);
+                    }
+                    
+                    // Store the file to public disk
+                    $path = $logo->storeAs('logos', $filename, 'public');
+                    
+                    if ($path) {
+                        $logoUrl = '/storage/' . $path;
+                        $updateData['logo_url'] = $logoUrl;
+                        
+                        if (config('app.debug')) {
+                            \Log::info('Logo uploaded successfully', [
+                                'franchise_id' => $franchise->id,
+                                'filename' => $filename,
+                                'path' => $path,
+                                'url' => $logoUrl,
+                                'disk' => 'public',
+                                'full_path' => storage_path('app/public/' . $path),
+                                'file_exists' => file_exists(storage_path('app/public/' . $path)),
+                            ]);
+                        }
+                    } else {
+                        \Log::error('Logo upload failed - storeAs returned false', [
                             'franchise_id' => $franchise->id,
                             'filename' => $filename,
-                            'path' => $path,
-                            'url' => $logoUrl,
-                            'disk' => 'public',
-                            'full_path' => storage_path('app/public/' . $path),
+                            'logos_dir' => $logosDir,
+                            'logos_dir_exists' => is_dir($logosDir),
                         ]);
                     }
-                } else {
-                    \Log::error('Logo upload failed - storeAs returned false', [
-                        'franchise_id' => $franchise->id,
-                        'filename' => $filename,
-                    ]);
                 }
             } catch (\Exception $e) {
                 \Log::error('Logo upload exception', [
                     'franchise_id' => $franchise->id,
                     'error' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
                     'trace' => $e->getTraceAsString(),
                 ]);
             }
@@ -714,10 +734,20 @@ class FranchiseContextController extends Controller
             
             // Add debug info if available
             if (config('app.debug')) {
+                $logoPath = null;
+                $logoExists = false;
+                if ($franchise->logo_url) {
+                    $logoPath = storage_path('app/public' . str_replace('/storage', '', $franchise->logo_url));
+                    $logoExists = file_exists($logoPath);
+                }
+                
                 $response['_debug'] = [
                     'updated_fields' => array_keys($updateData),
                     'logo_url' => $franchise->logo_url,
-                    'storage_path' => $franchise->logo_url ? storage_path('app/public' . str_replace('/storage', '', $franchise->logo_url)) : null,
+                    'logo_disk_path' => $logoPath,
+                    'logo_file_exists' => $logoExists,
+                    'app_url' => config('app.url'),
+                    'storage_disk_url' => config('filesystems.disks.public.url'),
                 ];
             }
             
