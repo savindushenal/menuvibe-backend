@@ -209,6 +209,31 @@ Route::get('/deployment-status', function () {
     ]);
 });
 
+// Storage debug endpoint (no auth required - for troubleshooting)
+Route::get('/storage-debug', function () {
+    $storagePublicPath = storage_path('app/public');
+    $logosPath = $storagePublicPath . '/logos';
+    $publicStorageLink = public_path('storage');
+    $publicLogosPath = $publicStorageLink . '/logos';
+    
+    return response()->json([
+        'storage_path' => $storagePublicPath,
+        'storage_path_exists' => is_dir($storagePublicPath),
+        'logos_path' => $logosPath,
+        'logos_path_exists' => is_dir($logosPath),
+        'logos_files' => is_dir($logosPath) ? scandir($logosPath) : null,
+        'public_storage_link' => $publicStorageLink,
+        'public_storage_link_exists' => is_dir($publicStorageLink),
+        'public_storage_is_link' => is_link($publicStorageLink),
+        'public_storage_link_target' => is_link($publicStorageLink) ? readlink($publicStorageLink) : null,
+        'public_logos_path' => $publicLogosPath,
+        'public_logos_path_exists' => is_dir($publicLogosPath),
+        'public_logos_files' => is_dir($publicLogosPath) ? scandir($publicLogosPath) : null,
+        'app_url' => config('app.url'),
+        'storage_url' => config('filesystems.disks.public.url'),
+    ]);
+});
+
 // Manual auth routes (bypass EnsureFrontendRequestsAreStateful middleware)
 Route::get('/user', [AuthController::class, 'profileManual']);
 Route::get('/auth/contexts', [AuthController::class, 'getContexts']);
