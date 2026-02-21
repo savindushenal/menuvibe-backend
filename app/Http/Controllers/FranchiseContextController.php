@@ -572,52 +572,84 @@ class FranchiseContextController extends Controller
                     \Log::error('Logo file validation failed', [
                         'franchise_id' => $franchise->id,
                         'error' => $logo->getErrorMessage(),
+                        'error_code' => $logo->getError(),
                     ]);
-                } else {
-                    $filename = 'franchise_' . $franchise->id . '_' . time() . '.' . $logo->getClientOriginalExtension();
-                    
-                    // Ensure logos directory exists
-                    $logosDir = storage_path('app/public/logos');
-                    if (!is_dir($logosDir)) {
-                        mkdir($logosDir, 0755, true);
-                    }
-                    
-                    // Store the file to public disk
-                    $path = $logo->storeAs('logos', $filename, 'public');
-                    
-                    if ($path) {
-                        // Use full backend URL so frontend can fetch from correct domain
-                        $logoUrl = config('app.url') . '/storage/' . $path;
-                        $updateData['logo_url'] = $logoUrl;
-                        
-                        if (config('app.debug')) {
-                            \Log::info('Logo uploaded successfully', [
-                                'franchise_id' => $franchise->id,
-                                'filename' => $filename,
-                                'path' => $path,
-                                'url' => $logoUrl,
-                                'disk' => 'public',
-                                'full_path' => storage_path('app/public/' . $path),
-                                'file_exists' => file_exists(storage_path('app/public/' . $path)),
-                            ]);
-                        }
-                    } else {
-                        \Log::error('Logo upload failed - storeAs returned false', [
-                            'franchise_id' => $franchise->id,
-                            'filename' => $filename,
-                            'logos_dir' => $logosDir,
-                            'logos_dir_exists' => is_dir($logosDir),
-                        ]);
+                    throw new \Exception('Invalid file upload: ' . $logo->getErrorMessage());
+                }
+                
+                // Check file size
+                $maxSize = 2048 * 1024; // 2MB
+                if ($logo->getSize() > $maxSize) {
+                    throw new \Exception("File too large. Max size: 2MB");
+                }
+                
+                $filename = 'franchise_' . $franchise->id . '_' . time() . '.' . $logo->getClientOriginalExtension();
+                
+                // Ensure logos directory exists with proper permissions
+                $logosDir = storage_path('app/public/logos');
+                if (!is_dir($logosDir)) {
+                    if (!mkdir($logosDir, 0755, true)) {
+                        throw new \Exception("Failed to create logos directory: $logosDir");
                     }
                 }
+                
+                // Check if directory is writable
+                if (!is_writable($logosDir)) {
+                    \Log::error('Logos directory not writable', [
+                        'path' => $logosDir,
+                        'is_writable' => is_writable($logosDir),
+                        'permissions' => substr(sprintf('%o', fileperms($logosDir)), -4),
+                    ]);
+                    throw new \Exception("Logos directory is not writable");
+                }
+                
+                // Store the file to public disk
+                $path = $logo->storeAs('logos', $filename, 'public');
+                
+                if (!$path) {
+                    throw new \Exception("storeAs returned false or null");
+                }
+                
+                // Verify file was actually created
+                $fullPath = storage_path('app/public/' . $path);
+                if (!file_exists($fullPath)) {
+                    \Log::error('Logo file not found after upload', [
+                        'franchise_id' => $franchise->id,
+                        'path' => $path,
+                        'full_path' => $fullPath,
+                        'file_exists' => file_exists($fullPath),
+                    ]);
+                    throw new \Exception("File exists check failed: $fullPath");
+                }
+                
+                // Use full backend URL so frontend can fetch from correct domain
+                $logoUrl = config('app.url') . '/storage/' . $path;
+                $updateData['logo_url'] = $logoUrl;
+                
+                \Log::info('Logo uploaded successfully', [
+                    'franchise_id' => $franchise->id,
+                    'filename' => $filename,
+                    'path' => $path,
+                    'url' => $logoUrl,
+                    'disk' => 'public',
+                    'full_path' => $fullPath,
+                    'file_exists' => file_exists($fullPath),
+                    'file_size' => filesize($fullPath),
+                ]);
+                
             } catch (\Exception $e) {
-                \Log::error('Logo upload exception', [
+                \Log::error('Logo upload failed', [
                     'franchise_id' => $franchise->id,
                     'error' => $e->getMessage(),
                     'file' => $e->getFile(),
                     'line' => $e->getLine(),
-                    'trace' => $e->getTraceAsString(),
                 ]);
+                
+                // Return error response immediately
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Logo upload failed: ' . $e->getMessage()
+                ], 422);
             }
         }
         
