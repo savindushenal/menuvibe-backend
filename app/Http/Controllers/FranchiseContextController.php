@@ -554,6 +554,10 @@ class FranchiseContextController extends Controller
             'design_tokens' => 'nullable|array',
             'settings' => 'nullable|array',
             'logo' => 'nullable|image|mimes:jpeg,jpg,png,svg,webp|max:2048',
+        ], [], [
+            'website' => 'website URL',
+            'email' => 'contact email',
+            'logo' => 'logo image'
         ]);
 
         $updateData = [];
@@ -651,13 +655,44 @@ class FranchiseContextController extends Controller
             ]);
         }
 
-        $franchise->update($updateData);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Settings updated successfully',
-            'data' => $franchise->fresh()
-        ]);
+        try {
+            // Only update if we have data to update
+            if (!empty($updateData)) {
+                $franchise->update($updateData);
+                if (config('app.debug')) {
+                    \Log::info('Franchise updateSettings completed', [
+                        'franchise_id' => $franchise->id,
+                        'updated_fields' => array_keys($updateData),
+                    ]);
+                }
+            } else {
+                if (config('app.debug')) {
+                    \Log::warning('Franchise updateSettings: no data to update', [
+                        'franchise_id' => $franchise->id,
+                    ]);
+                }
+            }
+            
+            // Refresh and return updated franchise
+            $franchise = $franchise->fresh();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Settings updated successfully',
+                'data' => $franchise
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Franchise updateSettings error', [
+                'franchise_id' => $franchise->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating settings: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
