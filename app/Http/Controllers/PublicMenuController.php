@@ -4,12 +4,25 @@ namespace App\Http\Controllers;
 
 use App\Models\MenuEndpoint;
 use App\Models\MenuOffer;
+use App\Services\MenuResolver;
 use Illuminate\Http\Request;
 
 class PublicMenuController extends Controller
 {
+    protected MenuResolver $menuResolver;
+
+    public function __construct(MenuResolver $menuResolver)
+    {
+        $this->menuResolver = $menuResolver;
+    }
+
     /**
      * Get menu by short code (for customer scanning QR)
+     * 
+     * Enhanced to support multi-menu selection:
+     * - If multiple menus active at current time: return corridor payload
+     * - If single menu active: return that menu data
+     * - Fallback: return configured template menu
      */
     public function getMenu(Request $request, string $shortCode)
     {
@@ -38,6 +51,131 @@ class PublicMenuController extends Controller
         // Record scan
         $endpoint->recordScan();
 
+        // Try to resolve active menus using MenuResolver if location exists
+        if ($endpoint->location) {
+            $resolution = $this->menuResolver->resolve($endpoint->location);
+
+            // If multiple menus are active, return corridor payload
+            if ($resolution['action'] === 'corridor' && $resolution['menus']->isNotEmpty()) {
+                return $this->serveCorridorResponse($endpoint, $resolution);
+            }
+
+            // If single menu is active, serve that menu
+            if ($resolution['action'] === 'redirect' && $resolution['menu']) {
+                return $this->serveMenuResponse($endpoint, $resolution['menu']);
+            }
+        }
+
+        // Fallback: serve the configured template menu (legacy behavior)
+        return $this->serveTemplateMenuResponse($endpoint);
+    }
+
+        // Fallback: serve the configured template menu (legacy behavior)
+        return $this->serveTemplateMenuResponse($endpoint);
+    }
+
+    /**
+     * Serve corridor response when multiple menus are active
+     * Shows user a menu selection landing page
+     */
+    private function serveCorridorResponse(MenuEndpoint $endpoint, array $resolution)
+    {
+        return response()->json([
+            'success' => true,
+            'action' => 'corridor',
+            'data' => [
+                'location' => [
+                    'id' => $endpoint->location->id,
+                    'name' => $endpoint->location->name,
+                    'branch_name' => $endpoint->location->branch_name,
+                ],
+                'endpoint' => [
+                    'id' => $endpoint->id,
+                    'type' => $endpoint->type,
+                    'name' => $endpoint->identifier ?? 'Table ' . $endpoint->position,
+                    'table_number' => $endpoint->identifier,
+                ],
+                'menus' => $resolution['menus'],
+                'cache_ttl_seconds' => $resolution['cache_ttl_seconds'],
+                'next_change_at' => $resolution['next_change_at']?->toIso8601String(),
+            ],
+        ]);
+    }
+
+    /**
+     * Serve a specific menu by Model
+     */
+    private function serveMenuResponse(MenuEndpoint $endpoint, \App\Models\Menu $menu)
+    {
+        // Fetch menu categories and items
+        $categories = $menu->activeCategories()
+            ->with(['items' => function ($q) {
+                $q->where('is_available', true)->orderBy('sort_order');
+            }])
+            ->orderBy('sort_order')
+            ->get();
+
+        // Build menu data structure
+        $menuData = [
+            'id' => $menu->id,
+            'name' => $menu->name,
+            'slug' => $menu->slug,
+            'description' => $menu->description,
+            'style' => $menu->style ?? 'premium',
+            'currency' => $menu->currency,
+            'categories' => $categories->map(fn($cat) => [
+                'id' => $cat->id,
+                'name' => $cat->name,
+                'description' => $cat->description,
+                'image_url' => $cat->image_url,
+                'items' => $cat->items->map(fn($item) => [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'description' => $item->description,
+                    'price' => $item->price,
+                    'image_url' => $item->image_url,
+                    'is_available' => $item->is_available,
+                    'variations' => json_decode($item->variations, true) ?? [],
+                ]),
+            ]),
+        ];
+
+        $location = $endpoint->location;
+        $businessProfile = $endpoint->user_id ? 
+            \App\Models\BusinessProfile::where('user_id', $endpoint->user_id)->first() : null;
+
+        return response()->json([
+            'success' => true,
+            'action' => 'redirect',
+            'data' => [
+                'menu' => $menuData,
+                'location' => [
+                    'id' => $location->id,
+                    'name' => $location->name,
+                    'branch_name' => $location->branch_name,
+                    'phone' => $location->phone,
+                    'email' => $location->email,
+                ],
+                'business' => $businessProfile ? [
+                    'name' => $businessProfile->business_name,
+                    'logo_url' => $businessProfile->logo_url ?? $location->logo_url,
+                    'primary_color' => $businessProfile->primary_color ?? $location->primary_color,
+                    'secondary_color' => $businessProfile->secondary_color ?? $location->secondary_color,
+                ] : null,
+                'endpoint' => [
+                    'id' => $endpoint->id,
+                    'type' => $endpoint->type,
+                    'name' => $endpoint->identifier ?? 'Table',
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * Serve template menu (legacy fallback behavior)
+     */
+    private function serveTemplateMenuResponse(MenuEndpoint $endpoint)
+    {
         // Get menu with overrides applied
         $menu = $endpoint->getMenuWithOverrides();
 
@@ -70,7 +208,7 @@ class PublicMenuController extends Controller
         if ($businessProfile || $location) {
             $business = [
                 // Business name from BusinessProfile, fallback to location name
-                'name' => $businessProfile?->business_name ?? $location?->name ?? $endpoint->template->name,
+                'name' => $businessProfile?->business_name ?? $location?->name ?? $endpoint->template?->name,
                 // Branch/location name (for display like "Business Name - Branch Name")
                 'branch_name' => $location?->name ?? null,
                 'description' => $businessProfile?->description ?? $location?->description,
