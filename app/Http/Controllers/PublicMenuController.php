@@ -20,6 +20,7 @@ class PublicMenuController extends Controller
      * Get menu by short code (for customer scanning QR)
      * 
      * Enhanced to support multi-menu selection:
+     * - If menu_id parameter provided: serve that specific menu
      * - If multiple menus active at current time: return corridor payload
      * - If single menu active: return that menu data
      * - Fallback: return configured template menu
@@ -51,6 +52,19 @@ class PublicMenuController extends Controller
         // Record scan
         $endpoint->recordScan();
 
+        // If menu_id parameter is provided, force serve that menu
+        $requestedMenuId = $request->query('menu_id');
+        if ($requestedMenuId && $endpoint->location) {
+            $menu = $endpoint->location->menus()
+                ->active()
+                ->where('id', $requestedMenuId)
+                ->first();
+            
+            if ($menu) {
+                return $this->serveMenuResponse($endpoint, $menu);
+            }
+        }
+
         // Try to resolve active menus using MenuResolver if location exists
         if ($endpoint->location) {
             $resolution = $this->menuResolver->resolve($endpoint->location);
@@ -65,10 +79,6 @@ class PublicMenuController extends Controller
                 return $this->serveMenuResponse($endpoint, $resolution['menu']);
             }
         }
-
-        // Fallback: serve the configured template menu (legacy behavior)
-        return $this->serveTemplateMenuResponse($endpoint);
-    }
 
         // Fallback: serve the configured template menu (legacy behavior)
         return $this->serveTemplateMenuResponse($endpoint);
