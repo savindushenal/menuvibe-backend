@@ -34,6 +34,7 @@ class MenuItem extends Model
         'is_spicy',
         'spice_level',
         'variations',
+        'customizations',
         'addons',
         'sku',
         'calories',
@@ -52,6 +53,7 @@ class MenuItem extends Model
         'allergens' => 'array',
         'dietary_info' => 'array',
         'variations' => 'array',
+        'customizations' => 'array',
         'gallery_images' => 'array',
         'addons' => 'array',
     ];

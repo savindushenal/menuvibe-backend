@@ -171,6 +171,9 @@ class MenuItemController extends Controller
         if (isset($input['variations']) && is_string($input['variations'])) {
             $input['variations'] = json_decode($input['variations'], true) ?: null;
         }
+        if (isset($input['customizations']) && is_string($input['customizations'])) {
+            $input['customizations'] = json_decode($input['customizations'], true) ?: null;
+        }
         
         // Convert numeric strings
         if (isset($input['spice_level'])) {
@@ -200,6 +203,7 @@ class MenuItemController extends Controller
             'dietary_info' => 'nullable|array',
             'dietary_info.*' => 'string',
             'variations' => 'nullable|array',
+            'customizations' => 'nullable|array',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
@@ -340,6 +344,9 @@ class MenuItemController extends Controller
         if (isset($input['variations']) && is_string($input['variations'])) {
             $input['variations'] = json_decode($input['variations'], true) ?: null;
         }
+        if (isset($input['customizations']) && is_string($input['customizations'])) {
+            $input['customizations'] = json_decode($input['customizations'], true) ?: null;
+        }
         
         // Convert numeric strings
         if (isset($input['spice_level'])) {
@@ -367,6 +374,7 @@ class MenuItemController extends Controller
             'allergens' => 'nullable|array',
             'dietary_info' => 'nullable|array',
             'variations' => 'nullable|array',
+            'customizations' => 'nullable|array',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
