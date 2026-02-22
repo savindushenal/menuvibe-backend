@@ -147,6 +147,7 @@ class PublicMenuController extends Controller
                     'image_url' => $item->image_url,
                     'is_available' => $item->is_available,
                     'variations' => json_decode($item->variations, true) ?? [],
+                    'customizations' => json_decode($item->customizations, true) ?? [],
                 ]),
             ]),
         ];

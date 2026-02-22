@@ -36,6 +36,7 @@ class MenuTemplateItem extends Model
         'is_spicy',
         'spice_level',
         'variations',
+        'customizations',
         'addons',
         'sku',
     ];
@@ -54,6 +55,7 @@ class MenuTemplateItem extends Model
         'allergens' => 'array',
         'dietary_info' => 'array',
         'variations' => 'array',
+        'customizations' => 'array',
         'addons' => 'array',
     ];
 
@@ -179,6 +181,7 @@ class MenuTemplateItem extends Model
             'allergens' => $this->allergens,
             'dietary_info' => $this->dietary_info,
             'variations' => $this->variations,
+            'customizations' => $this->customizations,
             'addons' => $this->addons,
         ];
     }
