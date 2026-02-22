@@ -45,16 +45,7 @@ class MenuItemController extends Controller
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Get user's location
-        $currentLocation = $user->defaultLocation ?? $user->locations()->first();
-
-        if (!$currentLocation) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No location found'
-            ], Response::HTTP_NOT_FOUND);
-        }
-
+        // Find menu - check ownership through location relationship
         $menu = Menu::whereHas('location', function($query) use ($user) {
             $query->where('user_id', $user->id);
         })->find($menuId);
@@ -91,16 +82,7 @@ class MenuItemController extends Controller
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Get user's location
-        $currentLocation = $user->defaultLocation ?? $user->locations()->first();
-
-        if (!$currentLocation) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No location found'
-            ], Response::HTTP_NOT_FOUND);
-        }
-
+        // Find menu - check ownership through location relationship
         $menu = Menu::whereHas('location', function($query) use ($user) {
             $query->where('user_id', $user->id);
         })->find($menuId);
@@ -244,16 +226,7 @@ class MenuItemController extends Controller
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Get user's location
-        $currentLocation = $user->defaultLocation ?? $user->locations()->first();
-
-        if (!$currentLocation) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No location found'
-            ], Response::HTTP_NOT_FOUND);
-        }
-
+        // Find menu - check ownership through location relationship
         $menu = Menu::whereHas('location', function($query) use ($user) {
             $query->where('user_id', $user->id);
         })->find($menuId);
@@ -296,16 +269,7 @@ class MenuItemController extends Controller
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Get user's location
-        $currentLocation = $user->defaultLocation ?? $user->locations()->first();
-
-        if (!$currentLocation) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No location found'
-            ], Response::HTTP_NOT_FOUND);
-        }
-
+        // Find menu - check ownership through location relationship
         $menu = Menu::whereHas('location', function($query) use ($user) {
             $query->where('user_id', $user->id);
         })->find($menuId);
@@ -428,16 +392,7 @@ class MenuItemController extends Controller
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Get user's location
-        $currentLocation = $user->defaultLocation ?? $user->locations()->first();
-
-        if (!$currentLocation) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No location found'
-            ], Response::HTTP_NOT_FOUND);
-        }
-
+        // Find menu - check ownership through location relationship
         $menu = Menu::whereHas('location', function($query) use ($user) {
             $query->where('user_id', $user->id);
         })->find($menuId);
