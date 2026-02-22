@@ -187,7 +187,7 @@ class IssoDemoSeeder extends Seeder
                 'sort_order' => 5,
             ],
 
-            // Mains
+            // Mains - with customizations
             [
                 'category' => 'Mains',
                 'name' => 'Hot Butter',
@@ -199,7 +199,7 @@ class IssoDemoSeeder extends Seeder
                 'variations' => [
                     [
                         'id' => 'base_section',
-                        'name' => 'Select Base (Select one)',
+                        'name' => 'Select Base (required)',
                         'type' => 'section',
                         'required' => true,
                         'min_selections' => 1,
@@ -211,20 +211,8 @@ class IssoDemoSeeder extends Seeder
                         ]
                     ],
                     [
-                        'id' => 'style_section',
-                        'name' => 'Style (Select one)',
-                        'type' => 'section',
-                        'required' => true,
-                        'min_selections' => 1,
-                        'max_selections' => 1,
-                        'options' => [
-                            ['id' => 'sri_lankan', 'name' => 'Sri Lankan', 'price_modifier' => 0],
-                            ['id' => 'indian', 'name' => 'Indian Spiced', 'price_modifier' => 150],
-                        ]
-                    ],
-                    [
                         'id' => 'sides_section',
-                        'name' => 'Sides (Select one)',
+                        'name' => 'Choose Sides (required)',
                         'type' => 'section',
                         'required' => true,
                         'min_selections' => 1,
@@ -233,21 +221,42 @@ class IssoDemoSeeder extends Seeder
                             ['id' => 'egg_fried_rice', 'name' => 'Egg Fried Rice', 'price_modifier' => 350],
                             ['id' => 'basmati_rice', 'name' => 'Basmati Rice', 'price_modifier' => 300],
                             ['id' => 'saffron_rice', 'name' => 'Saffron Rice', 'price_modifier' => 400],
-                            ['id' => 'noodles', 'name' => 'Egg Noodles', 'price_modifier' => 350],
                         ]
                     ],
                     [
-                        'id' => 'extra_portion_section',
-                        'name' => 'Extra Portions',
+                        'id' => 'extras_section',
+                        'name' => 'Add Extras (optional)',
                         'type' => 'section',
                         'required' => false,
                         'min_selections' => 0,
-                        'max_selections' => 3,
+                        'max_selections' => 2,
                         'options' => [
-                            ['id' => 'extra_prawns', 'name' => 'Extra Prawns (6 pcs)', 'price_modifier' => 850],
                             ['id' => 'extra_sauce', 'name' => 'Extra Butter Sauce', 'price_modifier' => 200],
-                            ['id' => 'extra_rice', 'name' => 'Extra Rice Portion', 'price_modifier' => 250],
-                            ['id' => 'extra_bread', 'name' => 'Garlic Bread', 'price_modifier' => 450],
+                            ['id' => 'garlic_bread', 'name' => 'Garlic Bread', 'price_modifier' => 450],
+                        ]
+                    ]
+                ]
+            ],
+            [
+                'category' => 'Mains',
+                'name' => 'Garlic Butter Prawns',
+                'description' => 'Fresh prawns sautéed in fragrant garlic butter with herbs.',
+                'price' => 2750,
+                'image_url' => 'https://app.menuvire.com/isso/Garlic%20Butter.jpg',
+                'is_featured' => false,
+                'sort_order' => 2,
+                'variations' => [
+                    [
+                        'id' => 'spice_level_section',
+                        'name' => 'Spice Level (required)',
+                        'type' => 'section',
+                        'required' => true,
+                        'min_selections' => 1,
+                        'max_selections' => 1,
+                        'options' => [
+                            ['id' => 'mild', 'name' => 'Mild', 'price_modifier' => 0],
+                            ['id' => 'medium', 'name' => 'Medium', 'price_modifier' => 0],
+                            ['id' => 'spicy', 'name' => 'Spicy', 'price_modifier' => 0],
                         ]
                     ]
                 ]
@@ -262,8 +271,8 @@ class IssoDemoSeeder extends Seeder
                 'sort_order' => 2,
                 'variations' => [
                     [
-                        'id' => 'style_section',
-                        'name' => 'Style (Select one)',
+                        'id' => 'doneness_section',
+                        'name' => 'Doneness (required)',
                         'type' => 'section',
                         'required' => true,
                         'min_selections' => 1,
@@ -271,46 +280,90 @@ class IssoDemoSeeder extends Seeder
                         'options' => [
                             ['id' => 'rare', 'name' => 'Rare', 'price_modifier' => 0],
                             ['id' => 'medium_rare', 'name' => 'Medium Rare', 'price_modifier' => 100],
+                            ['id' => 'medium', 'name' => 'Medium', 'price_modifier' => 150],
                         ]
                     ],
                     [
-                        'id' => 'sides_section',
-                        'name' => 'Sides (Select one)',
-                        'type' => 'section',
-                        'required' => true,
-                        'min_selections' => 1,
-                        'max_selections' => 1,
-                        'options' => [
-                            ['id' => 'wasabi_rice', 'name' => 'Wasabi Rice', 'price_modifier' => 300],
-                            ['id' => 'tempura_noodles', 'name' => 'Tempura Noodles', 'price_modifier' => 350],
-                            ['id' => 'cucumber_salad', 'name' => 'Cucumber Salad', 'price_modifier' => 250],
-                        ]
-                    ],
-                    [
-                        'id' => 'extra_portion_section',
-                        'name' => 'Add-ons',
+                        'id' => 'sauce_section',
+                        'name' => 'Choose Sauce (optional)',
                         'type' => 'section',
                         'required' => false,
                         'min_selections' => 0,
                         'max_selections' => 2,
                         'options' => [
-                            ['id' => 'extra_tuna', 'name' => 'Extra Tuna Serving', 'price_modifier' => 950],
-                            ['id' => 'ponzu_sauce', 'name' => 'Extra Ponzu Sauce', 'price_modifier' => 150],
+                            ['id' => 'ponzu_sauce', 'name' => 'Ponzu Sauce', 'price_modifier' => 100],
+                            ['id' => 'ginger_sauce', 'name' => 'Ginger Sauce', 'price_modifier' => 100],
+                            ['id' => 'soy_reduction', 'name' => 'Soy Reduction', 'price_modifier' => 75],
                         ]
                     ]
                 ]
             ],
+            [
+                'category' => 'Mains',
+                'name' => 'Grilled Fish Steak',
+                'description' => 'Premium grilled fish steak with fresh herbs and lemon butter.',
+                'price' => 2950,
+                'image_url' => 'https://app.menuvire.com/isso/Fish%20Steak.jpg',
+                'is_featured' => false,
+                'sort_order' => 3,
+                // No variations - plain item
+            ],
 
-            // Special Combos
+            // Salads - no customizations
+            [
+                'category' => 'Salads',
+                'name' => 'Prawn & Mango Salad',
+                'description' => 'Fresh green salad with succulent prawns and sweet mango pieces.',
+                'price' => 1950,
+                'image_url' => 'https://app.menuvire.com/isso/Prawn%20Mango%20Salad.jpg',
+                'is_featured' => false,
+                'sort_order' => 1,
+            ],
+            [
+                'category' => 'Salads',
+                'name' => 'Tuna & Avocado Salad',
+                'description' => 'Tender tuna chunks with creamy avocado in a light dressing.',
+                'price' => 2150,
+                'image_url' => 'https://app.menuvire.com/isso/Tuna%20Avocado%20Salad.jpg',
+                'is_featured' => false,
+                'sort_order' => 2,
+            ],
+
+            // Special Combos - with simple customization
             [
                 'category' => 'Special Combos',
                 'name' => 'Seafood Combo Special',
                 'description' => 'Limited time offer! A selection of our best seafood dishes at a special price.',
                 'price' => 3499,
-                'image_url' => 'https://app.menuvire.com/isso/Hot%20Butter.jpg',
+                'image_url' => 'https://app.menuvire.com/isso/Seafood%20Combo.jpg',
                 'is_featured' => true,
                 'is_available' => true,
                 'sort_order' => 1,
+                'variations' => [
+                    [
+                        'id' => 'portion_section',
+                        'name' => 'Choose Portion (required)',
+                        'type' => 'section',
+                        'required' => true,
+                        'min_selections' => 1,
+                        'max_selections' => 1,
+                        'options' => [
+                            ['id' => 'regular', 'name' => 'Regular (2 people)', 'price_modifier' => 0],
+                            ['id' => 'large', 'name' => 'Large (4 people)', 'price_modifier' => 1500],
+                        ]
+                    ]
+                ]
+            ],
+            [
+                'category' => 'Special Combos',
+                'name' => 'Family Seafood Platter',
+                'description' => 'Assorted seafood cooked various ways, perfect for sharing.',
+                'price' => 5999,
+                'image_url' => 'https://app.menuvire.com/isso/Family%20Platter.jpg',
+                'is_featured' => true,
+                'is_available' => true,
+                'sort_order' => 2,
+                // No variations - fixed offering
             ],
         ];
 
