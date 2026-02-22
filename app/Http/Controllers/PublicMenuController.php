@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 
 class PublicMenuController extends Controller
 {
+    // Handles menu endpoints with multi-menu support
     protected MenuResolver $menuResolver;
 
     public function __construct(MenuResolver $menuResolver)

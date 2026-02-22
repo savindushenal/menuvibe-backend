@@ -33,7 +33,7 @@ class IssoDemoSeeder extends Seeder
 
         // Set design tokens for Isso brand
         $isso->design_tokens = [
-            'template' => 'isso-seafood', // Template identifier for frontend
+            'template' => 'isso/demo', // Template identifier for frontend (demo variant)
             'brand' => [
                 'name' => 'ISSO',
                 'tagline' => 'Experience ISSO, a home-grown Sri Lankan seafood restaurant chain offering export-quality prawns and more.',
@@ -196,6 +196,61 @@ class IssoDemoSeeder extends Seeder
                 'image_url' => 'https://app.menuvire.com/isso/Hot%20Butter.jpg',
                 'is_featured' => true,
                 'sort_order' => 1,
+                'variations' => [
+                    [
+                        'id' => 'base_section',
+                        'name' => 'Select Base (Select one)',
+                        'type' => 'section',
+                        'required' => true,
+                        'min_selections' => 1,
+                        'max_selections' => 1,
+                        'options' => [
+                            ['id' => 'prawns', 'name' => 'Prawns', 'price_modifier' => 0],
+                            ['id' => 'cuttlefish', 'name' => 'Cuttlefish', 'price_modifier' => -200],
+                            ['id' => 'mixed', 'name' => 'Mixed Seafood', 'price_modifier' => 100],
+                        ]
+                    ],
+                    [
+                        'id' => 'style_section',
+                        'name' => 'Style (Select one)',
+                        'type' => 'section',
+                        'required' => true,
+                        'min_selections' => 1,
+                        'max_selections' => 1,
+                        'options' => [
+                            ['id' => 'sri_lankan', 'name' => 'Sri Lankan', 'price_modifier' => 0],
+                            ['id' => 'indian', 'name' => 'Indian Spiced', 'price_modifier' => 150],
+                        ]
+                    ],
+                    [
+                        'id' => 'sides_section',
+                        'name' => 'Sides (Select one)',
+                        'type' => 'section',
+                        'required' => true,
+                        'min_selections' => 1,
+                        'max_selections' => 1,
+                        'options' => [
+                            ['id' => 'egg_fried_rice', 'name' => 'Egg Fried Rice', 'price_modifier' => 350],
+                            ['id' => 'basmati_rice', 'name' => 'Basmati Rice', 'price_modifier' => 300],
+                            ['id' => 'saffron_rice', 'name' => 'Saffron Rice', 'price_modifier' => 400],
+                            ['id' => 'noodles', 'name' => 'Egg Noodles', 'price_modifier' => 350],
+                        ]
+                    ],
+                    [
+                        'id' => 'extra_portion_section',
+                        'name' => 'Extra Portions',
+                        'type' => 'section',
+                        'required' => false,
+                        'min_selections' => 0,
+                        'max_selections' => 3,
+                        'options' => [
+                            ['id' => 'extra_prawns', 'name' => 'Extra Prawns (6 pcs)', 'price_modifier' => 850],
+                            ['id' => 'extra_sauce', 'name' => 'Extra Butter Sauce', 'price_modifier' => 200],
+                            ['id' => 'extra_rice', 'name' => 'Extra Rice Portion', 'price_modifier' => 250],
+                            ['id' => 'extra_bread', 'name' => 'Garlic Bread', 'price_modifier' => 450],
+                        ]
+                    ]
+                ]
             ],
             [
                 'category' => 'Mains',
@@ -205,6 +260,45 @@ class IssoDemoSeeder extends Seeder
                 'image_url' => 'https://app.menuvire.com/isso/Black%20Pepper%20Crusted%20Yellow%20Fin%20Tuna%20Tataki.jpg',
                 'is_featured' => true,
                 'sort_order' => 2,
+                'variations' => [
+                    [
+                        'id' => 'style_section',
+                        'name' => 'Style (Select one)',
+                        'type' => 'section',
+                        'required' => true,
+                        'min_selections' => 1,
+                        'max_selections' => 1,
+                        'options' => [
+                            ['id' => 'rare', 'name' => 'Rare', 'price_modifier' => 0],
+                            ['id' => 'medium_rare', 'name' => 'Medium Rare', 'price_modifier' => 100],
+                        ]
+                    ],
+                    [
+                        'id' => 'sides_section',
+                        'name' => 'Sides (Select one)',
+                        'type' => 'section',
+                        'required' => true,
+                        'min_selections' => 1,
+                        'max_selections' => 1,
+                        'options' => [
+                            ['id' => 'wasabi_rice', 'name' => 'Wasabi Rice', 'price_modifier' => 300],
+                            ['id' => 'tempura_noodles', 'name' => 'Tempura Noodles', 'price_modifier' => 350],
+                            ['id' => 'cucumber_salad', 'name' => 'Cucumber Salad', 'price_modifier' => 250],
+                        ]
+                    ],
+                    [
+                        'id' => 'extra_portion_section',
+                        'name' => 'Add-ons',
+                        'type' => 'section',
+                        'required' => false,
+                        'min_selections' => 0,
+                        'max_selections' => 2,
+                        'options' => [
+                            ['id' => 'extra_tuna', 'name' => 'Extra Tuna Serving', 'price_modifier' => 950],
+                            ['id' => 'ponzu_sauce', 'name' => 'Extra Ponzu Sauce', 'price_modifier' => 150],
+                        ]
+                    ]
+                ]
             ],
 
             // Special Combos
@@ -238,6 +332,7 @@ class IssoDemoSeeder extends Seeder
                     'is_available' => $itemData['is_available'] ?? true,
                     'is_featured' => $itemData['is_featured'],
                     'sort_order' => $itemData['sort_order'],
+                    'variations' => $itemData['variations'] ?? [],
                 ]
             );
             echo "  ✓ Item: {$itemData['name']} (LKR {$itemData['price']})\n";
