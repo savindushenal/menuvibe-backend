@@ -106,6 +106,14 @@ class Franchise extends Model
     }
 
     /**
+     * Get all franchise accounts (new system).
+     */
+    public function accounts(): HasMany
+    {
+        return $this->hasMany(FranchiseAccount::class);
+    }
+
+    /**
      * Get all pricing configurations for this franchise.
      */
     public function pricing(): HasMany
