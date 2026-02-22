@@ -45,10 +45,21 @@ class MenuItemController extends Controller
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Find menu - check ownership through location relationship
-        $menu = Menu::whereHas('location', function($query) use ($user) {
-            $query->where('user_id', $user->id);
-        })->find($menuId);
+        // Find menu - check both business and franchise ownership
+        $menu = Menu::where('id', $menuId)
+            ->where(function($query) use ($user) {
+                // Business menu: direct user ownership
+                $query->whereHas('location', function($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                })
+                // OR Franchise menu: user has franchise access
+                ->orWhereHas('location', function($q) use ($user) {
+                    $q->whereNotNull('franchise_id')
+                      ->whereHas('franchise.accounts', function($f) use ($user) {
+                          $f->where('user_id', $user->id)->where('is_active', true);
+                      });
+                });
+            })->first();
 
         if (!$menu) {
             return response()->json([
@@ -82,10 +93,21 @@ class MenuItemController extends Controller
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Find menu - check ownership through location relationship
-        $menu = Menu::whereHas('location', function($query) use ($user) {
-            $query->where('user_id', $user->id);
-        })->find($menuId);
+        // Find menu - check both business and franchise ownership
+        $menu = Menu::where('id', $menuId)
+            ->where(function($query) use ($user) {
+                // Business menu: direct user ownership
+                $query->whereHas('location', function($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                })
+                // OR Franchise menu: user has franchise access
+                ->orWhereHas('location', function($q) use ($user) {
+                    $q->whereNotNull('franchise_id')
+                      ->whereHas('franchise.accounts', function($f) use ($user) {
+                          $f->where('user_id', $user->id)->where('is_active', true);
+                      });
+                });
+            })->first();
 
         if (!$menu) {
             return response()->json([
@@ -226,10 +248,21 @@ class MenuItemController extends Controller
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Find menu - check ownership through location relationship
-        $menu = Menu::whereHas('location', function($query) use ($user) {
-            $query->where('user_id', $user->id);
-        })->find($menuId);
+        // Find menu - check both business and franchise ownership
+        $menu = Menu::where('id', $menuId)
+            ->where(function($query) use ($user) {
+                // Business menu: direct user ownership
+                $query->whereHas('location', function($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                })
+                // OR Franchise menu: user has franchise access
+                ->orWhereHas('location', function($q) use ($user) {
+                    $q->whereNotNull('franchise_id')
+                      ->whereHas('franchise.accounts', function($f) use ($user) {
+                          $f->where('user_id', $user->id)->where('is_active', true);
+                      });
+                });
+            })->first();
 
         if (!$menu) {
             return response()->json([
@@ -269,10 +302,21 @@ class MenuItemController extends Controller
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Find menu - check ownership through location relationship
-        $menu = Menu::whereHas('location', function($query) use ($user) {
-            $query->where('user_id', $user->id);
-        })->find($menuId);
+        // Find menu - check both business and franchise ownership
+        $menu = Menu::where('id', $menuId)
+            ->where(function($query) use ($user) {
+                // Business menu: direct user ownership
+                $query->whereHas('location', function($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                })
+                // OR Franchise menu: user has franchise access
+                ->orWhereHas('location', function($q) use ($user) {
+                    $q->whereNotNull('franchise_id')
+                      ->whereHas('franchise.accounts', function($f) use ($user) {
+                          $f->where('user_id', $user->id)->where('is_active', true);
+                      });
+                });
+            })->first();
 
         if (!$menu) {
             return response()->json([
@@ -392,10 +436,21 @@ class MenuItemController extends Controller
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Find menu - check ownership through location relationship
-        $menu = Menu::whereHas('location', function($query) use ($user) {
-            $query->where('user_id', $user->id);
-        })->find($menuId);
+        // Find menu - check both business and franchise ownership
+        $menu = Menu::where('id', $menuId)
+            ->where(function($query) use ($user) {
+                // Business menu: direct user ownership
+                $query->whereHas('location', function($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                })
+                // OR Franchise menu: user has franchise access
+                ->orWhereHas('location', function($q) use ($user) {
+                    $q->whereNotNull('franchise_id')
+                      ->whereHas('franchise.accounts', function($f) use ($user) {
+                          $f->where('user_id', $user->id)->where('is_active', true);
+                      });
+                });
+            })->first();
 
         if (!$menu) {
             return response()->json([
@@ -435,9 +490,21 @@ class MenuItemController extends Controller
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        $menu = Menu::whereHas('location', function($query) use ($user) {
-            $query->where('user_id', $user->id);
-        })->find($menuId);
+        // Find menu - check both business and franchise ownership
+        $menu = Menu::where('id', $menuId)
+            ->where(function($query) use ($user) {
+                // Business menu: direct user ownership
+                $query->whereHas('location', function($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                })
+                // OR Franchise menu: user has franchise access
+                ->orWhereHas('location', function($q) use ($user) {
+                    $q->whereNotNull('franchise_id')
+                      ->whereHas('franchise.accounts', function($f) use ($user) {
+                          $f->where('user_id', $user->id)->where('is_active', true);
+                      });
+                });
+            })->first();
 
         if (!$menu) {
             return response()->json([
@@ -478,9 +545,21 @@ class MenuItemController extends Controller
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        $menu = Menu::whereHas('location', function($query) use ($user) {
-            $query->where('user_id', $user->id);
-        })->find($menuId);
+        // Find menu - check both business and franchise ownership
+        $menu = Menu::where('id', $menuId)
+            ->where(function($query) use ($user) {
+                // Business menu: direct user ownership
+                $query->whereHas('location', function($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                })
+                // OR Franchise menu: user has franchise access
+                ->orWhereHas('location', function($q) use ($user) {
+                    $q->whereNotNull('franchise_id')
+                      ->whereHas('franchise.accounts', function($f) use ($user) {
+                          $f->where('user_id', $user->id)->where('is_active', true);
+                      });
+                });
+            })->first();
 
         if (!$menu) {
             return response()->json([
