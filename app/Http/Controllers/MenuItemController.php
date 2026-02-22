@@ -32,21 +32,18 @@ class MenuItemController extends Controller
     }
 
     /**
-     * Display a listing of menu items for a specific menu.
+     * Find a menu with proper access control
+     * Admin roles have full access, others need ownership or franchise membership
      */
-    public function index(Request $request, $menuId)
+    private function findMenuWithAccess($menuId, $user)
     {
-        $user = $this->getUserFromToken($request);
-        
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthenticated'
-            ], Response::HTTP_UNAUTHORIZED);
+        // Super admin, admin, and support team have full access to all menus
+        if (in_array($user->role, ['super_admin', 'admin', 'support_team'])) {
+            return Menu::find($menuId);
         }
 
-        // Find menu - check both business and franchise ownership
-        $menu = Menu::where('id', $menuId)
+        // Regular users need ownership or franchise access
+        return Menu::where('id', $menuId)
             ->where(function($query) use ($user) {
                 // Business menu: direct user ownership
                 $query->whereHas('location', function($q) use ($user) {
@@ -60,6 +57,24 @@ class MenuItemController extends Controller
                       });
                 });
             })->first();
+    }
+
+    /**
+     * Display a listing of menu items for a specific menu.
+     */
+    public function index(Request $request, $menuId)
+    {
+        $user = $this->getUserFromToken($request);
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated'
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        // Find menu with access control (admins have full access)
+        $menu = $this->findMenuWithAccess($menuId, $user);
 
         if (!$menu) {
             return response()->json([
@@ -93,21 +108,8 @@ class MenuItemController extends Controller
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Find menu - check both business and franchise ownership
-        $menu = Menu::where('id', $menuId)
-            ->where(function($query) use ($user) {
-                // Business menu: direct user ownership
-                $query->whereHas('location', function($q) use ($user) {
-                    $q->where('user_id', $user->id);
-                })
-                // OR Franchise menu: user has franchise access
-                ->orWhereHas('location', function($q) use ($user) {
-                    $q->whereNotNull('franchise_id')
-                      ->whereHas('franchise.accounts', function($f) use ($user) {
-                          $f->where('user_id', $user->id)->where('is_active', true);
-                      });
-                });
-            })->first();
+        // Find menu with access control (admins have full access)
+        $menu = $this->findMenuWithAccess($menuId, $user);
 
         if (!$menu) {
             return response()->json([
@@ -248,21 +250,8 @@ class MenuItemController extends Controller
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Find menu - check both business and franchise ownership
-        $menu = Menu::where('id', $menuId)
-            ->where(function($query) use ($user) {
-                // Business menu: direct user ownership
-                $query->whereHas('location', function($q) use ($user) {
-                    $q->where('user_id', $user->id);
-                })
-                // OR Franchise menu: user has franchise access
-                ->orWhereHas('location', function($q) use ($user) {
-                    $q->whereNotNull('franchise_id')
-                      ->whereHas('franchise.accounts', function($f) use ($user) {
-                          $f->where('user_id', $user->id)->where('is_active', true);
-                      });
-                });
-            })->first();
+        // Find menu with access control (admins have full access)
+        $menu = $this->findMenuWithAccess($menuId, $user);
 
         if (!$menu) {
             return response()->json([
@@ -302,21 +291,8 @@ class MenuItemController extends Controller
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Find menu - check both business and franchise ownership
-        $menu = Menu::where('id', $menuId)
-            ->where(function($query) use ($user) {
-                // Business menu: direct user ownership
-                $query->whereHas('location', function($q) use ($user) {
-                    $q->where('user_id', $user->id);
-                })
-                // OR Franchise menu: user has franchise access
-                ->orWhereHas('location', function($q) use ($user) {
-                    $q->whereNotNull('franchise_id')
-                      ->whereHas('franchise.accounts', function($f) use ($user) {
-                          $f->where('user_id', $user->id)->where('is_active', true);
-                      });
-                });
-            })->first();
+        // Find menu with access control (admins have full access)
+        $menu = $this->findMenuWithAccess($menuId, $user);
 
         if (!$menu) {
             return response()->json([
@@ -436,21 +412,8 @@ class MenuItemController extends Controller
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Find menu - check both business and franchise ownership
-        $menu = Menu::where('id', $menuId)
-            ->where(function($query) use ($user) {
-                // Business menu: direct user ownership
-                $query->whereHas('location', function($q) use ($user) {
-                    $q->where('user_id', $user->id);
-                })
-                // OR Franchise menu: user has franchise access
-                ->orWhereHas('location', function($q) use ($user) {
-                    $q->whereNotNull('franchise_id')
-                      ->whereHas('franchise.accounts', function($f) use ($user) {
-                          $f->where('user_id', $user->id)->where('is_active', true);
-                      });
-                });
-            })->first();
+        // Find menu with access control (admins have full access)
+        $menu = $this->findMenuWithAccess($menuId, $user);
 
         if (!$menu) {
             return response()->json([
@@ -490,21 +453,8 @@ class MenuItemController extends Controller
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Find menu - check both business and franchise ownership
-        $menu = Menu::where('id', $menuId)
-            ->where(function($query) use ($user) {
-                // Business menu: direct user ownership
-                $query->whereHas('location', function($q) use ($user) {
-                    $q->where('user_id', $user->id);
-                })
-                // OR Franchise menu: user has franchise access
-                ->orWhereHas('location', function($q) use ($user) {
-                    $q->whereNotNull('franchise_id')
-                      ->whereHas('franchise.accounts', function($f) use ($user) {
-                          $f->where('user_id', $user->id)->where('is_active', true);
-                      });
-                });
-            })->first();
+        // Find menu with access control (admins have full access)
+        $menu = $this->findMenuWithAccess($menuId, $user);
 
         if (!$menu) {
             return response()->json([
@@ -545,21 +495,8 @@ class MenuItemController extends Controller
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Find menu - check both business and franchise ownership
-        $menu = Menu::where('id', $menuId)
-            ->where(function($query) use ($user) {
-                // Business menu: direct user ownership
-                $query->whereHas('location', function($q) use ($user) {
-                    $q->where('user_id', $user->id);
-                })
-                // OR Franchise menu: user has franchise access
-                ->orWhereHas('location', function($q) use ($user) {
-                    $q->whereNotNull('franchise_id')
-                      ->whereHas('franchise.accounts', function($f) use ($user) {
-                          $f->where('user_id', $user->id)->where('is_active', true);
-                      });
-                });
-            })->first();
+        // Find menu with access control (admins have full access)
+        $menu = $this->findMenuWithAccess($menuId, $user);
 
         if (!$menu) {
             return response()->json([
