@@ -148,40 +148,7 @@ class MenuItemController extends Controller
         }
 
         // Convert FormData string values to proper types
-        $input = $request->all();
-        
-        // Convert boolean strings to actual booleans
-        if (isset($input['is_available'])) {
-            $input['is_available'] = filter_var($input['is_available'], FILTER_VALIDATE_BOOLEAN);
-        }
-        if (isset($input['is_featured'])) {
-            $input['is_featured'] = filter_var($input['is_featured'], FILTER_VALIDATE_BOOLEAN);
-        }
-        if (isset($input['is_spicy'])) {
-            $input['is_spicy'] = filter_var($input['is_spicy'], FILTER_VALIDATE_BOOLEAN);
-        }
-        
-        // Convert JSON string arrays to actual arrays
-        if (isset($input['allergens']) && is_string($input['allergens'])) {
-            $input['allergens'] = json_decode($input['allergens'], true) ?: [];
-        }
-        if (isset($input['dietary_info']) && is_string($input['dietary_info'])) {
-            $input['dietary_info'] = json_decode($input['dietary_info'], true) ?: [];
-        }
-        if (isset($input['variations']) && is_string($input['variations'])) {
-            $input['variations'] = json_decode($input['variations'], true) ?: null;
-        }
-        if (isset($input['customizations']) && is_string($input['customizations'])) {
-            $input['customizations'] = json_decode($input['customizations'], true) ?: null;
-        }
-        
-        // Convert numeric strings
-        if (isset($input['spice_level'])) {
-            $input['spice_level'] = $input['spice_level'] === '0' ? null : (int)$input['spice_level'];
-        }
-        if (isset($input['preparation_time'])) {
-            $input['preparation_time'] = $input['preparation_time'] ? (int)$input['preparation_time'] : null;
-        }
+        $input = $this->transformFormInput($request->all());
 
                 $validator = Validator::make($input, [
             'name' => 'required|string|max:255',
@@ -323,38 +290,7 @@ class MenuItemController extends Controller
             'input' => $input
         ]);
         
-        // Convert boolean strings to actual booleans
-        if (isset($input['is_available'])) {
-            $input['is_available'] = filter_var($input['is_available'], FILTER_VALIDATE_BOOLEAN);
-        }
-        if (isset($input['is_featured'])) {
-            $input['is_featured'] = filter_var($input['is_featured'], FILTER_VALIDATE_BOOLEAN);
-        }
-        if (isset($input['is_spicy'])) {
-            $input['is_spicy'] = filter_var($input['is_spicy'], FILTER_VALIDATE_BOOLEAN);
-        }
-        
-        // Convert JSON string arrays to actual arrays
-        if (isset($input['allergens']) && is_string($input['allergens'])) {
-            $input['allergens'] = json_decode($input['allergens'], true) ?: [];
-        }
-        if (isset($input['dietary_info']) && is_string($input['dietary_info'])) {
-            $input['dietary_info'] = json_decode($input['dietary_info'], true) ?: [];
-        }
-        if (isset($input['variations']) && is_string($input['variations'])) {
-            $input['variations'] = json_decode($input['variations'], true) ?: null;
-        }
-        if (isset($input['customizations']) && is_string($input['customizations'])) {
-            $input['customizations'] = json_decode($input['customizations'], true) ?: null;
-        }
-        
-        // Convert numeric strings
-        if (isset($input['spice_level'])) {
-            $input['spice_level'] = $input['spice_level'] === '0' ? null : (int)$input['spice_level'];
-        }
-        if (isset($input['preparation_time'])) {
-            $input['preparation_time'] = $input['preparation_time'] ? (int)$input['preparation_time'] : null;
-        }
+        $input = $this->transformFormInput($input);
 
         $validator = Validator::make($input, [
             'name' => 'sometimes|string|max:255',
@@ -545,5 +481,49 @@ class MenuItemController extends Controller
                 'message' => 'Failed to reorder menu items'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     * Transform FormData input values to proper types
+     * 
+     * @param array $input
+     * @return array
+     */
+    private function transformFormInput(array $input): array
+    {
+        // Convert boolean strings to actual booleans
+        if (isset($input['is_available'])) {
+            $input['is_available'] = filter_var($input['is_available'], FILTER_VALIDATE_BOOLEAN);
+        }
+        if (isset($input['is_featured'])) {
+            $input['is_featured'] = filter_var($input['is_featured'], FILTER_VALIDATE_BOOLEAN);
+        }
+        if (isset($input['is_spicy'])) {
+            $input['is_spicy'] = filter_var($input['is_spicy'], FILTER_VALIDATE_BOOLEAN);
+        }
+        
+        // Convert JSON string arrays to actual arrays
+        if (isset($input['allergens']) && is_string($input['allergens'])) {
+            $input['allergens'] = json_decode($input['allergens'], true) ?: [];
+        }
+        if (isset($input['dietary_info']) && is_string($input['dietary_info'])) {
+            $input['dietary_info'] = json_decode($input['dietary_info'], true) ?: [];
+        }
+        if (isset($input['variations']) && is_string($input['variations'])) {
+            $input['variations'] = json_decode($input['variations'], true) ?: null;
+        }
+        if (isset($input['customizations']) && is_string($input['customizations'])) {
+            $input['customizations'] = json_decode($input['customizations'], true) ?: null;
+        }
+        
+        // Convert numeric strings
+        if (isset($input['spice_level'])) {
+            $input['spice_level'] = $input['spice_level'] === '0' ? null : (int)$input['spice_level'];
+        }
+        if (isset($input['preparation_time'])) {
+            $input['preparation_time'] = $input['preparation_time'] ? (int)$input['preparation_time'] : null;
+        }
+
+        return $input;
     }
 }
