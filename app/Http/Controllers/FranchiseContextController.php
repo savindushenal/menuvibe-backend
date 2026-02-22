@@ -378,6 +378,53 @@ class FranchiseContextController extends Controller
     }
 
     /**
+     * Delete a branch menu
+     */
+    public function deleteMenu(Request $request, string $franchiseSlug, int $menuId)
+    {
+        $franchise = $request->get('franchise');
+        $role = $request->get('franchise_role');
+
+        // Only owners and admins can delete menus
+        if (!in_array($role, ['owner', 'franchise_owner', 'admin', 'franchise_admin'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to delete menus'
+            ], 403);
+        }
+
+        $menu = Menu::whereHas('location', function ($q) use ($franchise) {
+            $q->where('franchise_id', $franchise->id);
+        })->find($menuId);
+
+        if (!$menu) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Menu not found'
+            ], 404);
+        }
+
+        // Delete menu items first
+        \App\Models\MenuItem::where('menu_id', $menuId)->delete();
+
+        // Delete menu categories
+        \App\Models\MenuCategory::where('menu_id', $menuId)->delete();
+
+        // Delete menu overrides
+        if ($menu->location_id) {
+            \App\Models\BranchMenuOverride::where('location_id', $menu->location_id)->delete();
+        }
+
+        // Delete the menu
+        $menu->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Menu deleted successfully'
+        ]);
+    }
+
+    /**
      * Get franchise staff/team members
      */
     public function staff(Request $request, string $franchiseSlug)

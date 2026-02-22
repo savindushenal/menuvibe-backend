@@ -361,6 +361,7 @@ Route::prefix('franchise/{franchiseSlug}')
         Route::get('/menus', [FranchiseContextController::class, 'menus']);
         Route::get('/menus/{menuId}', [FranchiseContextController::class, 'getMenu']);
         Route::post('/menus/{menuId}/bulk-update', [FranchiseContextController::class, 'bulkUpdateMenuItems']);
+        Route::delete('/menus/{menuId}', [FranchiseContextController::class, 'deleteMenu']);
         
         // Menu Schedules (time-based menu availability)
         Route::get('/menus/{menuId}/schedules', [MenuScheduleController::class, 'getForMenu']);
