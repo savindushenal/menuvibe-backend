@@ -106,6 +106,87 @@ Route::get('/payment-gateway-status', function () {
     }
 });
 
+// TEMPORARY: Fix duplicate menu versions (DELETE THIS ROUTE AFTER RUNNING ONCE)
+Route::get('/fix-duplicate-versions', function () {
+    try {
+        $output = [];
+        $output[] = "=== Fixing Duplicate Menu Versions ===\n";
+        
+        // Step 1: Find duplicates
+        $duplicates = DB::select("
+            SELECT 
+                master_menu_id, 
+                version_number, 
+                COUNT(*) as count
+            FROM master_menu_versions
+            GROUP BY master_menu_id, version_number
+            HAVING COUNT(*) > 1
+        ");
+        
+        if (empty($duplicates)) {
+            $output[] = "✓ No duplicates found!";
+        } else {
+            $output[] = "Found " . count($duplicates) . " duplicate version(s):";
+            foreach ($duplicates as $dup) {
+                $output[] = "  Menu {$dup->master_menu_id}, Version {$dup->version_number}: {$dup->count} copies";
+            }
+            
+            // Step 2: Delete duplicates (keep oldest)
+            $deleted = DB::delete("
+                DELETE v1 FROM master_menu_versions v1
+                INNER JOIN master_menu_versions v2 
+                WHERE 
+                    v1.master_menu_id = v2.master_menu_id
+                    AND v1.version_number = v2.version_number
+                    AND v1.id > v2.id
+            ");
+            $output[] = "✓ Deleted {$deleted} duplicate records";
+        }
+        
+        // Step 3: Update current_version counters
+        $updated = DB::update("
+            UPDATE master_menus m
+            SET current_version = (
+                SELECT COALESCE(MAX(version_number), 0)
+                FROM master_menu_versions v
+                WHERE v.master_menu_id = m.id
+            )
+        ");
+        $output[] = "✓ Updated {$updated} menu(s)";
+        
+        // Step 4: Verify
+        $menus = DB::select("
+            SELECT 
+                m.id,
+                m.name,
+                m.current_version,
+                (SELECT COALESCE(MAX(version_number), 0) FROM master_menu_versions v WHERE v.master_menu_id = m.id) as actual_max_version
+            FROM master_menus m
+        ");
+        
+        $output[] = "\nVerification:";
+        foreach ($menus as $menu) {
+            $status = $menu->current_version == $menu->actual_max_version ? '✓' : '✗';
+            $output[] = "  {$status} Menu {$menu->id} ({$menu->name}): current={$menu->current_version}, actual={$menu->actual_max_version}";
+        }
+        
+        $output[] = "\n=== Fix Complete! ===";
+        $output[] = "\nIMPORTANT: Delete this route '/fix-duplicate-versions' from routes/api.php now!";
+        
+        return response()->json([
+            'success' => true,
+            'output' => implode("\n", $output)
+        ]);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+});
+
 // Test payment initiation (for debugging)
 Route::get('/test-payment-init', function () {
     try {
