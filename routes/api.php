@@ -211,6 +211,41 @@ Route::get('/check-customizations-column', function () {
     }
 });
 
+// TEMPORARY: Fix isso franchise logo_url in production
+Route::get('/fix-isso-logo', function () {
+    try {
+        $logoUrl = 'https://api.menuvire.com/api/logos/isso_logo.png';
+
+        $franchise = DB::table('franchises')
+            ->where('slug', 'isso')
+            ->orWhere('name', 'LIKE', '%isso%')
+            ->first();
+
+        if (!$franchise) {
+            return response()->json(['success' => false, 'error' => 'Isso franchise not found']);
+        }
+
+        // Update logo_url
+        DB::table('franchises')->where('id', $franchise->id)->update(['logo_url' => $logoUrl]);
+
+        // Update design_tokens brand.logo
+        $dt = json_decode($franchise->design_tokens ?? '{}', true) ?: [];
+        $dt['brand']['logo'] = $logoUrl;
+        DB::table('franchises')->where('id', $franchise->id)->update(['design_tokens' => json_encode($dt)]);
+
+        $updated = DB::table('franchises')->where('id', $franchise->id)->first();
+
+        return response()->json([
+            'success' => true,
+            'franchise_id' => $franchise->id,
+            'franchise_name' => $franchise->name,
+            'logo_url' => $updated->logo_url,
+        ]);
+    } catch (\Exception $e) {
+        return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+    }
+});
+
 // Test payment initiation (for debugging)
 Route::get('/test-payment-init', function () {
     try {
