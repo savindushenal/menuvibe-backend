@@ -32,7 +32,9 @@ class PublicMenuController extends Controller
             ->where('is_active', true)
             ->with(['template' => function ($q) {
                 $q->where('is_active', true);
-            }, 'location', 'franchise'])
+            }, 'location', 'franchise' => function ($q) {
+                $q->withTrashed();
+            }])
             ->first();
 
         if (!$endpoint) {

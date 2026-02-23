@@ -216,7 +216,7 @@ Route::get('/check-endpoint/{code}', function ($code) {
     $ep = DB::table('menu_endpoints as me')
         ->leftJoin('franchises as f', 'me.franchise_id', '=', 'f.id')
         ->where('me.short_code', $code)
-        ->select('me.id', 'me.short_code', 'me.franchise_id', 'f.id as f_id', 'f.name as f_name', 'f.slug', 'f.logo_url')
+        ->select('me.id', 'me.short_code', 'me.franchise_id', 'f.id as f_id', 'f.name as f_name', 'f.slug', 'f.logo_url', 'f.deleted_at')
         ->first();
     return response()->json($ep ?: ['error' => 'not found']);
 });
