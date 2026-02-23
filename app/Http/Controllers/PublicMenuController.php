@@ -176,6 +176,14 @@ class PublicMenuController extends Controller
                     'primary_color' => $businessProfile->primary_color ?? $location->primary_color,
                     'secondary_color' => $businessProfile->secondary_color ?? $location->secondary_color,
                 ] : null,
+                'franchise' => $endpoint->franchise ? [
+                    'id' => $endpoint->franchise->id,
+                    'name' => $endpoint->franchise->name,
+                    'slug' => $endpoint->franchise->slug,
+                    'logo_url' => $endpoint->franchise->logo_url,
+                    'design_tokens' => $endpoint->franchise->design_tokens,
+                    'template_type' => $endpoint->franchise->template_type ?? 'premium',
+                ] : null,
                 'endpoint' => [
                     'id' => $endpoint->id,
                     'type' => $endpoint->type,
