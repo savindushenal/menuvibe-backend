@@ -54,6 +54,7 @@ class MasterMenuItem extends Model
         'allergens' => 'array',
         'dietary_info' => 'array',
         'variations' => 'array',
+        'customizations' => 'array',
         'addons' => 'array',
     ];
 
