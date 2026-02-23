@@ -41,17 +41,24 @@ class MenuSyncService
             
             $newVersion = $lockedMenu->current_version + 1;
 
-            DB::table('master_menu_versions')->insert([
-                'master_menu_id' => $lockedMenu->id,
-                'version_number' => $newVersion,
-                'change_type' => $changeType,
-                'change_summary' => $this->generateChangeSummary($changeType, $changesData),
-                'changes_data' => json_encode($changesData),
-                'snapshot' => json_encode($this->createMenuSnapshot($lockedMenu)),
-                'created_by' => $user->id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            // Use updateOrInsert to avoid duplicate key errors
+            // If the version already exists (from a failed previous attempt), update it
+            // Otherwise, insert a new version
+            DB::table('master_menu_versions')->updateOrInsert(
+                [
+                    'master_menu_id' => $lockedMenu->id,
+                    'version_number' => $newVersion,
+                ],
+                [
+                    'change_type' => $changeType,
+                    'change_summary' => $this->generateChangeSummary($changeType, $changesData),
+                    'changes_data' => json_encode($changesData),
+                    'snapshot' => json_encode($this->createMenuSnapshot($lockedMenu)),
+                    'created_by' => $user->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
 
             $lockedMenu->update(['current_version' => $newVersion]);
 
