@@ -474,6 +474,7 @@ class MasterMenuController extends Controller
             'is_spicy' => 'nullable|boolean',
             'spice_level' => 'nullable|integer|min:1|max:5',
             'variations' => 'nullable|array',
+            'customizations' => 'nullable|array',
             'addons' => 'nullable|array',
             'sku' => 'nullable|string|max:100',
             'calories' => 'nullable|integer',
