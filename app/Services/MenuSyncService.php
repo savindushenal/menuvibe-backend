@@ -35,24 +35,29 @@ class MenuSyncService
      */
     public function createVersion(MasterMenu $masterMenu, string $changeType, array $changesData, User $user): void
     {
-        $newVersion = $masterMenu->current_version + 1;
+        DB::transaction(function () use ($masterMenu, $changeType, $changesData, $user) {
+            // Lock the master menu row to prevent race conditions
+            $lockedMenu = MasterMenu::where('id', $masterMenu->id)->lockForUpdate()->first();
+            
+            $newVersion = $lockedMenu->current_version + 1;
 
-        DB::table('master_menu_versions')->insert([
-            'master_menu_id' => $masterMenu->id,
-            'version_number' => $newVersion,
-            'change_type' => $changeType,
-            'change_summary' => $this->generateChangeSummary($changeType, $changesData),
-            'changes_data' => json_encode($changesData),
-            'snapshot' => json_encode($this->createMenuSnapshot($masterMenu)),
-            'created_by' => $user->id,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+            DB::table('master_menu_versions')->insert([
+                'master_menu_id' => $lockedMenu->id,
+                'version_number' => $newVersion,
+                'change_type' => $changeType,
+                'change_summary' => $this->generateChangeSummary($changeType, $changesData),
+                'changes_data' => json_encode($changesData),
+                'snapshot' => json_encode($this->createMenuSnapshot($lockedMenu)),
+                'created_by' => $user->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
 
-        $masterMenu->update(['current_version' => $newVersion]);
+            $lockedMenu->update(['current_version' => $newVersion]);
 
-        // Notify branches about pending updates
-        $this->notifyBranchesOfUpdate($masterMenu, $newVersion, $changeType);
+            // Notify branches about pending updates
+            $this->notifyBranchesOfUpdate($lockedMenu, $newVersion, $changeType);
+        });
     }
 
     /**
