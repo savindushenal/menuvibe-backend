@@ -187,6 +187,30 @@ Route::get('/fix-duplicate-versions', function () {
     }
 });
 
+// TEMPORARY: Check if customizations column exists
+Route::get('/check-customizations-column', function () {
+    try {
+        $columns = DB::select("SHOW COLUMNS FROM master_menu_items WHERE Field = 'customizations'");
+        $item = DB::table('master_menu_items')->where('id', 23)->first(['id', 'name', 'customizations']);
+        
+        return response()->json([
+            'success' => true,
+            'column_exists' => !empty($columns),
+            'item_23' => [
+                'id' => $item->id ?? null,
+                'name' => $item->name ?? null,
+                'has_customizations' => isset($item->customizations) && $item->customizations !== null,
+                'customizations' => $item->customizations ?? null,
+            ]
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
+
 // Test payment initiation (for debugging)
 Route::get('/test-payment-init', function () {
     try {
