@@ -35,6 +35,7 @@ class MasterMenuItem extends Model
         'is_spicy',
         'spice_level',
         'variations',
+        'customizations',
         'addons',
         'sku',
         'calories',
