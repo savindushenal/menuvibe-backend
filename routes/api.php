@@ -211,6 +211,16 @@ Route::get('/check-customizations-column', function () {
     }
 });
 
+// TEMPORARY: Diagnose endpoint franchise linkage
+Route::get('/check-endpoint/{code}', function ($code) {
+    $ep = DB::table('menu_endpoints as me')
+        ->leftJoin('franchises as f', 'me.franchise_id', '=', 'f.id')
+        ->where('me.short_code', $code)
+        ->select('me.id', 'me.short_code', 'me.franchise_id', 'f.id as f_id', 'f.name as f_name', 'f.slug', 'f.logo_url')
+        ->first();
+    return response()->json($ep ?: ['error' => 'not found']);
+});
+
 // TEMPORARY: Fix isso franchise logo_url in production
 Route::get('/fix-isso-logo', function () {
     try {
