@@ -1694,11 +1694,8 @@ class FranchiseContextController extends Controller
             ], 403);
         }
 
-        $endpoint = \App\Models\MenuEndpoint::whereHas('template', function ($q) use ($franchise) {
-            $q->whereHas('location', function ($l) use ($franchise) {
-                $l->where('franchise_id', $franchise->id);
-            });
-        })->find($endpointId);
+        $endpoint = \App\Models\MenuEndpoint::where('franchise_id', $franchise->id)
+            ->find($endpointId);
 
         if (!$endpoint) {
             return response()->json([
