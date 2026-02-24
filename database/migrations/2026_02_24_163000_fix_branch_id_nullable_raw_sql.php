@@ -8,33 +8,29 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Raw SQL ALTER to make branch_id nullable — no doctrine/dbal required.
+     * Fixes: SQLSTATE[HY000]: Field 'branch_id' doesn't have a default value
+     * when inserting into branch_menu_overrides using only location_id.
      */
     public function up(): void
     {
-        // branch_id may still exist as NOT NULL on production if the rename
-        // migration added location_id without dropping branch_id.
-        // Use raw SQL to avoid needing doctrine/dbal for ->change().
         if (Schema::hasTable('branch_menu_overrides') && Schema::hasColumn('branch_menu_overrides', 'branch_id')) {
-            // Drop FK if it exists
+            // Drop any FK on branch_id first
             try {
                 Schema::table('branch_menu_overrides', function (Blueprint $table) {
                     $table->dropForeign(['branch_id']);
                 });
             } catch (\Exception $e) {
-                // FK doesn't exist — continue
+                // FK may already be gone
             }
 
-            // Raw ALTER to make nullable (works without doctrine/dbal)
+            // Raw ALTER — works without doctrine/dbal
             DB::statement('ALTER TABLE branch_menu_overrides MODIFY COLUMN branch_id BIGINT UNSIGNED NULL DEFAULT NULL');
         }
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        // No safe rollback
+        // Intentionally left empty — reverting to NOT NULL is unsafe
     }
 };
