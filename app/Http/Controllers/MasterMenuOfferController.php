@@ -20,7 +20,7 @@ class MasterMenuOfferController extends Controller
         $type = $request->query('type'); // special, instant, seasonal, combo, happy_hour
 
         $query = MasterMenuOffer::where('franchise_id', $franchiseId)
-            ->with(['masterMenu:id,name', 'branchOverrides:id,master_offer_id,branch_id,is_active'])
+            ->with(['masterMenu:id,name', 'branchOverrides:id,master_offer_id,location_id,is_active'])
             ->orderBy('sort_order');
 
         if ($type) {
@@ -399,7 +399,7 @@ class MasterMenuOfferController extends Controller
 
         $override = BranchOfferOverride::updateOrCreate(
             [
-                'branch_id' => $branchId,
+                'location_id' => $branchId,
                 'master_offer_id' => $offerId,
             ],
             $validator->validated()
@@ -409,6 +409,21 @@ class MasterMenuOfferController extends Controller
             'success' => true,
             'message' => 'Branch override saved successfully',
             'data' => $override
+        ]);
+    }
+
+    /**
+     * Remove branch override for an offer
+     */
+    public function removeBranchOverride(Request $request, int $franchiseId, int $menuId, int $offerId, int $branchId)
+    {
+        $deleted = BranchOfferOverride::where('master_offer_id', $offerId)
+            ->where('location_id', $branchId)
+            ->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => $deleted ? 'Branch override removed' : 'Override not found'
         ]);
     }
 
@@ -428,7 +443,7 @@ class MasterMenuOfferController extends Controller
                 // Check branch override if branch specified
                 if ($branchId) {
                     $override = $offer->branchOverrides()
-                        ->where('branch_id', $branchId)
+                        ->where('location_id', $branchId)
                         ->first();
                     
                     if ($override && !$override->is_active) {

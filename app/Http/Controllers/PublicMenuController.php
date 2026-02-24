@@ -677,7 +677,7 @@ class PublicMenuController extends Controller
                 if (!$offer->apply_to_all) {
                     if (!$locationId) continue;
                     $branchOverride = \App\Models\BranchOfferOverride::where('master_offer_id', $offer->id)
-                        ->where('branch_id', $locationId)
+                        ->where('location_id', $locationId)
                         ->where('is_active', true)
                         ->first();
                     if (!$branchOverride) continue;

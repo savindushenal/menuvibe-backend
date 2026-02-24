@@ -11,7 +11,7 @@ class BranchOfferOverride extends Model
     use HasFactory;
 
     protected $fillable = [
-        'branch_id',
+        'location_id',
         'master_offer_id',
         'is_active',
         'discount_override',
