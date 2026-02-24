@@ -118,16 +118,34 @@ class MenuOrder extends Model
 
     public function toSummary(): array
     {
+        // Enrich items: ensure selectedVariation is present for POS display.
+        // If an item has selected_options (raw option IDs) but no selectedVariation,
+        // build a human-readable variation string from option name hints stored in the payload.
+        $items = collect($this->items ?? [])->map(function ($item) {
+            if (!empty($item['selectedVariation']['name'])) {
+                return $item;
+            }
+            // Fallback: collect any pre-built variation hints stored as variation_labels
+            if (!empty($item['variation_labels']) && is_array($item['variation_labels'])) {
+                $item['selectedVariation'] = [
+                    'name'  => implode(', ', $item['variation_labels']),
+                    'price' => (float) ($item['unit_price'] ?? 0),
+                ];
+            }
+            return $item;
+        })->values()->all();
+
         return [
             'id'               => $this->id,
             'order_number'     => $this->order_number,
             'status'           => $this->status,
-            'items'            => $this->items,
+            'items'            => $items,
             'total'            => $this->total,
             'currency'         => $this->currency,
             'table_identifier' => $this->table_identifier,
             'notes'            => $this->notes,
             'is_active'        => $this->isActive(),
+            'created_at'       => $this->created_at->toIso8601String(),
             'placed_at'        => $this->created_at->toIso8601String(),
             'preparing_at'     => $this->preparing_at?->toIso8601String(),
             'ready_at'         => $this->ready_at?->toIso8601String(),
