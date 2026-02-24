@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\OrderStatusChanged;
 use App\Models\FranchiseUser;
+use App\Models\FranchiseAccount;
 use App\Models\Location;
 use App\Models\MenuOrder;
 use App\Models\StaffPushSubscription;
@@ -42,6 +43,15 @@ class PosOrderController extends Controller
             ->where('franchise_id', $location->franchise_id)
             ->where('is_active', true)
             ->first();
+
+        // Check FranchiseAccount first (staff added via admin onboarding flow)
+        $account = FranchiseAccount::where('user_id', $user->id)
+            ->where('location_id', $locationId)
+            ->where('is_active', true)
+            ->first();
+        if ($account) {
+            return $location;
+        }
 
         if (!$fu) return null;
 
@@ -96,6 +106,18 @@ class PosOrderController extends Controller
                     $locs = Location::whereIn('id', $ids)->get();
                     $locations = $locations->merge($locs);
                 }
+            }
+        }
+
+        // Fallback: also check FranchiseAccount (staff added via admin onboarding flow)
+        $accounts = FranchiseAccount::where('user_id', $user->id)
+            ->where('is_active', true)
+            ->whereNotNull('location_id')
+            ->get();
+        foreach ($accounts as $account) {
+            $loc = Location::find($account->location_id);
+            if ($loc) {
+                $locations->push($loc);
             }
         }
 
