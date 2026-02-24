@@ -1639,7 +1639,8 @@ class FranchiseContextController extends Controller
     {
         $franchise = $request->get('franchise');
         
-        $endpoint = \App\Models\MenuEndpoint::where('franchise_id', $franchise->id)
+        $endpoint = \App\Models\MenuEndpoint::withoutGlobalScopes()
+            ->where('franchise_id', $franchise->id)
             ->find($endpointId);
 
         if (!$endpoint) {
@@ -1694,7 +1695,8 @@ class FranchiseContextController extends Controller
             ], 403);
         }
 
-        $endpoint = \App\Models\MenuEndpoint::where('franchise_id', $franchise->id)
+        $endpoint = \App\Models\MenuEndpoint::withoutGlobalScopes()
+            ->where('franchise_id', $franchise->id)
             ->find($endpointId);
 
         if (!$endpoint) {
