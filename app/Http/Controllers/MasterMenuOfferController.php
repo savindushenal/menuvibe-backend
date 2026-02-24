@@ -20,7 +20,7 @@ class MasterMenuOfferController extends Controller
         $type = $request->query('type'); // special, instant, seasonal, combo, happy_hour
 
         $query = MasterMenuOffer::where('franchise_id', $franchiseId)
-            ->with(['masterMenu:id,name'])
+            ->with(['masterMenu:id,name', 'branchOverrides:id,master_offer_id,branch_id,is_active'])
             ->orderBy('sort_order');
 
         if ($type) {
