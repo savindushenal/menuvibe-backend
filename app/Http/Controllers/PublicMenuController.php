@@ -661,6 +661,8 @@ class PublicMenuController extends Controller
 
         // --- MasterMenuOffer (franchise dashboard offers) ---
         if ($endpoint->franchise_id) {
+            $locationId = $endpoint->location_id;
+
             $masterOffers = \App\Models\MasterMenuOffer::where('franchise_id', $endpoint->franchise_id)
                 ->active()
                 ->orderBy('is_featured', 'desc')
@@ -669,6 +671,19 @@ class PublicMenuController extends Controller
 
             foreach ($masterOffers as $offer) {
                 if (!$offer->is_valid) continue;
+
+                // Branch filtering: if not apply_to_all, check BranchOfferOverride
+                $discountOverride = null;
+                if (!$offer->apply_to_all) {
+                    if (!$locationId) continue;
+                    $branchOverride = \App\Models\BranchOfferOverride::where('master_offer_id', $offer->id)
+                        ->where('branch_id', $locationId)
+                        ->where('is_active', true)
+                        ->first();
+                    if (!$branchOverride) continue;
+                    $discountOverride = $branchOverride->discount_override;
+                }
+
                 $formatted[] = [
                     'id' => $offer->id,
                     'type' => $offer->offer_type,
@@ -678,7 +693,7 @@ class PublicMenuController extends Controller
                     'badge_text' => $offer->badge_text ?? $offer->type_badge['text'],
                     'badge_color' => $offer->badge_color ?? $offer->type_badge['color'],
                     'discount_type' => $offer->discount_type,
-                    'discount_value' => $offer->discount_value,
+                    'discount_value' => $discountOverride ?? $offer->discount_value,
                     'bundle_price' => $offer->bundle_price,
                     'minimum_order' => $offer->minimum_order,
                     'remaining_time' => $offer->remaining_time,
