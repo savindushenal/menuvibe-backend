@@ -15,7 +15,6 @@ class FranchiseAccount extends Model
         'franchise_id',
         'user_id',
         'role',
-        'branch_id',
         'location_id',
         'permissions',
         'is_active',

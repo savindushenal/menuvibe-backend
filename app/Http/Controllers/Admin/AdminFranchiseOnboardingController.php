@@ -591,7 +591,7 @@ class AdminFranchiseOnboardingController extends Controller
                 'franchise_id' => $franchiseId,
                 'user_id' => $user->id,
                 'role' => $request->role,
-                'branch_id' => $request->branch_id,
+                'location_id' => $request->branch_id,
                 'is_active' => true,
                 'created_by' => $request->user()->id,
             ]);
@@ -602,7 +602,7 @@ class AdminFranchiseOnboardingController extends Controller
                 'email' => $user->email,
                 'name' => $user->name,
                 'role' => $request->role,
-                'branch_id' => $request->branch_id,
+                'location_id' => $request->branch_id,
                 'token' => FranchiseInvitation::generateToken(),
                 'status' => 'accepted', // Already accepted since account is created
                 'expires_at' => now()->addDays(7),
@@ -730,7 +730,7 @@ class AdminFranchiseOnboardingController extends Controller
             'email' => $request->email,
             'name' => $request->name,
             'role' => $request->role,
-            'branch_id' => $request->branch_id,
+            'location_id' => $request->branch_id,
             'token' => FranchiseInvitation::generateToken(),
             'status' => 'pending',
             'expires_at' => now()->addDays($request->expires_in_days ?? 7),

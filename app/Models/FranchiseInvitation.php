@@ -16,7 +16,6 @@ class FranchiseInvitation extends Model
         'email',
         'name',
         'role',
-        'branch_id',
         'location_id',
         'token',
         'status',
