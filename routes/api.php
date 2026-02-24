@@ -1079,6 +1079,7 @@ Route::prefix('menu-session')->group(function () {
 
 // POS — staff order management (bearer token auth)
 Route::prefix('pos')->group(function () {
+    Route::get('/me/locations',                          [App\Http\Controllers\PosOrderController::class, 'myLocations']);
     Route::get('/{locationId}/orders',                   [App\Http\Controllers\PosOrderController::class, 'index']);
     Route::patch('/{locationId}/orders/{orderId}/status',[App\Http\Controllers\PosOrderController::class, 'updateStatus']);
     Route::post('/{locationId}/subscribe',               [App\Http\Controllers\PosOrderController::class, 'subscribe']);

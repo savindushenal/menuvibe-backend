@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\OrderStatusChanged;
+use App\Models\FranchiseUser;
 use App\Models\Location;
 use App\Models\MenuOrder;
 use App\Models\StaffPushSubscription;
@@ -14,21 +15,99 @@ use Laravel\Sanctum\PersonalAccessToken;
 class PosOrderController extends Controller
 {
     /**
-     * Authenticate staff from bearer token.
-     * Returns the location if the token owner has access.
+     * Authenticate staff from bearer token and verify they have access
+     * to the requested location via FranchiseUser role/location_ids.
      */
     private function resolveLocation(Request $request, int|string $locationId): ?Location
     {
         $token = $request->bearerToken();
         if (!$token) return null;
 
-        $pat  = PersonalAccessToken::findToken($token);
+        $pat = PersonalAccessToken::findToken($token);
         if (!$pat) return null;
 
         $user = $pat->tokenable;
         $request->setUserResolver(fn() => $user);
 
-        return Location::find($locationId);
+        $location = Location::find($locationId);
+        if (!$location) return null;
+
+        // Platform admins always have access
+        if (in_array($user->role ?? '', ['super_admin', 'platform_admin', 'admin'])) {
+            return $location;
+        }
+
+        // Check FranchiseUser membership for this location's franchise
+        $fu = FranchiseUser::where('user_id', $user->id)
+            ->where('franchise_id', $location->franchise_id)
+            ->where('is_active', true)
+            ->first();
+
+        if (!$fu) return null;
+
+        // Owner / admin can access ALL locations in their franchise
+        if (in_array($fu->role, [FranchiseUser::ROLE_OWNER, FranchiseUser::ROLE_ADMIN])) {
+            return $location;
+        }
+
+        // Manager / viewer must have this specific location in their location_ids
+        $ids = $fu->location_ids ?? [];
+        if (in_array((int) $locationId, array_map('intval', $ids))) {
+            return $location;
+        }
+
+        return null;
+    }
+
+    /**
+     * Return the list of POS-accessible locations for the authenticated user.
+     * GET /api/pos/me/locations
+     */
+    public function myLocations(Request $request): JsonResponse
+    {
+        $token = $request->bearerToken();
+        if (!$token) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $pat = PersonalAccessToken::findToken($token);
+        if (!$pat) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $user = $pat->tokenable;
+
+        // Platform admins — return nothing specific (they pick manually)
+        $memberships = FranchiseUser::where('user_id', $user->id)
+            ->where('is_active', true)
+            ->get();
+
+        $locations = collect();
+
+        foreach ($memberships as $fu) {
+            if (in_array($fu->role, [FranchiseUser::ROLE_OWNER, FranchiseUser::ROLE_ADMIN])) {
+                // All locations in their franchise
+                $locs = Location::where('franchise_id', $fu->franchise_id)->get();
+                $locations = $locations->merge($locs);
+            } else {
+                // Only their assigned locations
+                $ids = array_map('intval', $fu->location_ids ?? []);
+                if (!empty($ids)) {
+                    $locs = Location::whereIn('id', $ids)->get();
+                    $locations = $locations->merge($locs);
+                }
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $locations->unique('id')->values()->map(fn($l) => [
+                'id'           => $l->id,
+                'name'         => $l->name,
+                'franchise_id' => $l->franchise_id,
+                'address'      => $l->address ?? null,
+            ]),
+        ]);
     }
 
     /**
