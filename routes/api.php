@@ -1077,6 +1077,14 @@ Route::prefix('menu-session')->group(function () {
     Route::delete('/{token}/orders/{orderId}',  [App\Http\Controllers\MenuSessionController::class, 'cancelOrder']);
 });
 
+// POS — staff order management (bearer token auth)
+Route::prefix('pos')->group(function () {
+    Route::get('/{locationId}/orders',                   [App\Http\Controllers\PosOrderController::class, 'index']);
+    Route::patch('/{locationId}/orders/{orderId}/status',[App\Http\Controllers\PosOrderController::class, 'updateStatus']);
+    Route::post('/{locationId}/subscribe',               [App\Http\Controllers\PosOrderController::class, 'subscribe']);
+    Route::delete('/{locationId}/subscribe',             [App\Http\Controllers\PosOrderController::class, 'unsubscribe']);
+});
+
 // Customer Authentication Routes (public - no auth required)
 Route::prefix('public/auth')->group(function () {
     Route::post('/send-otp', [App\Http\Controllers\CustomerAuthController::class, 'sendOtp']);

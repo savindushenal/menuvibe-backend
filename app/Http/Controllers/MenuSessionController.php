@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\OrderPlaced;
 use App\Models\MenuEndpoint;
 use App\Models\MenuOrder;
 use App\Models\QrScanSession;
@@ -136,7 +137,7 @@ class MenuSessionController extends Controller
                 return response()->json(['success' => false, 'message' => 'Cart is empty'], 422);
             }
 
-            $total    = collect($items)->sum(fn($i) => ($i['finalPrice'] ?? $i['price'] ?? 0) * ($i['quantity'] ?? 1));
+            $total    = collect($items)->sum(fn($i) => ($i['unit_price'] ?? $i['finalPrice'] ?? $i['price'] ?? 0) * ($i['quantity'] ?? 1));
             $notes    = $request->input('notes', '');
             $currency = $request->input('currency', 'LKR');
 
@@ -154,6 +155,14 @@ class MenuSessionController extends Controller
                 'table_identifier' => $session->table_identifier,
                 'confirmed_at'     => now(),
             ]);
+
+            // Broadcast to POS + send Web Push to staff
+            try {
+                broadcast(new OrderPlaced($order));
+                (new OrderPlaced($order))->sendWebPush();
+            } catch (\Exception $broadcastEx) {
+                Log::warning('OrderPlaced broadcast failed', ['error' => $broadcastEx->getMessage()]);
+            }
 
             // Clear cart after ordering, update session stats
             $session->update([

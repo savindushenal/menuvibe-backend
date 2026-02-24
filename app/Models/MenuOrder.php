@@ -50,6 +50,16 @@ class MenuOrder extends Model
     // Terminal statuses (order done)
     const DONE_STATUSES = ['delivered', 'completed', 'cancelled'];
 
+    // Allowed status transitions for POS
+    const STATUS_TRANSITIONS = [
+        'pending'   => ['preparing', 'cancelled'],
+        'preparing' => ['ready', 'cancelled'],
+        'ready'     => ['delivered', 'completed'],
+        'delivered' => ['completed'],
+        'completed' => [],
+        'cancelled' => [],
+    ];
+
     // ---------- Relationships ----------
 
     public function session(): BelongsTo
