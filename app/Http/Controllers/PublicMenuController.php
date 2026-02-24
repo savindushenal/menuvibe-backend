@@ -158,11 +158,15 @@ class PublicMenuController extends Controller
         $businessProfile = $endpoint->user_id ? 
             \App\Models\BusinessProfile::where('user_id', $endpoint->user_id)->first() : null;
 
+        // Get active offers for this endpoint
+        $offers = $this->getActiveOffersForEndpoint($endpoint);
+
         return response()->json([
             'success' => true,
             'action' => 'redirect',
             'data' => [
                 'menu' => $menuData,
+                'offers' => $offers,
                 'location' => [
                     'id' => $location->id,
                     'name' => $location->name,
@@ -619,7 +623,10 @@ class PublicMenuController extends Controller
      */
     private function getActiveOffersForEndpoint(MenuEndpoint $endpoint): array
     {
-        $offers = MenuOffer::where('user_id', $endpoint->user_id)
+        $formatted = [];
+
+        // --- Legacy MenuOffer (non-franchise endpoints) ---
+        $menuOffers = MenuOffer::where('user_id', $endpoint->user_id)
             ->where(function ($q) use ($endpoint) {
                 $q->whereNull('template_id')
                   ->orWhere('template_id', $endpoint->template_id);
@@ -631,9 +638,38 @@ class PublicMenuController extends Controller
             ->filter(function ($offer) use ($endpoint) {
                 return $offer->appliesToEndpoint($endpoint->id);
             })
-            ->values()
-            ->map(function ($offer) {
-                return [
+            ->values();
+
+        foreach ($menuOffers as $offer) {
+            $formatted[] = [
+                'id' => $offer->id,
+                'type' => $offer->offer_type,
+                'title' => $offer->title,
+                'description' => $offer->description,
+                'image_url' => $offer->image_url,
+                'badge_text' => $offer->badge_text ?? $offer->type_badge['text'],
+                'badge_color' => $offer->badge_color ?? $offer->type_badge['color'],
+                'discount_type' => $offer->discount_type,
+                'discount_value' => $offer->discount_value,
+                'bundle_price' => $offer->bundle_price,
+                'minimum_order' => $offer->minimum_order,
+                'remaining_time' => $offer->remaining_time,
+                'terms_conditions' => $offer->terms_conditions,
+                'is_featured' => $offer->is_featured,
+            ];
+        }
+
+        // --- MasterMenuOffer (franchise dashboard offers) ---
+        if ($endpoint->franchise_id) {
+            $masterOffers = \App\Models\MasterMenuOffer::where('franchise_id', $endpoint->franchise_id)
+                ->active()
+                ->orderBy('is_featured', 'desc')
+                ->orderBy('sort_order')
+                ->get();
+
+            foreach ($masterOffers as $offer) {
+                if (!$offer->is_valid) continue;
+                $formatted[] = [
                     'id' => $offer->id,
                     'type' => $offer->offer_type,
                     'title' => $offer->title,
@@ -649,9 +685,11 @@ class PublicMenuController extends Controller
                     'terms_conditions' => $offer->terms_conditions,
                     'is_featured' => $offer->is_featured,
                 ];
-            })
-            ->toArray();
+            }
 
-        return $offers;
-    }
-}
+            // Sort combined: featured first
+            usort($formatted, fn($a, $b) => $b['is_featured'] <=> $a['is_featured']);
+        }
+
+        return $formatted;
+    }}
