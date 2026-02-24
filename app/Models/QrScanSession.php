@@ -26,6 +26,8 @@ class QrScanSession extends Model
         'user_agent',
         'ip_address',
         'metadata',
+        'cart_data',
+        'table_identifier',
         'scan_count',
         'order_count',
         'total_spent',
@@ -39,6 +41,7 @@ class QrScanSession extends Model
     protected $casts = [
         'loyalty_data' => 'array',
         'metadata' => 'array',
+        'cart_data' => 'array',
         'scan_count' => 'integer',
         'order_count' => 'integer',
         'total_spent' => 'decimal:2',
@@ -281,6 +284,11 @@ class QrScanSession extends Model
     public function franchise(): BelongsTo
     {
         return $this->belongsTo(Franchise::class);
+    }
+
+    public function menuOrders(): HasMany
+    {
+        return $this->hasMany(MenuOrder::class, 'session_id');
     }
 
     public function orders(): HasMany

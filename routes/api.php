@@ -1068,6 +1068,15 @@ Route::prefix('public/sessions')->group(function () {
     Route::get('/{sessionToken}/history', [App\Http\Controllers\QrSessionController::class, 'getHistory']);
 });
 
+// Menu Session — cart persistence + ordering (public, no auth)
+Route::prefix('menu-session')->group(function () {
+    Route::post('/{code}/init',                 [App\Http\Controllers\MenuSessionController::class, 'init']);
+    Route::put('/{token}/cart',                 [App\Http\Controllers\MenuSessionController::class, 'saveCart']);
+    Route::post('/{token}/orders',              [App\Http\Controllers\MenuSessionController::class, 'placeOrder']);
+    Route::get('/{token}/status',               [App\Http\Controllers\MenuSessionController::class, 'status']);
+    Route::delete('/{token}/orders/{orderId}',  [App\Http\Controllers\MenuSessionController::class, 'cancelOrder']);
+});
+
 // Customer Authentication Routes (public - no auth required)
 Route::prefix('public/auth')->group(function () {
     Route::post('/send-otp', [App\Http\Controllers\CustomerAuthController::class, 'sendOtp']);
