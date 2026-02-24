@@ -557,7 +557,7 @@ class AdminFranchiseOnboardingController extends Controller
             'email' => 'required|email|unique:users,email',
             'phone' => 'nullable|string|max:20',
             'role' => 'required|in:franchise_owner,franchise_manager,branch_manager,staff',
-            'branch_id' => 'nullable|exists:franchise_branches,id',
+            'branch_id' => 'nullable|exists:locations,id',
             'send_credentials' => 'boolean',
             'custom_password' => 'nullable|string|min:8',
         ]);
@@ -679,7 +679,7 @@ class AdminFranchiseOnboardingController extends Controller
             'email' => 'required|email',
             'name' => 'nullable|string|max:255',
             'role' => 'required|in:franchise_owner,franchise_manager,branch_manager,staff',
-            'branch_id' => 'nullable|exists:franchise_branches,id',
+            'branch_id' => 'nullable|exists:locations,id',
             'message' => 'nullable|string',
             'send_credentials' => 'boolean',
             'expires_in_days' => 'nullable|integer|min:1|max:30',
