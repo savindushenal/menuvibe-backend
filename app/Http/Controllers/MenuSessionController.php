@@ -28,24 +28,43 @@ class MenuSessionController extends Controller
                 return response()->json(['success' => false, 'message' => 'Invalid QR code'], 404);
             }
 
-            $existingToken = $request->input('session_token');
-            $session = null;
+            $existingToken = $request->input('session_token') ?? $request->input('token');
+            $deviceId      = $request->input('device_id');
+            $userAgent     = $request->userAgent();
+            $ipAddress     = $request->ip();
+            $session       = null;
 
-            // Try to restore existing valid session
+            // 1. Try to restore by session token (fastest path)
             if ($existingToken) {
                 $session = QrScanSession::where('session_token', $existingToken)
                     ->where('endpoint_id', $endpoint->id)
                     ->where('expires_at', '>', now())
                     ->first();
-
-                if ($session) {
-                    // Update activity + scan count
-                    $session->increment('scan_count');
-                    $session->update(['last_activity_at' => now()]);
-                }
             }
 
-            // Create new session if none found
+            // 2. Fallback: restore by device fingerprint (works across browser clears)
+            if (!$session && $deviceId) {
+                $session = QrScanSession::where('device_fingerprint', $deviceId)
+                    ->where('endpoint_id', $endpoint->id)
+                    ->where('expires_at', '>', now())
+                    ->orderByDesc('last_activity_at')
+                    ->first();
+            }
+
+            if ($session) {
+                // Refresh expiry + activity; update device_id if not yet recorded
+                $updateData = ['last_activity_at' => now(), 'expires_at' => now()->addHours(24)];
+                if ($deviceId && !$session->device_fingerprint) {
+                    $updateData['device_fingerprint'] = $deviceId;
+                }
+                if ($userAgent && !$session->user_agent) {
+                    $updateData['user_agent'] = $userAgent;
+                }
+                $session->increment('scan_count');
+                $session->update($updateData);
+            }
+
+            // 3. Create new session if still none found
             if (!$session) {
                 $session = QrScanSession::create([
                     'session_token'    => QrScanSession::generateToken($endpoint->location_id),
@@ -53,6 +72,9 @@ class MenuSessionController extends Controller
                     'location_id'      => $endpoint->location_id,
                     'franchise_id'     => $endpoint->franchise_id,
                     'table_identifier' => $endpoint->identifier ?? $endpoint->display_name,
+                    'device_fingerprint' => $deviceId,
+                    'user_agent'       => $userAgent,
+                    'ip_address'       => $ipAddress,
                     'expires_at'       => now()->addHours(24),
                     'last_activity_at' => now(),
                 ]);
