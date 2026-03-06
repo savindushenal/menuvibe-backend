@@ -268,6 +268,34 @@ class MasterMenuController extends Controller
     }
 
     /**
+     * Reorder categories by updating sort_order
+     */
+    public function reorderCategories(Request $request, int $franchiseId, int $menuId)
+    {
+        $validator = Validator::make($request->all(), [
+            'categories' => 'required|array',
+            'categories.*.id' => 'required|integer',
+            'categories.*.sort_order' => 'required|integer',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+        }
+
+        DB::transaction(function () use ($request, $franchiseId, $menuId) {
+            foreach ($request->categories as $cat) {
+                MasterMenuCategory::whereHas('masterMenu', function ($q) use ($franchiseId) {
+                    $q->where('franchise_id', $franchiseId);
+                })->where('id', $cat['id'])
+                  ->where('master_menu_id', $menuId)
+                  ->update(['sort_order' => $cat['sort_order']]);
+            }
+        });
+
+        return response()->json(['success' => true, 'message' => 'Categories reordered']);
+    }
+
+    /**
      * Update a category
      */
     public function updateCategory(Request $request, int $franchiseId, int $menuId, int $categoryId)

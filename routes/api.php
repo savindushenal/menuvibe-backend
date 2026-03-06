@@ -1514,6 +1514,24 @@ Route::delete('/franchises/{franchiseId}/master-menus/{menuId}/categories/{categ
     return app(MasterMenuController::class)->destroyCategory($request, $franchiseId, $menuId, $categoryId);
 });
 
+Route::post('/franchises/{franchiseId}/master-menus/{menuId}/categories/reorder', function (Request $request, int $franchiseId, int $menuId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MasterMenuController::class)->reorderCategories($request, $franchiseId, $menuId);
+});
+
+Route::post('/franchises/{franchiseId}/master-menus/{menuId}/items/bulk', function (Request $request, int $franchiseId, int $menuId) {
+    $token = $request->bearerToken();
+    if (!$token) return response()->json(['error' => 'Token required'], 401);
+    $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+    if (!$pat) return response()->json(['error' => 'Invalid token'], 401);
+    $request->setUserResolver(fn() => $pat->tokenable);
+    return app(MasterMenuController::class)->bulkUpdateItems($request, $franchiseId, $menuId);
+});
+
 // Master Menu Items
 Route::post('/franchises/{franchiseId}/master-menus/{menuId}/categories/{categoryId}/items', function (Request $request, int $franchiseId, int $menuId, int $categoryId) {
     $token = $request->bearerToken();
