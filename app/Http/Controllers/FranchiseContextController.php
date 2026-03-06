@@ -381,7 +381,8 @@ class FranchiseContextController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Menu items updated successfully'
+            'message' => 'Menu items updated successfully',
+            'updated' => count($updates),
         ]);
     }
 
