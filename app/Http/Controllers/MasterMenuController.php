@@ -268,34 +268,6 @@ class MasterMenuController extends Controller
     }
 
     /**
-     * Reorder categories by updating sort_order
-     */
-    public function reorderCategories(Request $request, int $franchiseId, int $menuId)
-    {
-        $validator = Validator::make($request->all(), [
-            'categories' => 'required|array',
-            'categories.*.id' => 'required|integer',
-            'categories.*.sort_order' => 'required|integer',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
-        }
-
-        DB::transaction(function () use ($request, $franchiseId, $menuId) {
-            foreach ($request->categories as $cat) {
-                MasterMenuCategory::whereHas('masterMenu', function ($q) use ($franchiseId) {
-                    $q->where('franchise_id', $franchiseId);
-                })->where('id', $cat['id'])
-                  ->where('master_menu_id', $menuId)
-                  ->update(['sort_order' => $cat['sort_order']]);
-            }
-        });
-
-        return response()->json(['success' => true, 'message' => 'Categories reordered']);
-    }
-
-    /**
      * Update a category
      */
     public function updateCategory(Request $request, int $franchiseId, int $menuId, int $categoryId)
@@ -1215,6 +1187,82 @@ class MasterMenuController extends Controller
             'success' => true,
             'message' => 'Override removed successfully'
         ]);
+    }
+
+    // ===========================================
+    // REORDER
+    // ===========================================
+
+    /**
+     * Reorder categories within a master menu
+     * Expects body: { orders: [{id: int, sort_order: int}, ...] }
+     */
+    public function reorderCategories(Request $request, int $franchiseId, int $menuId)
+    {
+        $validator = Validator::make($request->all(), [
+            'orders'             => 'required|array|min:1',
+            'orders.*.id'        => 'required|integer',
+            'orders.*.sort_order'=> 'required|integer|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors'  => $validator->errors()
+            ], 422);
+        }
+
+        $menu = MasterMenu::where('franchise_id', $franchiseId)->where('id', $menuId)->first();
+        if (!$menu) {
+            return response()->json(['success' => false, 'message' => 'Menu not found'], 404);
+        }
+
+        DB::transaction(function () use ($request, $menuId) {
+            foreach ($request->orders as $order) {
+                MasterMenuCategory::where('id', $order['id'])
+                    ->where('master_menu_id', $menuId)
+                    ->update(['sort_order' => $order['sort_order']]);
+            }
+        });
+
+        return response()->json(['success' => true, 'message' => 'Categories reordered successfully']);
+    }
+
+    /**
+     * Reorder items within a master menu category
+     * Expects body: { orders: [{id: int, sort_order: int}, ...] }
+     */
+    public function reorderItems(Request $request, int $franchiseId, int $menuId)
+    {
+        $validator = Validator::make($request->all(), [
+            'orders'             => 'required|array|min:1',
+            'orders.*.id'        => 'required|integer',
+            'orders.*.sort_order'=> 'required|integer|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors'  => $validator->errors()
+            ], 422);
+        }
+
+        $menu = MasterMenu::where('franchise_id', $franchiseId)->where('id', $menuId)->first();
+        if (!$menu) {
+            return response()->json(['success' => false, 'message' => 'Menu not found'], 404);
+        }
+
+        DB::transaction(function () use ($request, $menuId) {
+            foreach ($request->orders as $order) {
+                MasterMenuItem::where('id', $order['id'])
+                    ->where('master_menu_id', $menuId)
+                    ->update(['sort_order' => $order['sort_order']]);
+            }
+        });
+
+        return response()->json(['success' => true, 'message' => 'Items reordered successfully']);
     }
 
     // ===========================================
