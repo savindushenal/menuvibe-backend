@@ -358,16 +358,20 @@ class FranchiseContextController extends Controller
             $itemId = $update['item_id'];
             
             // Find or create override
+            // branch_id is nullable (DEFAULT NULL) after migration; location_id is the unified FK
+            $values = [
+                'is_available' => $update['is_available'] ?? null,
+                'updated_by'   => $user->id,
+            ];
+            if (isset($update['price'])) {
+                $values['price_override'] = $update['price'];
+            }
             $override = \App\Models\BranchMenuOverride::updateOrCreate(
                 [
-                    'location_id' => $locationId,
+                    'location_id'    => $locationId,
                     'master_item_id' => $itemId,
                 ],
-                [
-                    'price' => $update['price'] ?? null,
-                    'is_available' => $update['is_available'] ?? null,
-                    'updated_by' => $user->id,
-                ]
+                $values
             );
         }
 

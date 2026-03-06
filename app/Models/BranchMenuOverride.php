@@ -11,6 +11,7 @@ class BranchMenuOverride extends Model
     use HasFactory;
 
     protected $fillable = [
+        'branch_id',
         'location_id',
         'master_item_id',
         'price_override',
@@ -18,6 +19,7 @@ class BranchMenuOverride extends Model
         'is_featured',
         'variation_prices',
         'notes',
+        'updated_by',
     ];
 
     protected $casts = [
