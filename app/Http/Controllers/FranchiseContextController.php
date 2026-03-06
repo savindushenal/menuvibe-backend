@@ -356,23 +356,27 @@ class FranchiseContextController extends Controller
 
         foreach ($updates as $update) {
             $itemId = $update['item_id'];
-            
-            // Find or create override
-            // branch_id is nullable (DEFAULT NULL) after migration; location_id is the unified FK
-            $values = [
-                'is_available' => $update['is_available'] ?? null,
-                'updated_by'   => $user->id,
-            ];
-            if (isset($update['price'])) {
-                $values['price_override'] = $update['price'];
+
+            // item_id refers to menu_items.id (regular items, NOT master_menu_items).
+            // Update the item directly; verify it belongs to this menu for safety.
+            $menuItem = \App\Models\MenuItem::where('id', $itemId)
+                ->where('menu_id', $menuId)
+                ->first();
+
+            if (!$menuItem) {
+                continue; // skip items that don't belong to this menu
             }
-            $override = \App\Models\BranchMenuOverride::updateOrCreate(
-                [
-                    'location_id'    => $locationId,
-                    'master_item_id' => $itemId,
-                ],
-                $values
-            );
+
+            $itemValues = [];
+            if (isset($update['is_available'])) {
+                $itemValues['is_available'] = $update['is_available'];
+            }
+            if (isset($update['price'])) {
+                $itemValues['price'] = $update['price'];
+            }
+            if (!empty($itemValues)) {
+                $menuItem->update($itemValues);
+            }
         }
 
         return response()->json([
