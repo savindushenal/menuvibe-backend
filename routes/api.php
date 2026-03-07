@@ -32,6 +32,7 @@ use App\Http\Controllers\MenuTemplateController;
 use App\Http\Controllers\MenuEndpointController;
 use App\Http\Controllers\MenuOfferController;
 use App\Http\Controllers\PublicMenuController;
+use App\Http\Controllers\RecommendationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Broadcast;
@@ -1881,6 +1882,10 @@ Route::get('/menu/{shortCode}/offers', [PublicMenuController::class, 'getOffers'
 Route::get('/menu/{shortCode}/info', [PublicMenuController::class, 'getEndpointInfo']);
 Route::get('/menu/{shortCode}/config', [PublicMenuController::class, 'getConfig']); // API-driven config
 Route::post('/menu/{shortCode}/scan', [PublicMenuController::class, 'recordScan']);
+
+// Recommendation & upsell engine (no auth – public customer-facing)
+Route::get('/menu/{shortCode}/recommendations', [RecommendationController::class, 'index']);
+Route::get('/menu/{shortCode}/recommendations/guide', [RecommendationController::class, 'guide']);
 
 // ===========================================
 // AUTHENTICATED ROUTES
