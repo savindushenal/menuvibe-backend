@@ -140,6 +140,7 @@ class PublicMenuController extends Controller
                 'id' => $cat->id,
                 'name' => $cat->name,
                 'description' => $cat->description,
+                'icon' => $cat->icon,
                 'image_url' => $cat->image_url,
                 'items' => $cat->items->map(fn($item) => [
                     'id' => $item->id,
