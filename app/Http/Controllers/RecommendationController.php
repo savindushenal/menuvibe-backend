@@ -127,10 +127,10 @@ class RecommendationController extends Controller
         $results = match ($mood) {
             'spicy'   => $available->filter(fn($i) => ($i['is_spicy'] ?? false) || ($i['spice_level'] ?? 0) > 0)
                                     ->sortByDesc(fn($i) => $i['is_featured'] ?? false),
-            'light'   => $available->filter(fn($i) => $this->categoryMatchesKeywords($i['category_name'] ?? '', ['salad', 'soup', 'light', 'appetizer', 'starter', 'juice', 'smoothie'])),
-            'hearty'  => $available->filter(fn($i) => $this->categoryMatchesKeywords($i['category_name'] ?? '', ['main', 'grill', 'burger', 'rice', 'pasta', 'steak', 'platter', 'seafood'])),
-            'drink'   => $available->filter(fn($i) => $this->categoryMatchesKeywords($i['category_name'] ?? '', ['drink', 'beverage', 'juice', 'smoothie', 'coffee', 'tea', 'cocktail', 'mocktail', 'soda', 'water'])),
-            'dessert' => $available->filter(fn($i) => $this->categoryMatchesKeywords($i['category_name'] ?? '', ['dessert', 'sweet', 'cake', 'ice cream', 'pudding', 'pastry', 'waffle'])),
+            'light'   => $available->filter(fn($i) => $this->itemMatchesMood($i, ['salad', 'soup', 'light', 'appetizer', 'starter', 'juice', 'smoothie'])),
+            'hearty'  => $available->filter(fn($i) => $this->itemMatchesMood($i, ['main', 'grill', 'burger', 'rice', 'pasta', 'steak', 'platter', 'seafood'])),
+            'drink'   => $available->filter(fn($i) => $this->itemMatchesMood($i, ['drink', 'beverage', 'juice', 'smoothie', 'coffee', 'tea', 'cocktail', 'mocktail', 'soda', 'water'])),
+            'dessert' => $available->filter(fn($i) => $this->itemMatchesMood($i, ['dessert', 'sweet', 'cake', 'ice cream', 'pudding', 'pastry', 'waffle'])),
             default   => $available, // surprise — all items
         };
 
@@ -401,6 +401,26 @@ class RecommendationController extends Controller
             'category_name' => $item['category_name'],
             'variations'    => $item['variations'] ?? [],
         ], $extra);
+    }
+
+    /**
+     * Match an item against mood keywords by searching across
+     * category name, item name, AND description — making the guide
+     * smart enough to find e.g. "grilled salmon" tagged as Fish, not Seafood.
+     */
+    private function itemMatchesMood(array $item, array $keywords): bool
+    {
+        $haystack = strtolower(
+            ($item['category_name'] ?? '') . ' ' .
+            ($item['name'] ?? '') . ' ' .
+            ($item['description'] ?? '')
+        );
+        foreach ($keywords as $keyword) {
+            if (str_contains($haystack, $keyword)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private function categoryMatchesKeywords(string $categoryName, array $keywords): bool
