@@ -142,9 +142,10 @@ class MenuTemplate extends Model
      */
     public function getFullMenu(): array
     {
-        $this->load(['categories.items' => function ($query) {
-            $query->where('is_available', true)->orderBy('sort_order');
-        }]);
+        $this->load([
+            'categories' => fn($q) => $q->where('is_active', true)->orderBy('sort_order'),
+            'categories.items' => fn($q) => $q->where('is_available', true)->orderBy('sort_order'),
+        ]);
 
         return [
             'id' => $this->id,
