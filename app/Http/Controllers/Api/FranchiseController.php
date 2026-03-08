@@ -771,6 +771,21 @@ class FranchiseController extends Controller
             }
         }
 
+        // Merge settings: location menu settings as base, endpoint template settings
+        // take precedence (the endpoint template is what the admin configures via
+        // the Design Settings dialog — enable_recommendation_guide, enable_upsell_strip, etc.)
+        $defaultSettings = [
+            'show_prices' => true,
+            'show_images' => true,
+            'show_descriptions' => true,
+            'show_categories' => true,
+            'allow_search' => true,
+            'theme' => 'premium',
+        ];
+        $locationMenuSettings = $menu ? ($menu->settings ?? []) : [];
+        $endpointTemplateSettings = $endpoint->template ? ($endpoint->template->settings ?? []) : [];
+        $mergedSettings = array_merge($defaultSettings, $locationMenuSettings, $endpointTemplateSettings);
+
         return response()->json([
             'success' => true,
             'data' => [
@@ -795,18 +810,11 @@ class FranchiseController extends Controller
                     'table_number' => $endpoint->identifier, // Alias for compatibility
                 ],
                 'template' => [
-                    'id' => $menu ? $menu->id : null,
+                    'id' => $menu ? $menu->id : ($endpoint->template ? $endpoint->template->id : null),
                     'name' => $menu ? $menu->name : 'Menu',
                     'style' => $menu ? $menu->style : 'modern',
-                    'currency' => $menu ? $menu->currency : 'LKR',
-                    'settings' => $menu ? $menu->settings : [
-                        'show_prices' => true,
-                        'show_images' => true,
-                        'show_descriptions' => true,
-                        'show_categories' => true,
-                        'allow_search' => true,
-                        'theme' => 'premium'
-                    ],
+                    'currency' => $menu ? $menu->currency : ($endpoint->template ? $endpoint->template->currency : 'LKR'),
+                    'settings' => $mergedSettings,
                 ],
                 'menu' => $menu ? [
                     'id' => $menu->id,
