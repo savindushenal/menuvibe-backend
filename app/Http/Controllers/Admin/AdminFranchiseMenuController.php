@@ -137,13 +137,17 @@ class AdminFranchiseMenuController extends Controller
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        $template->update($request->only([
-            'name',
-            'description',
-            'currency',
-            'settings',
-            'is_active',
-        ]));
+        // Build update data — merge settings so existing keys are preserved
+        $data = $request->only(['name', 'description', 'currency', 'is_active']);
+        if ($request->has('settings')) {
+            // Merge: existing template settings are the base; incoming changes override
+            $data['settings'] = array_merge(
+                $template->settings ?? [],
+                $request->settings ?? []
+            );
+        }
+
+        $template->update($data);
 
         return response()->json([
             'success' => true,
