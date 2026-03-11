@@ -495,7 +495,7 @@ class AdminUserController extends Controller
             $result = $emailService->sendPasswordReset(
                 $user->email,
                 $user->name,
-                config('app.frontend_url') . '/login',
+                config('app.frontend_url') . '/auth/login',
                 'This is your new password'
             );
             
@@ -506,7 +506,7 @@ class AdminUserController extends Controller
                     'user_name' => $user->name,
                     'platform_name' => 'MenuVire',
                     'new_password' => $password,
-                    'login_link' => config('app.frontend_url') . '/login',
+                    'login_link' => config('app.frontend_url') . '/auth/login',
                 ]);
             }
             
