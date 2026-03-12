@@ -25,8 +25,8 @@ WORKDIR /app
 # Copy composer files first for caching
 COPY composer.json composer.lock ./
 
-# Install dependencies
-RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction
+# Install dependencies (--ignore-platform-req=ext-gd: gd is installed in the image but not detected at build time by Composer)
+RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction --ignore-platform-req=ext-gd
 
 # Copy application files
 COPY . .
