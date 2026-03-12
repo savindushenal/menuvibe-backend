@@ -471,41 +471,21 @@ class AdminUserController extends Controller
         // Revoke all existing tokens for security
         $user->tokens()->delete();
 
-        // Send the password via email using EmailService API
+        // Send the password via email
+        $emailSent = false;
         try {
-            \Log::info('=== PASSWORD EMAIL DEBUG START ===');
-            \Log::info('Sending password email via Email API...');
+            \Log::info('=== PASSWORD EMAIL START ===', ['to' => $user->email]);
             
-            $emailService = new EmailService();
-            $loginUrl = config('app.frontend_url', 'https://app.menuvire.com') . '/auth/login';
+            // Use Laravel Mail with the PasswordResetByAdminMail mailable
+            Mail::to($user->email)->send(new PasswordResetByAdminMail($user, $password));
             
-            // Use the credential template which includes the password
-            $result = $emailService->send($user->email, 'password-reset-admin', [
-                'user_name' => $user->name,
-                'user_email' => $user->email,
-                'platform_name' => 'MenuVire',
-                'new_password' => $password,
-                'login_url' => $loginUrl,
-            ]);
-            
-            if ($result['success']) {
-                $emailSent = true;
-                \Log::info('=== PASSWORD EMAIL SENT SUCCESSFULLY via API ===', ['to' => $user->email]);
-            } else {
-                // Fallback to Laravel Mail if API fails
-                \Log::info('API failed, falling back to Laravel Mail...', ['error' => $result['message'] ?? 'unknown']);
-                \Mail::to($user->email)->send(new PasswordResetByAdminMail($user, $password));
-                $emailSent = true;
-                \Log::info('=== PASSWORD EMAIL SENT SUCCESSFULLY via Laravel Mail ===', ['to' => $user->email]);
-            }
+            $emailSent = true;
+            \Log::info('=== PASSWORD EMAIL SENT ===', ['to' => $user->email]);
         } catch (\Throwable $e) {
-            $emailSent = false;
             \Log::error('=== PASSWORD EMAIL FAILED ===', [
-                'error_class' => get_class($e),
-                'error_message' => $e->getMessage(),
-                'error_code' => $e->getCode(),
-                'error_file' => $e->getFile(),
-                'error_line' => $e->getLine(),
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
             ]);
         }
 
