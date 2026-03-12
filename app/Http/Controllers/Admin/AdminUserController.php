@@ -471,30 +471,33 @@ class AdminUserController extends Controller
         // Revoke all existing tokens for security
         $user->tokens()->delete();
 
-        // Send the password via email
+        // Send the password via email using EmailService API
         try {
             \Log::info('=== PASSWORD EMAIL DEBUG START ===');
-            \Log::info('Mail configuration', [
-                'to' => $user->email,
-                'mail_driver' => config('mail.default'),
-                'mail_host' => config('mail.mailers.smtp.host'),
-                'mail_port' => config('mail.mailers.smtp.port'),
-                'mail_encryption' => config('mail.mailers.smtp.encryption'),
-                'mail_username' => config('mail.mailers.smtp.username'),
-                'mail_from_address' => config('mail.from.address'),
-                'mail_from_name' => config('mail.from.name'),
-                'queue_connection' => config('queue.default'),
+            \Log::info('Sending password email via Email API...');
+            
+            $emailService = new EmailService();
+            $loginUrl = config('app.frontend_url', 'https://app.menuvire.com') . '/auth/login';
+            
+            // Use the credential template which includes the password
+            $result = $emailService->send($user->email, 'password-reset-admin', [
+                'user_name' => $user->name,
+                'user_email' => $user->email,
+                'platform_name' => 'MenuVire',
+                'new_password' => $password,
+                'login_url' => $loginUrl,
             ]);
             
-            // Check if OpenSSL is loaded
-            \Log::info('OpenSSL loaded: ' . (extension_loaded('openssl') ? 'YES' : 'NO'));
-            
-            // Send email using the PasswordResetByAdminMail mailable (includes the password)
-            \Log::info('Sending password email via Mailable...');
-            \Mail::to($user->email)->send(new PasswordResetByAdminMail($user, $password));
-            
-            $emailSent = true;
-            \Log::info('=== PASSWORD EMAIL SENT SUCCESSFULLY ===', ['to' => $user->email]);
+            if ($result['success']) {
+                $emailSent = true;
+                \Log::info('=== PASSWORD EMAIL SENT SUCCESSFULLY via API ===', ['to' => $user->email]);
+            } else {
+                // Fallback to Laravel Mail if API fails
+                \Log::info('API failed, falling back to Laravel Mail...', ['error' => $result['message'] ?? 'unknown']);
+                \Mail::to($user->email)->send(new PasswordResetByAdminMail($user, $password));
+                $emailSent = true;
+                \Log::info('=== PASSWORD EMAIL SENT SUCCESSFULLY via Laravel Mail ===', ['to' => $user->email]);
+            }
         } catch (\Throwable $e) {
             $emailSent = false;
             \Log::error('=== PASSWORD EMAIL FAILED ===', [
@@ -503,7 +506,6 @@ class AdminUserController extends Controller
                 'error_code' => $e->getCode(),
                 'error_file' => $e->getFile(),
                 'error_line' => $e->getLine(),
-                'trace' => $e->getTraceAsString(),
             ]);
         }
 
