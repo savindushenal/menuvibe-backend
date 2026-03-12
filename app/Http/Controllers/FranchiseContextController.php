@@ -292,8 +292,8 @@ class FranchiseContextController extends Controller
         $franchise = $request->get('franchise');
         $role = $request->get('franchise_role');
 
-        $query = \App\Models\MenuTemplate::where('franchise_id', $franchise->id)
-            ->with(['location:id,name,branch_name,branch_code'])
+        $query = \App\Models\MenuTemplate::withoutGlobalScopes()->where('franchise_id', $franchise->id)
+            ->with(['location' => function ($q) { $q->withoutGlobalScopes()->select('id', 'name', 'branch_name', 'branch_code'); }])
             ->orderBy('is_default', 'desc')
             ->orderBy('name');
 
@@ -323,8 +323,8 @@ class FranchiseContextController extends Controller
         $role = $request->get('franchise_role');
         $user = $request->user();
 
-        $menu = Menu::whereHas('location', function ($q) use ($franchise) {
-            $q->where('franchise_id', $franchise->id);
+        $menu = Menu::withoutGlobalScope('franchise')->whereHas('location', function ($q) use ($franchise) {
+            $q->withoutGlobalScopes()->where('franchise_id', $franchise->id);
         })->find($menuId);
 
         if (!$menu) {
@@ -412,8 +412,8 @@ class FranchiseContextController extends Controller
             ], 403);
         }
 
-        $menu = Menu::whereHas('location', function ($q) use ($franchise) {
-            $q->where('franchise_id', $franchise->id);
+        $menu = Menu::withoutGlobalScope('franchise')->whereHas('location', function ($q) use ($franchise) {
+            $q->withoutGlobalScopes()->where('franchise_id', $franchise->id);
         })->find($menuId);
 
         if (!$menu) {
@@ -928,7 +928,7 @@ class FranchiseContextController extends Controller
         }
 
         // Branches are now unified as Locations
-        $branch = Location::where('franchise_id', $franchise->id)
+        $branch = Location::withoutGlobalScopes()->where('franchise_id', $franchise->id)
             ->whereNotNull('branch_code')
             ->where('id', $branchId)
             ->first();
@@ -994,7 +994,7 @@ class FranchiseContextController extends Controller
         }
 
         // Branches are now unified as Locations
-        $branch = Location::where('franchise_id', $franchise->id)
+        $branch = Location::withoutGlobalScopes()->where('franchise_id', $franchise->id)
             ->whereNotNull('branch_code')
             ->where('id', $branchId)
             ->first();
@@ -1085,7 +1085,7 @@ class FranchiseContextController extends Controller
 
         // Check if location/branch belongs to franchise
         if ($locationId) {
-            $location = Location::where('franchise_id', $franchise->id)
+            $location = Location::withoutGlobalScopes()->where('franchise_id', $franchise->id)
                 ->where('id', $locationId)
                 ->first();
             
@@ -1220,7 +1220,7 @@ class FranchiseContextController extends Controller
 
         // Check if location/branch belongs to franchise
         if ($locationId) {
-            $location = Location::where('franchise_id', $franchise->id)
+            $location = Location::withoutGlobalScopes()->where('franchise_id', $franchise->id)
                 ->where('id', $locationId)
                 ->first();
             
@@ -1316,7 +1316,7 @@ class FranchiseContextController extends Controller
         }
 
         // Get endpoints for THIS franchise only (filter by franchise_id directly)
-        $query = \App\Models\MenuEndpoint::query()
+        $query = \App\Models\MenuEndpoint::withoutGlobalScopes()
             ->where('franchise_id', $franchise->id)
             ->with('template');
 
@@ -1368,7 +1368,7 @@ class FranchiseContextController extends Controller
         $locationId = $validated['location_id'] ?? $userAccount?->location_id;
         
         if (!$locationId) {
-            $location = Location::where('franchise_id', $franchise->id)->first();
+            $location = Location::withoutGlobalScopes()->where('franchise_id', $franchise->id)->first();
             if (!$location) {
                 return response()->json([
                     'success' => false,
@@ -1379,7 +1379,7 @@ class FranchiseContextController extends Controller
         }
         
         // Verify location belongs to this franchise
-        $location = Location::where('id', $locationId)
+        $location = Location::withoutGlobalScopes()->where('id', $locationId)
             ->where('franchise_id', $franchise->id)
             ->first();
             
@@ -1393,13 +1393,13 @@ class FranchiseContextController extends Controller
         // Get or create default template for franchise location
         $templateId = $validated['template_id'] ?? null;
         if (!$templateId) {
-            $template = \App\Models\MenuTemplate::where('location_id', $locationId)
+            $template = \App\Models\MenuTemplate::withoutGlobalScopes()->where('location_id', $locationId)
                 ->where('franchise_id', $franchise->id)
                 ->where('is_default', true)
                 ->first();
             
             if (!$template) {
-                $template = \App\Models\MenuTemplate::where('location_id', $locationId)
+                $template = \App\Models\MenuTemplate::withoutGlobalScopes()->where('location_id', $locationId)
                     ->where('franchise_id', $franchise->id)
                     ->first();
             }
@@ -1470,7 +1470,7 @@ class FranchiseContextController extends Controller
         $locationId = $validated['location_id'] ?? $userAccount?->location_id;
         
         if (!$locationId) {
-            $location = Location::where('franchise_id', $franchise->id)->first();
+            $location = Location::withoutGlobalScopes()->where('franchise_id', $franchise->id)->first();
             if (!$location) {
                 return response()->json([
                     'success' => false,
@@ -1482,13 +1482,13 @@ class FranchiseContextController extends Controller
 
         $templateId = $validated['template_id'] ?? null;
         if (!$templateId) {
-            $template = \App\Models\MenuTemplate::where('location_id', $locationId)
+            $template = \App\Models\MenuTemplate::withoutGlobalScopes()->where('location_id', $locationId)
                 ->where('franchise_id', $franchise->id)
                 ->where('is_default', true)
                 ->first();
             
             if (!$template) {
-                $template = \App\Models\MenuTemplate::where('location_id', $locationId)
+                $template = \App\Models\MenuTemplate::withoutGlobalScopes()->where('location_id', $locationId)
                     ->where('franchise_id', $franchise->id)
                     ->first();
             }
@@ -1543,7 +1543,7 @@ class FranchiseContextController extends Controller
     {
         $franchise = $request->get('franchise');
         
-        $endpoint = \App\Models\MenuEndpoint::with('template')
+        $endpoint = \App\Models\MenuEndpoint::withoutGlobalScopes()->with('template')
             ->where('franchise_id', $franchise->id)
             ->find($endpointId);
 
@@ -1575,7 +1575,7 @@ class FranchiseContextController extends Controller
             ], 403);
         }
 
-        $endpoint = \App\Models\MenuEndpoint::where('franchise_id', $franchise->id)
+        $endpoint = \App\Models\MenuEndpoint::withoutGlobalScopes()->where('franchise_id', $franchise->id)
             ->find($endpointId);
 
         if (!$endpoint) {
@@ -1597,7 +1597,7 @@ class FranchiseContextController extends Controller
         
         // If location_id is being updated, verify it belongs to this franchise
         if (isset($validated['location_id'])) {
-            $location = Location::where('id', $validated['location_id'])
+            $location = Location::withoutGlobalScopes()->where('id', $validated['location_id'])
                 ->where('franchise_id', $franchise->id)
                 ->first();
                 
@@ -1633,7 +1633,7 @@ class FranchiseContextController extends Controller
             ], 403);
         }
 
-        $endpoint = \App\Models\MenuEndpoint::where('franchise_id', $franchise->id)
+        $endpoint = \App\Models\MenuEndpoint::withoutGlobalScopes()->where('franchise_id', $franchise->id)
             ->find($endpointId);
 
         if (!$endpoint) {
