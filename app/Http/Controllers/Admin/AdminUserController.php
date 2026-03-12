@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\PasswordResetByAdminMail;
 use App\Models\AdminActivityLog;
 use App\Models\User;
 use App\Models\UserSubscription;
@@ -10,6 +11,7 @@ use App\Services\EmailService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -469,23 +471,27 @@ class AdminUserController extends Controller
         // Revoke all existing tokens for security
         $user->tokens()->delete();
 
-        // Send the new password via email using EmailService API
+        // Send the password via email using the Email API service
         $emailSent = false;
         try {
-            $loginUrl = config('app.frontend_url') . '/auth/login';
             $emailService = new EmailService();
-            $result = $emailService->sendAdminPasswordReset(
-                $user->email,
-                $user->name,
-                $password,
-                $loginUrl
-            );
+            $loginUrl = config('app.frontend_url') . '/auth/login';
+
+            $result = $emailService->send($user->email, 'franchise-credentials', [
+                'owner_name' => $user->name,
+                'franchise_name' => 'MenuVire',
+                'platform_name' => 'MenuVire',
+                'email' => $user->email,
+                'password' => $password,
+                'login_url' => $loginUrl,
+            ]);
+
             $emailSent = $result['success'];
             if (!$emailSent) {
-                \Log::error('Password email API failed', ['error' => $result['message'] ?? 'unknown']);
+                \Log::error('PASSWORD EMAIL FAILED', ['response' => $result]);
             }
         } catch (\Throwable $e) {
-            \Log::error('Password email exception', ['error' => $e->getMessage()]);
+            \Log::error('PASSWORD EMAIL EXCEPTION', ['error' => $e->getMessage()]);
         }
 
         // Log the activity
