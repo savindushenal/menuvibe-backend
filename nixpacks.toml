@@ -10,7 +10,7 @@ cmds = [
     "mkdir -p storage/logs",
     "chmod -R 775 storage",
     "chmod -R 775 bootstrap/cache",
-    "composer install --no-dev --optimize-autoloader"
+    "composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-gd"
 ]
 
 [phases.build]
