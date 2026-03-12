@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Mail\PasswordResetByAdminMail;
 use App\Models\AdminActivityLog;
 use App\Models\User;
 use App\Models\UserSubscription;
@@ -11,7 +10,6 @@ use App\Services\EmailService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -471,22 +469,23 @@ class AdminUserController extends Controller
         // Revoke all existing tokens for security
         $user->tokens()->delete();
 
-        // Send the password via email
+        // Send the new password via email using EmailService API
         $emailSent = false;
         try {
-            \Log::info('=== PASSWORD EMAIL START ===', ['to' => $user->email]);
-            
-            // Use Laravel Mail with the PasswordResetByAdminMail mailable
-            Mail::to($user->email)->send(new PasswordResetByAdminMail($user, $password));
-            
-            $emailSent = true;
-            \Log::info('=== PASSWORD EMAIL SENT ===', ['to' => $user->email]);
+            $loginUrl = config('app.frontend_url') . '/auth/login';
+            $emailService = new EmailService();
+            $result = $emailService->sendAdminPasswordReset(
+                $user->email,
+                $user->name,
+                $password,
+                $loginUrl
+            );
+            $emailSent = $result['success'];
+            if (!$emailSent) {
+                \Log::error('Password email API failed', ['error' => $result['message'] ?? 'unknown']);
+            }
         } catch (\Throwable $e) {
-            \Log::error('=== PASSWORD EMAIL FAILED ===', [
-                'error' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-            ]);
+            \Log::error('Password email exception', ['error' => $e->getMessage()]);
         }
 
         // Log the activity

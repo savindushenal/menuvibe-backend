@@ -86,7 +86,7 @@ class EmailService
     }
 
     /**
-     * Send password reset email
+     * Send password reset email (self-service)
      */
     public function sendPasswordReset(string $to, string $userName, string $resetLink, string $expiresAt = '1 hour'): array
     {
@@ -95,6 +95,20 @@ class EmailService
             'platform_name' => 'MenuVire',
             'reset_link' => $resetLink,
             'expires_at' => $expiresAt,
+        ]);
+    }
+
+    /**
+     * Send admin-generated password email (includes the new password)
+     */
+    public function sendAdminPasswordReset(string $to, string $userName, string $newPassword, string $loginUrl): array
+    {
+        return $this->send($to, 'password-reset', [
+            'user_name' => $userName,
+            'platform_name' => 'MenuVire',
+            'reset_link' => $loginUrl,
+            'new_password' => $newPassword,
+            'expires_at' => 'Your new password is ready to use',
         ]);
     }
 
