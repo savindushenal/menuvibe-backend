@@ -38,7 +38,7 @@ class FranchiseContextController extends Controller
             $stats = [
                 'branches' => 1, // Just their branch
                 'locations' => 1,
-                'menus' => Menu::where('location_id', $userLocationId)->count(),
+                'menus' => Menu::withoutGlobalScope('franchise')->where('location_id', $userLocationId)->count(),
                 'staff' => FranchiseAccount::where('franchise_id', $franchise->id)
                     ->where('location_id', $userLocationId)
                     ->where('is_active', true)
@@ -47,12 +47,12 @@ class FranchiseContextController extends Controller
         } else {
             // Owners/admins see all stats
             $stats = [
-                'branches' => Location::where('franchise_id', $franchise->id)
+                'branches' => Location::withoutGlobalScopes()->where('franchise_id', $franchise->id)
                     ->whereNotNull('branch_code')
                     ->count(),
-                'locations' => Location::where('franchise_id', $franchise->id)->count(),
-                'menus' => Menu::whereHas('location', function ($q) use ($franchise) {
-                    $q->where('franchise_id', $franchise->id);
+                'locations' => Location::withoutGlobalScopes()->where('franchise_id', $franchise->id)->count(),
+                'menus' => Menu::withoutGlobalScope('franchise')->whereHas('location', function ($q) use ($franchise) {
+                    $q->withoutGlobalScopes()->where('franchise_id', $franchise->id);
                 })->count(),
                 'staff' => FranchiseAccount::where('franchise_id', $franchise->id)
                     ->where('is_active', true)
@@ -63,7 +63,7 @@ class FranchiseContextController extends Controller
         // Get user's location info if branch-restricted
         $userLocation = null;
         if ($isBranchRestricted && $userLocationId) {
-            $location = Location::find($userLocationId);
+            $location = Location::withoutGlobalScopes()->find($userLocationId);
             if ($location) {
                 $userLocation = [
                     'id' => $location->id,
@@ -114,7 +114,7 @@ class FranchiseContextController extends Controller
                 ]);
             }
 
-            $branches = Location::where('franchise_id', $franchise->id)
+            $branches = Location::withoutGlobalScopes()->where('franchise_id', $franchise->id)
                 ->where('id', $account->location_id)
                 ->with(['accounts', 'menus'])
                 ->get();
@@ -126,7 +126,7 @@ class FranchiseContextController extends Controller
         }
 
         // Owners and admins can see all branches
-        $branches = Location::where('franchise_id', $franchise->id)
+        $branches = Location::withoutGlobalScopes()->where('franchise_id', $franchise->id)
             ->whereNotNull('branch_code')
             ->with(['accounts', 'menus'])
             ->get();
@@ -146,7 +146,7 @@ class FranchiseContextController extends Controller
         $franchise = $request->get('franchise');
         $role = $request->get('franchise_role');
 
-        $query = Location::where('franchise_id', $franchise->id)
+        $query = Location::withoutGlobalScopes()->where('franchise_id', $franchise->id)
             ->with(['menus:id,location_id,name']);
 
         // For branch managers and staff, filter by their location
@@ -175,9 +175,15 @@ class FranchiseContextController extends Controller
         $franchise = $request->get('franchise');
         $role = $request->get('franchise_role');
 
-        $query = Menu::whereHas('location', function ($q) use ($franchise) {
-            $q->where('franchise_id', $franchise->id);
-        })->with(['location:id,name,branch_name,branch_code', 'categories.items']);
+        $query = Menu::withoutGlobalScope('franchise')
+            ->whereHas('location', function ($q) use ($franchise) {
+                $q->withoutGlobalScopes()->where('franchise_id', $franchise->id);
+            })->with([
+                'location' => function ($q) {
+                    $q->withoutGlobalScopes()->select('id', 'name', 'branch_name', 'branch_code');
+                },
+                'categories.items'
+            ]);
 
         // For branch managers and staff, filter by their location
         if (in_array($role, ['branch_manager', 'manager', 'staff'])) {
@@ -185,7 +191,7 @@ class FranchiseContextController extends Controller
             
             if ($account && $account->location_id) {
                 $query->whereHas('location', function ($q) use ($account) {
-                    $q->where('id', $account->location_id);
+                    $q->withoutGlobalScopes()->where('id', $account->location_id);
                 });
             }
         }
@@ -207,8 +213,12 @@ class FranchiseContextController extends Controller
         $role = $request->get('franchise_role');
 
         // First, check if menu exists at all
-        $menu = Menu::with(['location:id,name,branch_name,branch_code,franchise_id', 'categories.items'])
-            ->find($menuId);
+        $menu = Menu::with([
+                'location' => function ($q) {
+                    $q->withoutGlobalScopes()->select('id', 'name', 'branch_name', 'branch_code', 'franchise_id');
+                },
+                'categories.items'
+            ])->find($menuId);
 
         \Log::info('Fetching menu', [
             'menu_id' => $menuId,
