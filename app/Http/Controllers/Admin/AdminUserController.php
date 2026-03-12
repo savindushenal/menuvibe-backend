@@ -489,33 +489,12 @@ class AdminUserController extends Controller
             // Check if OpenSSL is loaded
             \Log::info('OpenSSL loaded: ' . (extension_loaded('openssl') ? 'YES' : 'NO'));
             
-            // Send email via Email API service
-            \Log::info('Sending email via Email API...');
-            $emailService = new EmailService();
-            $result = $emailService->sendPasswordReset(
-                $user->email,
-                $user->name,
-                config('app.frontend_url') . '/auth/login',
-                'This is your new password'
-            );
+            // Send email using the PasswordResetByAdminMail mailable (includes the password)
+            \Log::info('Sending password email via Mailable...');
+            \Mail::to($user->email)->send(new PasswordResetByAdminMail($user, $password));
             
-            // If template doesn't exist, send a basic email with the password
-            if (!$result['success']) {
-                // Fallback: send credentials email with password
-                $result = $emailService->send($user->email, 'password-reset', [
-                    'user_name' => $user->name,
-                    'platform_name' => 'MenuVire',
-                    'new_password' => $password,
-                    'login_link' => config('app.frontend_url') . '/auth/login',
-                ]);
-            }
-            
-            $emailSent = $result['success'];
-            if ($emailSent) {
-                \Log::info('=== PASSWORD EMAIL SENT SUCCESSFULLY ===', ['to' => $user->email]);
-            } else {
-                throw new \Exception($result['message'] ?? 'Email API failed');
-            }
+            $emailSent = true;
+            \Log::info('=== PASSWORD EMAIL SENT SUCCESSFULLY ===', ['to' => $user->email]);
         } catch (\Throwable $e) {
             $emailSent = false;
             \Log::error('=== PASSWORD EMAIL FAILED ===', [
