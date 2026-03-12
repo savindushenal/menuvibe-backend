@@ -201,7 +201,7 @@ class AuthController extends Controller
             ->whereNull('franchise_id')
             ->count();
         
-        if ($personalLocations > 0 || $user->role === 'user') {
+        if ($personalLocations > 0) {
             $contexts[] = [
                 'type' => 'personal',
                 'id' => null,
