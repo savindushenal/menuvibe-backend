@@ -117,6 +117,18 @@ class IssoDemoSeeder extends Seeder
                 'icon' => '⭐',
                 'sort_order' => 4,
             ],
+            [
+                'name' => 'Island Coolers & House Specials',
+                'description' => 'Vibrant house-made lemonades and refreshing specialty drinks',
+                'icon' => '🍋',
+                'sort_order' => 5,
+            ],
+            [
+                'name' => 'Indulgent Treats & Lassi',
+                'description' => 'Thick shakes, creamy lassis and dessert drinks',
+                'icon' => '🍦',
+                'sort_order' => 6,
+            ],
         ];
 
         $categoryMap = [];
@@ -365,6 +377,119 @@ class IssoDemoSeeder extends Seeder
                 'sort_order' => 2,
                 // No variations - fixed offering
             ],
+
+            // Island Coolers & House Specials
+            [
+                'category' => 'Island Coolers & House Specials',
+                'name' => 'Watermelon Lemonade',
+                'description' => 'A vibrant, house-made lemonade blended with fresh watermelon and hint of mint.',
+                'price' => 895,
+                'image_url' => null,
+                'is_featured' => false,
+                'sort_order' => 1,
+            ],
+            [
+                'category' => 'Island Coolers & House Specials',
+                'name' => 'Passionfruit Lemonade',
+                'description' => 'Zesty passionfruit puree mixed with our classic sweet lemonade.',
+                'price' => 895,
+                'image_url' => null,
+                'is_featured' => false,
+                'sort_order' => 2,
+            ],
+            [
+                'category' => 'Island Coolers & House Specials',
+                'name' => 'Pomegranate Ginger Fizz',
+                'description' => 'A dazzling mix of sweet pomegranate, spicy fresh ginger and sparkling soda.',
+                'price' => 995,
+                'image_url' => null,
+                'is_featured' => true,
+                'sort_order' => 3,
+            ],
+            [
+                'category' => 'Island Coolers & House Specials',
+                'name' => 'Tropical Refresher',
+                'description' => 'Fresh mango, jasmine green tea, lime, honey.',
+                'price' => 995,
+                'image_url' => null,
+                'is_featured' => false,
+                'sort_order' => 4,
+            ],
+            [
+                'category' => 'Island Coolers & House Specials',
+                'name' => 'Strawberry Fields Iced Tea',
+                'description' => 'Fresh strawberry, Chamomile Tea, Honey.',
+                'price' => 995,
+                'image_url' => null,
+                'is_featured' => false,
+                'sort_order' => 5,
+            ],
+            [
+                'category' => 'Island Coolers & House Specials',
+                'name' => 'Lime Soda Cooler',
+                'description' => 'Freshly squeezed lime juice, sugar topped with soda.',
+                'price' => 895,
+                'image_url' => null,
+                'is_featured' => false,
+                'sort_order' => 6,
+            ],
+            [
+                'category' => 'Island Coolers & House Specials',
+                'name' => 'Elderflower Bloom',
+                'description' => 'A light, aromatic soda infused with the delicate, fragrant essence of elderflower.',
+                'price' => 895,
+                'image_url' => null,
+                'is_featured' => false,
+                'sort_order' => 7,
+            ],
+
+            // Indulgent Treats & Lassi
+            [
+                'category' => 'Indulgent Treats & Lassi',
+                'name' => 'Choco Cookie Delight',
+                'description' => 'Crushed cookies blended into a thick cream vanilla ice cream shake.',
+                'price' => 1195,
+                'image_url' => null,
+                'is_featured' => true,
+                'sort_order' => 1,
+            ],
+            [
+                'category' => 'Indulgent Treats & Lassi',
+                'name' => 'Mango Dream Lassi',
+                'description' => 'A thick, sweet blend of rich yogurt, fresh mango pulp, hint of cardamom.',
+                'price' => 995,
+                'image_url' => null,
+                'is_featured' => false,
+                'sort_order' => 2,
+            ],
+            [
+                'category' => 'Indulgent Treats & Lassi',
+                'name' => 'Rose Garden Falooda',
+                'description' => 'A stunning, layered dessert drink with rose syrup, basil seeds, vermicelli and vanilla ice cream.',
+                'price' => 795,
+                'image_url' => null,
+                'is_featured' => false,
+                'sort_order' => 3,
+            ],
+            [
+                'category' => 'Indulgent Treats & Lassi',
+                'name' => 'Iced Milo Dynamo',
+                'description' => 'Ice cold milk loaded with famous chocolate malt powder: nostalgic favorite!',
+                'price' => 1095,
+                'image_url' => null,
+                'is_featured' => false,
+                'sort_order' => 4,
+            ],
+            [
+                'category' => 'Indulgent Treats & Lassi',
+                'name' => 'The Palm Coast Date Shake',
+                'description' => 'A creamy, naturally sweet indulgence that blends premium vanilla ice cream with plump Medjool dates, a hint of local honey, and a blend of crunchy cashews and almonds. A protein-rich, satisfying drink.',
+                'price' => 1195,
+                'image_url' => null,
+                'is_featured' => true,
+                'sort_order' => 5,
+            ],
+
         ];
 
         foreach ($items as $itemData) {
